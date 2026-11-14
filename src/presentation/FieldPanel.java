@@ -221,9 +221,7 @@ public class FieldPanel extends JPanel {
 
         //Friccion, el balon se frena poco a poco en X 
         if (Math.abs(balon.getVelocityX()) < VELOCIDAD_MINIMA) {
-            balon.setVelocityX(balon.getVelocityX() * 0.95);
-        } else {
-            balon.setVelocityX(0);  // si es muy lento, se para
+            balon.setVelocityX(0);
         }
 
         //Limites de los jugadores (no salirse de la cancha) 

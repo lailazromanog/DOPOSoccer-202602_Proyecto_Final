@@ -64,6 +64,13 @@ public class FieldPanel extends JPanel {
     private double poderJ1 = 0.0;
     private double poderJ2 = 0.0;
 
+    //constantes para la fisica del balon
+    private static final double FRICCION_AIRE =0.97; //pierde rebote en el aire 
+    private static final double REBOTE_PISO = 0.7; //energia que se conserva al rebortar en el piso
+    private static final double REBOTE_PARED = 0.8; //'' al rebotar en una pared
+    private static final double VELOCIDAD_MINIMA = 0.5; //si el balone sta por debajo, se para
+    private static final double FUERZA_PATADA = 12; 
+    private static final double ANGULO_PATADA = 0.3; 
     public FieldPanel() {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
@@ -162,8 +169,13 @@ public class FieldPanel extends JPanel {
         // si esta lo suficientemente cerca, patear
         if (distX < DIAMETRO_JUGADOR && distY < DIAMETRO_JUGADOR) {
             
-            double angulo = (direccion == 1) ? -0.3 : Math.PI + 0.3;
-            balon.applyForce(12, angulo);
+            double angulo;
+            if(direccion == 1){
+                angulo = -ANGULO_PATADA; //patea hacia la derecha
+            }else{
+                angulo = Math.PI + ANGULO_PATADA; //patea hacia la izq
+            }
+            balon.applyForce(FUERZA_PATADA, angulo);
         }
     }
 
@@ -174,13 +186,16 @@ public class FieldPanel extends JPanel {
 
         // Mover el balon  
         balon.move();
+        //friccion del aire
+        balon.setVelocityX(balon.getVelocityX() * FRICCION_AIRE);
+        balon.setVelocityY(balon.getVelocityY() * FRICCION_AIRE);
 
         // Rebote del balon contra el suelo 
         if (balon.getPositionY() > SUELO_BALON) {
             balon.setPositionY(SUELO_BALON);
-            balon.bounceY();  // invierte velocityY
-            // amortiguar: el balon pierde energia en cada rebote
-            balon.setVelocityY(balon.getVelocityY() * 0.7);
+            balon.bounceY();  
+            // amortiguar, el balon pierde energia en cada rebote
+            balon.setVelocityY(balon.getVelocityY() * REBOTE_PISO);
             if(Math.abs(balon.getVelocityY()) < 1.0){ //si el rebote es minimo, se detiene
                 balon.setVelocityY(0);
             }
@@ -196,20 +211,22 @@ public class FieldPanel extends JPanel {
         if (balon.getPositionX() < 0) {
             balon.setPositionX(0);
             balon.bounceX();  // invierte velocityX
+            balon.setVelocityX(balon.getVelocityX() * REBOTE_PARED);
         }
-        if (balon.getPositionX() > ANCHO - DIAMETRO_BALON) {
+        if (balon.getPositionX() > ANCHO - DIAMETRO_BALON){
             balon.setPositionX(ANCHO - DIAMETRO_BALON);
             balon.bounceX();
+            balon.setVelocityX(balon.getVelocityX() * REBOTE_PARED);
         }
 
-        // Friccion: el balon se frena poco a poco en X 
-        if (Math.abs(balon.getVelocityX()) > 0.1) {
-            balon.setVelocityX(balon.getVelocityX() * 0.99);
+        //Friccion, el balon se frena poco a poco en X 
+        if (Math.abs(balon.getVelocityX()) < VELOCIDAD_MINIMA) {
+            balon.setVelocityX(balon.getVelocityX() * 0.95);
         } else {
-            balon.setVelocityX(0);  // si es muy lento, pararlo
+            balon.setVelocityX(0);  // si es muy lento, se para
         }
 
-        // Limites de los jugadores (no salirse de la cancha) 
+        //Limites de los jugadores (no salirse de la cancha) 
         if (jugador1.getPositionX() < 0) jugador1.setPositionX(0);
         if (jugador1.getPositionX() > ANCHO - DIAMETRO_JUGADOR) jugador1.setPositionX(ANCHO - DIAMETRO_JUGADOR);
         if (jugador2.getPositionX() < 0) jugador2.setPositionX(0);

@@ -76,6 +76,7 @@ public class Player {
     public void update(double  groundY){
         //la gravedad aumenta la velocidad hacia abajo en cada frame
         velocityY += 0.5;
+        positionY += velocityY; 
 
         //si llego al suelo o lo paso, se deja al jugador en el suelo 
         if(positionY >= groundY){

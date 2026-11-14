@@ -12,7 +12,7 @@ public class Ball  {
         this.positionY = 0;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.gravity = 9.8;
+        this.gravity = 0.4; //era 9.8, cuando usamos pixeles usamos algo mas pequeño
     }
 
     public void move(){
@@ -29,9 +29,18 @@ public class Ball  {
         velocityX += force * Math.cos(angle);
         velocityY += force * Math.sin(angle);
     }
+    /**
+     * Rebote vertical, invierte la velocidad en Y, para el rebote del suelo y el techo
+     */
+    public void bounceY(){
+        velocityY = -this.velocityY;
+    }
 
-    public void bounce(){
-        velocityY = -velocityY;
+    /**
+     * Rebote horizontal, invierte la velocidad en X, para el rebote en paredes
+     */
+    public void bounceX(){
+        this.velocityX = -this.velocityX;
     }
 
     public void reset(){
@@ -39,7 +48,7 @@ public class Ball  {
         this.positionY = 0;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.gravity = 9.8;
+        this.gravity = 0.4;
     }
 
     public double getPositionX() {
@@ -61,4 +70,36 @@ public class Ball  {
     public double getGravity() {
         return gravity;
     }
+
+    /**
+     * permite colocar la posición X del balón desde la presentación
+     */
+    public void setPositionX(double x){
+        this.positionX = x;
+    }
+
+    /**
+     * Permite colocar la posición Y del balón desde la presentación
+     */
+    public void setPositionY(double  y){
+        this.positionY = y;
+    }
+
+    /**
+     * Permite ajustar la velocidad en X, para friccion y rebote en paredes
+     */
+    public void setVelocityX(double  vx){
+        this.velocityX = vx;
+    }
+
+    /**
+     * Permite ajustar la velocidad en Y, para fricción y rebote en las paredes
+     */
+    public void setVelocityY(double  vy){
+        this.velocityY = vy;
+    }
+
+    
+
+    
 }

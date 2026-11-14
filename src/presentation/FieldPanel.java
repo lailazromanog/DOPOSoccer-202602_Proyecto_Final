@@ -181,6 +181,9 @@ public class FieldPanel extends JPanel {
             balon.bounceY();  // invierte velocityY
             // amortiguar: el balon pierde energia en cada rebote
             balon.setVelocityY(balon.getVelocityY() * 0.7);
+            if(Math.abs(balon.getVelocityY()) < 1.0){ //si el rebote es minimo, se detiene
+                balon.setVelocityY(0);
+            }
         }
 
         // Rebote contra el techo 

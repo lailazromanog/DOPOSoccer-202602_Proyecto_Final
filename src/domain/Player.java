@@ -19,7 +19,7 @@ public class Player {
     private Character character;
     private PowerBar powerBar;
     private double velocityY; //velocidad vertical, para la fisica del salto del jugador
-
+    private boolean onGround = true; //para que salga solo si esta en el suelo
     public Player() {
         this.health = getMaxHealth();
         this.stunned = false;
@@ -62,8 +62,9 @@ public class Player {
      */
     public void jump() {
         if(!stunned && !"unconscious".equals(currentEffect) && !"electrocuted".equals(currentEffect)){
-            if(velocityY == 0){ //solo salta si esta en el suelo
+            if(onGround){ //solo salta si esta en el suelo
                 velocityY = -10; // un impulso hacia arriba
+                onGround = false; //para que no salga de pantalla
             }
         }
     }
@@ -82,6 +83,9 @@ public class Player {
         if(positionY >= groundY){
             positionY = groundY;
             velocityY = 0; //ya no se mueve verticalmente
+            onGround = true; //ya esta en el suelo
+        }else{
+            onGround = false; //se encuentra en el aire
         }
     }
     public void kick(Ball ball) {

@@ -3,6 +3,9 @@ import domain.Ball;
 import domain.Player;
 import domain.Goal;
 import domain.Score;
+import domain.Match;
+import domain.Time; 
+
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -45,8 +48,8 @@ public class FieldPanel extends JPanel {
     private Ball balon;
     private Goal arcoIzquierdo;
     private Goal arcoDerecho;
-    private domain.Timer cronometro;
-    private Score marcador; 
+    private Match partido;
+ 
 
     private static final int ANCHO = 769;
     private static final int ALTO = 450;
@@ -60,9 +63,6 @@ public class FieldPanel extends JPanel {
     private Set<Integer> teclasPresionadas;
     private Timer gameLoop;
     private boolean partidoTerminado = false;
-
-    private double poderJ1 = 0.0;
-    private double poderJ2 = 0.0;
 
     //constantes para la fisica del balon
     private static final double FRICCION_AIRE =0.97; //pierde rebote en el aire 
@@ -90,20 +90,30 @@ public class FieldPanel extends JPanel {
         setPreferredSize(new Dimension(ANCHO, ALTO));
 
         //creamos los objetos del dominio 
-        jugador1 = new Player();
-        jugador2 = new Player();
-        balon = new Ball();
-        arcoIzquierdo = new Goal(-100, 290, (POSTE_IZQ - DIAMETRO_BALON / 2) + 100, 135);
-        arcoDerecho   = new Goal(POSTE_DER - DIAMETRO_BALON / 2, 290, 200, 135);
-        cronometro = new domain.Timer(180);
-        cronometro.start();
-        marcador = new Score(jugador1, jugador2);
+        Player p1 = new Player();
+        Player p2 = new Player();
+        Ball b = new Ball();
+        Goal arcoIzq = new Goal(-100, 290, (POSTE_IZQ - DIAMETRO_BALON / 2) + 100, 135);
+        Goal arcoDer = new Goal(POSTE_DER - DIAMETRO_BALON / 2, 290, 200, 135);
+        domain.Timer cronometro = new domain.Timer(180);
+        Score marcador = new Score(p1, p2);
+
+        //armamos el partido 
+        partido = new Time(p1, p2, b, arcoIzq, arcoDer, cronometro, marcador);
+        partido.start();
+
+        jugador1 = partido.getPlayerOne();
+        jugador2 = partido.getPlayerTwo();
+        balon = partido.getBall();
+        arcoIzquierdo = partido.getLeftGoal();
+        arcoDerecho = partido.getRightGoal();
+
+
 
         //posiciones iniciales
         jugador1.setInitialPosition(ANCHO * 0.18, SUELO_JUGADOR);
         jugador2.setInitialPosition(ANCHO * 0.75, SUELO_JUGADOR);
-        balon.setPositionX(ANCHO/2.0 - DIAMETRO_BALON/2.0);
-        balon.setPositionY(SUELO_BALON);
+        centrarBalon();
 
         //teclas 
         teclasPresionadas = new HashSet<>();
@@ -137,15 +147,15 @@ public class FieldPanel extends JPanel {
      * Descuenta el tiempo
      */
     private void actualizarTiempo(){
-        cronometro.update(16/1000.0);
-        if(cronometro.isTimeUp()){
+        partido.getTimer().update(16/1000.0);
+        if(partido.checkWinCondition()){
             terminarPartido();
         }
     }
 
     private void terminarPartido(){
         partidoTerminado = true;
-        cronometro.stop();
+        partido.finish();
         gameLoop.stop();
     }
     private void procesarTeclas(){
@@ -236,24 +246,22 @@ public class FieldPanel extends JPanel {
     private void revisarGol(){
         //gol en el arco izq, gol para el J2
         if(arcoIzquierdo.isGoal(balon)){
-            marcador.addGoal(jugador2);
-            reiniciarPosiciones();
+            partido.onGoal(jugador2);
+            centrarBalon();
         }else if(arcoDerecho.isGoal(balon)){
-            marcador.addGoal(jugador1);
-            reiniciarPosiciones();
+            partido.onGoal(jugador1);
+            centrarBalon();
         }
     }
 
     /**
      * Vuelve el balon al centro y los jugadores a su posicion inicial
      */
-    private void reiniciarPosiciones(){
+    private void centrarBalon(){
         balon.setPositionX(ANCHO/ 2.0 - DIAMETRO_BALON/2.0);
         balon.setPositionY(SUELO_BALON);
         balon.setVelocityX(0);
         balon.setVelocityY(0);
-        jugador1.resetPosition();
-        jugador2.resetPosition();
     }
 
     private void actualizarFisica() {
@@ -321,7 +329,7 @@ public class FieldPanel extends JPanel {
         g.setColor(new Color(0, 0, 0, 180));
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        Player ganador = marcador.getWinner();
+        Player ganador = partido.getScore().getWinner();
         String resultado; 
         if(ganador == jugador1){
             resultado = "Gana Jugador 1";
@@ -337,7 +345,7 @@ public class FieldPanel extends JPanel {
         g.drawString(resultado, (getWidth() - fm.stringWidth(resultado))/2, getHeight()/2 - 20);
 
         g.setFont(new Font("Arial", Font.BOLD, 28));
-        String m = marcador.getGoalsPlayerOne() + " - " + marcador.getGoalsPlayerTwo();
+        String m = partido.getScore().getGoalsPlayerOne() + " - " + partido.getScore().getGoalsPlayerTwo();
         FontMetrics fm2 = g.getFontMetrics();
         g.drawString(m, (getWidth() - fm2.stringWidth(m))/2, getHeight()/2 + 30);
 
@@ -347,17 +355,15 @@ public class FieldPanel extends JPanel {
      */
     @Override
     protected  void paintComponent(Graphics g){
+        if(partidoTerminado){
+            dibujarFinPartido(g);
+        }
         super.paintComponent(g); //limpiamos antes de dibujar el fondo 
         dibujarCancha(g);
         dibujarJugadores(g);
         dibujarBalon(g);
         dibujarArcos(g);
         dibujarHUD(g);
-
-        if(partidoTerminado){
-            dibujarFinPartido(g);
-        }
-        
     }
     private void dibujarCancha(Graphics g) {
         if (cancha != null) {
@@ -413,6 +419,9 @@ public class FieldPanel extends JPanel {
 
     /** Dibuja el HUD: marcador, cronometro y barras de poder */
     private void dibujarHUD(Graphics g) {
+        double poderJ1 = jugador1.getPowerBar().getCurrentCharge() / jugador1.getPowerBar().getMaxCharge();
+        double poderJ2 = jugador2.getPowerBar().getCurrentCharge() / jugador2.getPowerBar().getMaxCharge();
+
         // fondo semitransparente
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, getWidth(), 48);
@@ -422,7 +431,7 @@ public class FieldPanel extends JPanel {
         FontMetrics fm = g.getFontMetrics();
 
         // marcador centrado
-        String marcadorTexto = marcador.getGoalsPlayerOne() + " - " + marcador.getGoalsPlayerTwo();
+        String marcadorTexto = partido.getGoalsPlayerOne() + " - " + partido.getGoalsPlayerTwo();
         int anchoMarcador = fm.stringWidth(marcadorTexto);
         g.drawString(marcadorTexto, (getWidth() - anchoMarcador) / 2, 28);
 
@@ -433,7 +442,7 @@ public class FieldPanel extends JPanel {
         g.drawString("J2", getWidth()/2 + anchoMarcador/2 + 8, 28);
 
         // cronometro
-        int t = cronometro.getCurrentTime();
+        int t = partido.getCurrentTime();
         int minutos = t/60;
         int segundos = t % 60;
         String tiempo = String.format("%d:%02d", minutos, segundos);

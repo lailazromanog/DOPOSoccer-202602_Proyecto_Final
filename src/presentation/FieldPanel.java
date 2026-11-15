@@ -127,6 +127,7 @@ public class FieldPanel extends JPanel {
             public void actionPerformed(java.awt.event.ActionEvent e){
                 procesarTeclas();
                 actualizarFisica();
+                actualizarTiempo();
                 repaint();
             }
         });
@@ -352,7 +353,10 @@ public class FieldPanel extends JPanel {
         dibujarBalon(g);
         dibujarArcos(g);
         dibujarHUD(g);
-        dibujarFinPartido(g);
+
+        if(partidoTerminado){
+            dibujarFinPartido(g);
+        }
         
     }
     private void dibujarCancha(Graphics g) {

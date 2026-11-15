@@ -71,6 +71,8 @@ public class FieldPanel extends JPanel {
     private static final double VELOCIDAD_MINIMA = 0.5; //si el balone sta por debajo, se para
     private static final double FUERZA_PATADA = 12; 
     private static final double ANGULO_PATADA = 0.3; 
+    private static final double REBOTE_MINIMO = 2.0; 
+
     public FieldPanel() {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
@@ -196,7 +198,7 @@ public class FieldPanel extends JPanel {
             balon.bounceY();  
             // amortiguar, el balon pierde energia en cada rebote
             balon.setVelocityY(balon.getVelocityY() * REBOTE_PISO);
-            if(Math.abs(balon.getVelocityY()) < 1.0){ //si el rebote es minimo, se detiene
+            if(Math.abs(balon.getVelocityY()) < REBOTE_MINIMO){ //si el rebote es minimo, se detiene
                 balon.setVelocityY(0);
             }
         }

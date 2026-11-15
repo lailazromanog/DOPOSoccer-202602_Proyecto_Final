@@ -22,8 +22,10 @@ import domain.Timer;
  */
 public class GameGUI extends JFrame {
     //la cancha 
-    private FieldPanel fieldPanel;
+    private ConfigPanel configPanel;
+    
 
+    
     public GameGUI(){
         prepareElements();
     }
@@ -35,10 +37,9 @@ public class GameGUI extends JFrame {
         setTitle("DOPOSoccer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
-
-        Match match = buildMatch(true, 3);
-        fieldPanel = new FieldPanel(match);
-        add(fieldPanel);
+        
+        configPanel = new ConfigPanel(this);
+        add(configPanel);
 
         pack();
         setLocationRelativeTo(null);
@@ -61,7 +62,16 @@ public class GameGUI extends JFrame {
         }
 
     }
-    
+    public void startGame(boolean byTime, int value){
+        Match match = buildMatch(byTime, value);
+        FieldPanel fieldPanel = new FieldPanel(match);
+        setContentPane(fieldPanel);
+        revalidate();
+        pack();
+        setLocationRelativeTo(null);
+        fieldPanel.requestFocusInWindow();
+    }
+
     public static void main(String[] args) {
         GameGUI ventana = new GameGUI();
         ventana.setVisible(true);

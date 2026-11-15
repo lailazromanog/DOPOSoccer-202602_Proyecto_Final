@@ -84,3 +84,49 @@ coordenadas de pantalla (píxeles):
   del salto, y se subió `speed` de 1 a 5 para que el movimiento sea visible.
 - `Ball`: se bajó `gravity` de 9.8 a 0.4 (de metros/s² a píxeles/frame),
   y se agregaron setters y `bounceX()` para manejar rebotes en paredes.
+
+## Pantalla de configuración (ConfigPanel / GameGUI)
+
+Técnicas de Java Swing usadas en la pantalla de configuración del partido
+(elegir "por tiempo" o "por goles" y definir minutos/goles).
+
+### JRadioButton + ButtonGroup
+- **Qué es:** botones de opción (radio). El `ButtonGroup` los agrupa para que
+  solo uno quede seleccionado a la vez (si marcas "Por goles", se desmarca
+  "Por tiempo").
+- **Para qué lo usé:** elegir el tipo de partido, que es una decisión
+  excluyente (o tiempo o goles, no ambos).
+- **Fuente:** Oracle — "How to Use Buttons, Check Boxes, and Radio Buttons"
+  https://docs.oracle.com/javase/tutorial/uiswing/components/button.html#radiobutton
+
+### JTextField + Integer.parseInt con try/catch
+- **Qué es:** un campo de texto para escribir; `Integer.parseInt` convierte ese
+  texto a número. El `try/catch` atrapa el error si lo escrito no es un número.
+- **Para qué lo usé:** leer los minutos o los goles. Si el usuario escribe algo
+  inválido, no se cae el programa: uso un valor por defecto (3 min o 5 goles).
+- **Fuente:** Oracle — "How to Use Text Fields"
+  https://docs.oracle.com/javase/tutorial/uiswing/components/textfield.html
+
+### BoxLayout
+- **Qué es:** un administrador de layout que apila los componentes en una sola
+  columna (eje Y). `Box.createVerticalStrut(n)` mete espacios entre ellos.
+- **Para qué lo usé:** ordenar título, opciones, campo y botón de arriba hacia
+  abajo y centrados.
+- **Fuente:** Oracle — "How to Use BoxLayout"
+  https://docs.oracle.com/javase/tutorial/uiswing/layout/box.html
+
+### setContentPane(...)
+- **Qué es:** cambia todo el contenido de la ventana (JFrame) por otro panel,
+  sin abrir una ventana nueva.
+- **Para qué lo usé:** pasar de la pantalla de configuración a la cancha dentro
+  de la misma ventana, cuando se da "JUGAR".
+- **Fuente:** Oracle — "Using Top-Level Containers"
+  https://docs.oracle.com/javase/tutorial/uiswing/components/toplevel.html
+
+### requestFocusInWindow()
+- **Qué es:** le pide el foco del teclado a un componente.
+- **Para qué lo usé:** después de cambiar a la cancha con setContentPane, hay
+  que pedir el foco para que el panel del juego reciba las teclas (A/D/W/S y las
+  flechas). Si no, el teclado no responde.
+- **Fuente:** Oracle — "How to Use the Focus Subsystem"
+  https://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html

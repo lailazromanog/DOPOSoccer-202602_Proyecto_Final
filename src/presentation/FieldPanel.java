@@ -181,10 +181,38 @@ public class FieldPanel extends JPanel {
         }
     }
 
+    /**
+     * Evita que los jugadores se sobrepongan, si chocan de lado se separan
+     */
+    private void colisionJugadores(){
+        double centro1X = jugador1.getPositionX() + DIAMETRO_JUGADOR/ 2.0;
+        double centro1Y = jugador1.getPositionY() + DIAMETRO_JUGADOR/ 2.0;
+        double centro2X = jugador2.getPositionX() + DIAMETRO_JUGADOR/ 2.0;
+        double centro2Y = jugador1.getPositionY() + DIAMETRO_JUGADOR/ 2.0;
+
+        //cuanto se superponen en cada eje, si es positivo entonces lo estan
+        double solapeX = DIAMETRO_JUGADOR - Math.abs(centro1X -centro2X);
+        double solapeY = DIAMETRO_JUGADOR - Math.abs(centro1Y -centro2Y);
+
+        //chocan solo si se superponen en ambos ejes
+        if(solapeX > 0 &&  solapeY >0){
+            if(centro1X < centro2X){
+                jugador1.setPositionX(jugador1.getPositionX() - solapeX/2);
+                jugador2.setPositionX(jugador2.getPositionX() + solapeX/2);
+            }else{
+                jugador1.setPositionX(jugador1.getPositionX() + solapeX/2);
+                jugador2.setPositionX(jugador2.getPositionX() - solapeX/2);
+            }
+        }//si es el y, uno esta encima del otro, no importa 
+    }
+
     private void actualizarFisica() {
         // Gravedad de los jugadores (para el salto) 
         jugador1.update(SUELO_JUGADOR);
         jugador2.update(SUELO_JUGADOR);
+
+        //colision entre jugadores, pa que no se atraviesen 
+        colisionJugadores();
 
         // Mover el balon  
         balon.move();

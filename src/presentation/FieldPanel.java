@@ -44,15 +44,15 @@ public class FieldPanel extends JPanel {
     //
     private static final int ANCHO = 769;
     private static final int ALTO = 450;
-    private static final int DIAMETRO_JUGADOR = ALTO/5; //90 px
-    private static final int DIAMETRO_BALON = ALTO/9; //50 px
+    private static final int DIAMETRO_JUGADOR = 60;
+    private static final int DIAMETRO_BALON = 34; 
     
     //las teclas que presionan los jugadores
     private Set<Integer> teclasPresionadas;
 
     //suelo de ambos objetos 
-    private static final int SUELO_JUGADOR = (int) (ALTO * 0.70);
-    private static final int SUELO_BALON = (int) (ALTO * 0.78);
+    private static final int SUELO_JUGADOR = 348;
+    private static final int SUELO_BALON = 374;
 
     //Lee las teclas y llama metodos del dominio
     //actualiza la fisica, tanto la gravdad como los rebotes

@@ -20,6 +20,8 @@ public class Player {
     private PowerBar powerBar;
     private double velocityY; //velocidad vertical, para la fisica del salto del jugador
     private boolean onGround = true; //para que salga solo si esta en el suelo
+
+
     public Player() {
         this.health = getMaxHealth();
         this.stunned = false;

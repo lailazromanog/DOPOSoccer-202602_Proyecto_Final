@@ -1,6 +1,8 @@
 package presentation;
 import domain.Ball;
 import domain.Player;
+import domain.Goal;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -73,6 +75,10 @@ public class FieldPanel extends JPanel {
     private static final double ANGULO_PATADA = 0.3; 
     private static final double REBOTE_MINIMO = 2.0; 
 
+    //arco 
+    private Goal arcoIzquierdo; 
+    private Goal arcoDerecho; 
+
     public FieldPanel() {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
@@ -89,7 +95,8 @@ public class FieldPanel extends JPanel {
         jugador1 = new Player();
         jugador2 = new Player();
         balon = new Ball();
-
+        arcoDerecho = new Goal(ANCHO - 45, 295, 45, 120);
+        arcoIzquierdo = new Goal(0, 295, 45, 120);
         //posiciones iniciales
         jugador1.setInitialPosition(ANCHO * 0.18, SUELO_JUGADOR);
         jugador2.setInitialPosition(ANCHO * 0.75, SUELO_JUGADOR);
@@ -156,7 +163,7 @@ public class FieldPanel extends JPanel {
             teclasPresionadas.remove(KeyEvent.VK_DOWN);
         }
     }
-
+    
     private void intentarPatear(Player jugador, int direccion){
         // calcular el centro de cada uno
         double centroJugadorX = jugador.getPositionX() + DIAMETRO_JUGADOR / 2.0;
@@ -207,8 +214,30 @@ public class FieldPanel extends JPanel {
     }
 
     /**
-     * 
+     * Revisa si el balon entro a un arco y suma el gol al jugador que anoto
      */
+    private void revisarGol(){
+        //gol en el arco izq, gol para el J2
+        if(arcoIzquierdo.isGoal(balon)){
+            golesJ2++;
+            reiniciarPosiciones();
+        }else if(arcoDerecho.isGoal(balon)){
+            golesJ1++;
+            reiniciarPosiciones();
+        }
+    }
+
+    /**
+     * Vuelve el balon al centro y los jugadores a su posicion inicial
+     */
+    private void reiniciarPosiciones(){
+        balon.setPositionX(ANCHO/ 2.0 - DIAMETRO_BALON/2.0);
+        balon.setPositionY(SUELO_BALON);
+        balon.setVelocityX(0);
+        balon.setVelocityY(0);
+        jugador1.resetPosition();
+        jugador2.resetPosition();
+    }
 
     private void actualizarFisica() {
         // Gravedad de los jugadores (para el salto) 
@@ -223,6 +252,9 @@ public class FieldPanel extends JPanel {
         //friccion del aire
         balon.setVelocityX(balon.getVelocityX() * FRICCION_AIRE);
         balon.setVelocityY(balon.getVelocityY() * FRICCION_AIRE);
+
+        //hay gol?
+        revisarGol();
 
         // Rebote del balon contra el suelo 
         if (balon.getPositionY() > SUELO_BALON) {
@@ -275,6 +307,7 @@ public class FieldPanel extends JPanel {
         dibujarJugadores(g);
         dibujarBalon(g);
         dibujarHUD(g);
+        
     }
     private void dibujarCancha(Graphics g) {
         if (cancha != null) {
@@ -370,6 +403,7 @@ public class FieldPanel extends JPanel {
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.add(new FieldPanel());
         ventana.pack(); //ajusta la venta al tamaño preferido del panel 
+        ventana.setLocationRelativeTo(null); //fijamos la venta en 769x450
         ventana.setLocationRelativeTo(null); //Centra en la pantalla 
         ventana.setVisible(true);
     }

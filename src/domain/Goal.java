@@ -7,12 +7,17 @@ public class Goal {
     private int height;
 
     public Goal(double positionX, double positionY) {
-        this.positionX = positionX;
-        this.positionY = positionY;
-        this.width = 10; 
-        this.height = 100; 
+       this(positionX, positionY, 10, 100); 
     }
 
+    //permite definir el ancho y alto del arco 
+    public Goal(double positionX, double positionY, int width, int height){
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.width = width;
+        this.height = height;
+    }
+    
     public boolean isGoal(Ball ball) {
 
         return ball.getPositionX() >= positionX && ball.getPositionX() <= positionX + width &&

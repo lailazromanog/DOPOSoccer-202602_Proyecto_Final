@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -419,8 +418,7 @@ public class FieldPanel extends JPanel {
 
     /** Dibuja el HUD: marcador, cronometro y barras de poder */
     private void dibujarHUD(Graphics g) {
-        double poderJ1 = jugador1.getPowerBar().getCurrentCharge() / jugador1.getPowerBar().getMaxCharge();
-        double poderJ2 = jugador2.getPowerBar().getCurrentCharge() / jugador2.getPowerBar().getMaxCharge();
+        Score marcador = partido.getScore();
 
         // fondo semitransparente
         g.setColor(new Color(0, 0, 0, 150));
@@ -431,7 +429,7 @@ public class FieldPanel extends JPanel {
         FontMetrics fm = g.getFontMetrics();
 
         // marcador centrado
-        String marcadorTexto = partido.getGoalsPlayerOne() + " - " + partido.getGoalsPlayerTwo();
+        String marcadorTexto = marcador.getGoalsPlayerOne() + " - " + marcador.getGoalsPlayerTwo();
         int anchoMarcador = fm.stringWidth(marcadorTexto);
         g.drawString(marcadorTexto, (getWidth() - anchoMarcador) / 2, 28);
 
@@ -442,7 +440,7 @@ public class FieldPanel extends JPanel {
         g.drawString("J2", getWidth()/2 + anchoMarcador/2 + 8, 28);
 
         // cronometro
-        int t = partido.getCurrentTime();
+        int t = partido.getTimer().getCurrentTime();
         int minutos = t/60;
         int segundos = t % 60;
         String tiempo = String.format("%d:%02d", minutos, segundos);
@@ -450,6 +448,9 @@ public class FieldPanel extends JPanel {
         FontMetrics fmTime = g.getFontMetrics();
         g.drawString(tiempo, getWidth() - fmTime.stringWidth(tiempo) - 15, 28);
 
+        double poderJ1 = jugador1.getPowerBar().getCurrentCharge() / jugador1.getPowerBar().getMaxCharge();
+        double poderJ2 = jugador2.getPowerBar().getCurrentCharge() / jugador2.getPowerBar().getMaxCharge();
+        
         // barras de poder
         int barW = 100, barH = 10, barY = 34;
         // J1
@@ -468,18 +469,5 @@ public class FieldPanel extends JPanel {
         g.fillRect(barX2, barY, (int)(barW * poderJ2), barH);
         g.setColor(Color.WHITE);
         g.drawRect(barX2, barY, barW, barH);
-    }
-
-    /**
-     * Main para probar solo la cancha
-     */
-    public static void main(String[] args) {
-        JFrame ventana = new JFrame("Cancha DOPOSoccer");
-        ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ventana.add(new FieldPanel());
-        ventana.pack(); //ajusta la venta al tamaño preferido del panel 
-        ventana.setLocationRelativeTo(null); //fijamos la venta en 769x450
-        ventana.setLocationRelativeTo(null); //Centra en la pantalla 
-        ventana.setVisible(true);
     }
 }

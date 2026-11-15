@@ -4,7 +4,6 @@ import domain.Goal;
 import domain.Match;
 import domain.Player;
 import domain.Score;
-import domain.Time;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -51,7 +50,7 @@ public class FieldPanel extends JPanel {
     private static final int WIDTH = 769;
     private static final int HEIGHT = 450;
     private static final int PLAYER_DIAMETER = 60;
-    private static final int BALL_DIAMETER = 34; 
+    public static final int BALL_DIAMETER = 34; 
     //suelo de ambos objetos 
     private static final int PLAYER_GROUND = 348;
     private static final int BALL_GROUND = 374;
@@ -71,12 +70,12 @@ public class FieldPanel extends JPanel {
     private static final double MIN_BOUNCE = 2.0; 
 
     //arco 
-    private static final int LEFT_POST = 72; 
-    private static final int RIGHT_POST =  697; 
+    public static final int LEFT_POST = 72; 
+    public static final int RIGHT_POST =  697; 
     private static final int GOAL_TOP = 295; 
     private static final int GOAL_BOTTON = 417; 
 
-    public FieldPanel() {
+    public FieldPanel(Match match) {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
             fieldImage = ImageIO.read(new File("resources/cancha.png"));
@@ -86,22 +85,14 @@ public class FieldPanel extends JPanel {
         // el tamaño preferido del panel = tamaño real de la imagen
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
-        //creamos los objetos del dominio 
-        Player p1 = new Player();
-        Player p2 = new Player();
-        Ball b = new Ball();
-        leftGoal = new Goal(-100, 290, (LEFT_POST - BALL_DIAMETER / 2) + 100, 135);
-        rightGoal = new Goal(RIGHT_POST - BALL_DIAMETER / 2, 290, 200, 135);
-        domain.Timer timer = new domain.Timer(180);
-        Score score = new Score(p1, p2);
-
-        //armamos el match 
-        match = new Time(p1, p2, b, leftGoal, rightGoal, timer, score);
-        match.start();
+        this.match = match;
 
         leftPlayer = match.getPlayerOne();
         rightPlayer = match.getPlayerTwo();
         ball = match.getBall();
+        leftGoal = match.getLeftGoal();
+        rightGoal = match.getRightGoal();
+        match.start();
 
         //posiciones iniciales
         leftPlayer.setInitialPosition(WIDTH * 0.18, PLAYER_GROUND);
@@ -340,7 +331,7 @@ public class FieldPanel extends JPanel {
         g.setFont(new Font("Arial", Font.BOLD, 28));
         String scoreText = match.getScore().getGoalsPlayerOne() + " - " + match.getScore().getGoalsPlayerTwo();
         FontMetrics fm2 = g.getFontMetrics();
-        g.drawString(scoreText, (getWidth() - fm2.stringWidth(m))/2, getHeight()/2 + 30);
+        g.drawString(scoreText, (getWidth() - fm2.stringWidth(scoreText))/2, getHeight()/2 + 30);
 
     }
     /**

@@ -130,3 +130,36 @@ Técnicas de Java Swing usadas en la pantalla de configuración del partido
   flechas). Si no, el teclado no responde.
 - **Fuente:** Oracle — "How to Use the Focus Subsystem"
   https://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html
+
+
+## Pantalla de configuración — estética (ConfigPanel / RoundedButton)
+
+### Botón pintado a mano (RoundedButton extends JButton)
+- **Qué es:** un JButton al que le dibujo yo mismo el fondo, con esquinas
+  redondeadas, en vez del botón gris rectangular por defecto de Swing.
+- **Cómo:** en el constructor apago el fondo estándar con
+  `setContentAreaFilled(false)`, `setBorderPainted(false)` y `setOpaque(false)`;
+  luego en `paintComponent` dibujo un rectángulo redondeado con
+  `g2.fillRoundRect(...)` y dejo que `super.paintComponent(g)` pinte el texto
+  encima. Uso `RenderingHints.VALUE_ANTIALIAS_ON` para que el borde salga suave.
+- **Para qué lo usé:** el botón "JUGAR", para que se vea llamativo (naranja,
+  redondeado) como en la maqueta.
+- **Fuente:** Oracle — "Performing Custom Painting"
+  https://docs.oracle.com/javase/tutorial/uiswing/painting/
+
+### GridBagLayout para centrar la tarjeta
+- **Qué es:** un administrador de layout. Si le agrego un solo componente, lo
+  deja centrado (horizontal y vertical) dentro del panel.
+- **Para qué lo usé:** centrar la "tarjeta" oscura con los controles encima de
+  la foto de fondo del estadio.
+- **Fuente:** Oracle — "How to Use GridBagLayout"
+  https://docs.oracle.com/javase/tutorial/uiswing/layout/gridbag.html
+
+### Imagen de fondo en un panel (repaso)
+- **Qué es:** cargar una imagen con `ImageIO.read(...)` y dibujarla como fondo
+  sobreescribiendo `paintComponent` con `g.drawImage(fondo, 0, 0, getWidth(),
+  getHeight(), this)` (la estira al tamaño del panel).
+- **Para qué lo usé:** la foto del estadio (`menu.png`) detrás de la
+  configuración. Es la misma técnica que ya uso para la cancha.
+- **Fuente:** Oracle — "How to Use Icons" / "Reading/Loading an Image"
+  https://docs.oracle.com/javase/tutorial/2d/images/loadimage.html

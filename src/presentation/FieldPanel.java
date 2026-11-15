@@ -75,6 +75,8 @@ public class FieldPanel extends JPanel {
     private static final int GOAL_TOP = 295; 
     private static final int GOAL_BOTTON = 417; 
 
+    private boolean paused = false;
+
     public FieldPanel(Match match) {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
@@ -106,7 +108,14 @@ public class FieldPanel extends JPanel {
         addKeyListener(new KeyAdapter(){
             @Override
             public void keyPressed(KeyEvent e){
-                pressedKeys.add(e.getKeyCode());
+                int code = e.getKeyCode();
+                if(code == KeyEvent.VK_P){
+                    paused = !paused; //P:pausar o reanudar
+                }else if(code == KeyEvent.VK_ESCAPE){
+                    finishMatch(); //ESC:terminar el partido
+                }else{
+                    pressedKeys.add(code);
+                }
             }
             @Override 
             public void keyReleased(KeyEvent e){
@@ -119,9 +128,11 @@ public class FieldPanel extends JPanel {
         gameLoop = new Timer(16, new java.awt.event.ActionListener(){
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e){
-                processKeys();
-                updatePhysics();
-                updateTime();
+                if(!paused){
+                     processKeys();
+                    updatePhysics();
+                    updateTime();
+                }
                 repaint();
             }
         });
@@ -141,7 +152,9 @@ public class FieldPanel extends JPanel {
         matchFinished = true;
         match.finish();
         gameLoop.stop();
+        repaint();
     }
+
     private void processKeys(){
         // Jugador 1: A W S D Q 
         if (pressedKeys.contains(KeyEvent.VK_A)) {
@@ -348,7 +361,28 @@ public class FieldPanel extends JPanel {
 
         if(matchFinished){
             drawMatchEnd(g);
+        }else if(paused){
+            drawPaused(g);
         }
+    }
+
+    /**
+     * dibuja cuando se pausa el juego
+     */
+    private void drawPaused(Graphics g){
+        g.setColor(new Color(0, 0, 0, 170));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 44));
+        FontMetrics fm = g.getFontMetrics();
+        String text = "PAUSA";
+        g.drawString(text, (getWidth() - fm.stringWidth(text))/2, getHeight()/2 - 10);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 18));
+        FontMetrics fm2 = g.getFontMetrics();
+        String ayuda = "P: reanudar    ESC: terminar";
+        g.drawString(ayuda, (getWidth() - fm2.stringWidth(ayuda))/2, getHeight()/2 + 30);
     }
     private void drawField(Graphics g) {
         if (fieldImage != null) {

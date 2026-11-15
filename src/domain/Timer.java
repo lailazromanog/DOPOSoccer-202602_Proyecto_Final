@@ -2,14 +2,17 @@ package domain;
 
 public class Timer {
     private int totalTime;
-    private int currentTime;
+    private double  currentTime;
     private boolean running;
 
     public Timer() {
-        this.totalTime = 60;
-        this.currentTime = 60;
-    }
+        this(60);
 
+    }
+    public Timer(int seconds){
+        this.totalTime = seconds;
+        this.currentTime = seconds;
+    }
     public void start() {
         running = true;
     }
@@ -36,7 +39,7 @@ public class Timer {
     }
 
     public int getCurrentTime() {
-        return currentTime;
+        return (int) Math.ceil(currentTime);
     }
 
     public boolean isRunning() {

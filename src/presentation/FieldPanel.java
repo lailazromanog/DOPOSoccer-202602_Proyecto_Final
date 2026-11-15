@@ -2,6 +2,7 @@ package presentation;
 import domain.Ball;
 import domain.Player;
 import domain.Goal;
+import domain.Score;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,6 +20,8 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+
 /**
  * Pantalla de la cancha
  * Carga la imagen del estadio desde la carpeta de recursos y la dibuja como fondo.
@@ -40,29 +43,24 @@ public class FieldPanel extends JPanel {
     private Player jugador1;
     private Player jugador2;
     private Ball balon;
+    private Goal arcoIzquierdo;
+    private Goal arcoDerecho;
+    private domain.Timer cronometro;
+    private Score marcador; 
 
-    //
     private static final int ANCHO = 769;
     private static final int ALTO = 450;
     private static final int DIAMETRO_JUGADOR = 60;
     private static final int DIAMETRO_BALON = 34; 
-    
-    //las teclas que presionan los jugadores
-    private Set<Integer> teclasPresionadas;
-
     //suelo de ambos objetos 
     private static final int SUELO_JUGADOR = 348;
     private static final int SUELO_BALON = 374;
-
-    //Lee las teclas y llama metodos del dominio
-    //actualiza la fisica, tanto la gravdad como los rebotes
-    //llama a repaint para dibujar la pantalla 
+    
+    //las teclas que presionan los jugadores
+    private Set<Integer> teclasPresionadas;
     private Timer gameLoop;
+    private boolean partidoTerminado = false;
 
-    //valores del HUB, que son temporales hasta que conecte con score/timer
-    private int golesJ1 = 0;
-    private int golesJ2 = 0; 
-    private int tiempoSegundos = 180; 
     private double poderJ1 = 0.0;
     private double poderJ2 = 0.0;
 
@@ -76,8 +74,6 @@ public class FieldPanel extends JPanel {
     private static final double REBOTE_MINIMO = 2.0; 
 
     //arco 
-    private Goal arcoIzquierdo;
-    private Goal arcoDerecho;
     private static final int POSTE_IZQ = 72; 
     private static final int POSTE_DER =  697; 
     private static final int TOPE_ARCO = 295; 
@@ -86,9 +82,7 @@ public class FieldPanel extends JPanel {
     public FieldPanel() {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
-            File f = new File("resources/cancha.png");
-            //System.out.println("Buscando imagen en: " + f.getAbsolutePath() + " existe? " + f.exists());
-            cancha = ImageIO.read(f);
+            cancha = ImageIO.read(new File("resources/cancha.png"));
         } catch (IOException e) {
             System.out.println("No se pudo cargar la cancha: " + e.getMessage());
         }
@@ -101,7 +95,10 @@ public class FieldPanel extends JPanel {
         balon = new Ball();
         arcoIzquierdo = new Goal(-100, 290, (POSTE_IZQ - DIAMETRO_BALON / 2) + 100, 135);
         arcoDerecho   = new Goal(POSTE_DER - DIAMETRO_BALON / 2, 290, 200, 135);
-        
+        cronometro = new domain.Timer(180);
+        cronometro.start();
+        marcador = new Score(jugador1, jugador2);
+
         //posiciones iniciales
         jugador1.setInitialPosition(ANCHO * 0.18, SUELO_JUGADOR);
         jugador2.setInitialPosition(ANCHO * 0.75, SUELO_JUGADOR);
@@ -135,7 +132,21 @@ public class FieldPanel extends JPanel {
         });
         gameLoop.start();
     }
+    /**
+     * Descuenta el tiempo
+     */
+    private void actualizarTiempo(){
+        cronometro.update(16/1000.0);
+        if(cronometro.isTimeUp()){
+            terminarPartido();
+        }
+    }
 
+    private void terminarPartido(){
+        partidoTerminado = true;
+        cronometro.stop();
+        gameLoop.stop();
+    }
     private void procesarTeclas(){
         // Jugador 1: A W S D Q 
         if (teclasPresionadas.contains(KeyEvent.VK_A)) {
@@ -224,10 +235,10 @@ public class FieldPanel extends JPanel {
     private void revisarGol(){
         //gol en el arco izq, gol para el J2
         if(arcoIzquierdo.isGoal(balon)){
-            golesJ2++;
+            marcador.addGoal(jugador2);
             reiniciarPosiciones();
         }else if(arcoDerecho.isGoal(balon)){
-            golesJ1++;
+            marcador.addGoal(jugador1);
             reiniciarPosiciones();
         }
     }
@@ -303,6 +314,34 @@ public class FieldPanel extends JPanel {
     }
 
     /**
+     * dibuja como finaliza el partido en diferentes casos
+     */
+    private void dibujarFinPartido(Graphics g){
+        g.setColor(new Color(0, 0, 0, 180));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        Player ganador = marcador.getWinner();
+        String resultado; 
+        if(ganador == jugador1){
+            resultado = "Gana Jugador 1";
+        }else if( ganador == jugador2){
+            resultado = "Gana Jugador 2";
+        }else{
+            resultado = "EMPATE";
+        }
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 40));
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(resultado, (getWidth() - fm.stringWidth(resultado))/2, getHeight()/2 - 20);
+
+        g.setFont(new Font("Arial", Font.BOLD, 28));
+        String m = marcador.getGoalsPlayerOne() + " - " + marcador.getGoalsPlayerTwo();
+        FontMetrics fm2 = g.getFontMetrics();
+        g.drawString(m, (getWidth() - fm2.stringWidth(m))/2, getHeight()/2 + 30);
+
+    }
+    /**
      * Swing llama para dibujar el panel, aqui pintamos la imagen
      */
     @Override
@@ -313,6 +352,7 @@ public class FieldPanel extends JPanel {
         dibujarBalon(g);
         dibujarArcos(g);
         dibujarHUD(g);
+        dibujarFinPartido(g);
         
     }
     private void dibujarCancha(Graphics g) {
@@ -378,9 +418,9 @@ public class FieldPanel extends JPanel {
         FontMetrics fm = g.getFontMetrics();
 
         // marcador centrado
-        String marcador = golesJ1 + "-" + golesJ2;
-        int anchoMarcador = fm.stringWidth(marcador);
-        g.drawString(marcador, (getWidth() - anchoMarcador) / 2, 28);
+        String marcadorTexto = marcador.getGoalsPlayerOne() + " - " + marcador.getGoalsPlayerTwo();
+        int anchoMarcador = fm.stringWidth(marcadorTexto);
+        g.drawString(marcadorTexto, (getWidth() - anchoMarcador) / 2, 28);
 
         // etiquetas J1 y J2
         g.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -389,8 +429,9 @@ public class FieldPanel extends JPanel {
         g.drawString("J2", getWidth()/2 + anchoMarcador/2 + 8, 28);
 
         // cronometro
-        int minutos = tiempoSegundos / 60;
-        int segundos = tiempoSegundos % 60;
+        int t = cronometro.getCurrentTime();
+        int minutos = t/60;
+        int segundos = t % 60;
         String tiempo = String.format("%d:%02d", minutos, segundos);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         FontMetrics fmTime = g.getFontMetrics();

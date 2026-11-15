@@ -4,8 +4,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -16,17 +22,46 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+/**
+ * Pantalla de configuracion del partido
+ * Deja elegir el tipo de partido, por tiempo o por goles y el valor.
+ */
+
 public class ConfigPanel extends JPanel {
+
+    private BufferedImage background;
     private JRadioButton byTimeOption;
     private JRadioButton byGoalsOption;
     private JLabel valueLabel;
     private JTextField valueField;
-    private JButton playButton;
+    private RoundedButton playButton;
 
 
     public ConfigPanel(GameGUI gui){
+        loadBackground();
         prepareElements();
         prepareActions(gui);
+    }
+
+    /**
+     * Carga la imagen de fondo de la configuracion
+     */
+    private void loadBackground(){
+        try{
+            background = ImageIO.read(new File("resources/menu.png"));
+        }catch(IOException e){
+            System.out.println("No se pudo cargar el fondo: " + e.getMessage());
+        }
+    }
+    /**
+     * Dibuja la foto de fondo 
+     */
+    @Override
+    protected void paintComponent(Graphics g){
+        super.paintComponent(g);
+        if(background != null){
+            g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+        }
     }
 
     /**
@@ -34,12 +69,17 @@ public class ConfigPanel extends JPanel {
      */
     private void prepareElements(){
         setPreferredSize(new Dimension(769, 450));
-        setBackground(new Color(0x1b2b34));
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(BorderFactory.createEmptyBorder(60, 40, 40, 40));
+        setLayout(new GridBagLayout()); // centra la tarjeta en la pantalla
 
-        JLabel title = label("DOPOSoccer", new Font("Arial", Font.BOLD, 42), Color.WHITE);
-        JLabel subtitle = label("Configuracion del partido", new Font("Arial", Font.PLAIN, 18), new Color(0xbcd4df));
+        // tarjeta oscura para que todo se lea sobre la foto
+        JPanel card = new JPanel();
+        card.setBackground(new Color(0x14212a));
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xF28C28), 3, true),
+                BorderFactory.createEmptyBorder(26, 48, 26, 48)));
+
+        JLabel subtitle = label("Configuracion del partido", new Font("Arial", Font.BOLD, 26), Color.WHITE);
 
         //tipo de partido
         byTimeOption = radio("Por tiempo", true);
@@ -49,28 +89,32 @@ public class ConfigPanel extends JPanel {
         group.add(byGoalsOption);
 
         //tiempo de la partida o numero de goles que elija el usuario
-        valueLabel = label("Minutos: ", new Font("Arial", Font.PLAIN, 16), Color.WHITE);
+        valueLabel = label("Minutos: ", new Font("Arial", Font.PLAIN, 16), new Color(0xbcd4df));
         valueField = new JTextField("3", 5);
-        valueField.setMaximumSize(new Dimension(90, 32));
+        valueField.setMaximumSize(new Dimension(90, 34));
+        valueField.setFont(new Font("Arial", Font.BOLD, 16));
         valueField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        playButton = new JButton("JUGAR");
-        playButton.setFont(new Font("Arial", Font.BOLD, 20));
+        playButton = new RoundedButton("JUGAR", new Color(0xF28C28));
+        playButton.setFont(new Font("Arial", Font.BOLD, 22));
+        playButton.setMaximumSize(new Dimension(220, 52));
+        playButton.setPreferredSize(new Dimension(220, 52));
         playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        add(title);
-        add(Box.createVerticalStrut(6));
-        add(subtitle);
-        add(Box.createVerticalStrut(34));
-        add(byTimeOption);
-        add(Box.createVerticalStrut(4));
-        add(byGoalsOption);
-        add(Box.createVerticalStrut(24));
-        add(valueLabel);
-        add(Box.createVerticalStrut(6));
-        add(valueField);
-        add(Box.createVerticalStrut(34));
-        add(playButton);
+        // todo va en la card
+        card.add(subtitle);
+        card.add(Box.createVerticalStrut(22));
+        card.add(byTimeOption);
+        card.add(Box.createVerticalStrut(4));
+        card.add(byGoalsOption);
+        card.add(Box.createVerticalStrut(20));
+        card.add(valueLabel);
+        card.add(Box.createVerticalStrut(6));
+        card.add(valueField);
+        card.add(Box.createVerticalStrut(26));
+        card.add(playButton);
+
+        add(card);
     }
 
     /**

@@ -76,8 +76,12 @@ public class FieldPanel extends JPanel {
     private static final double REBOTE_MINIMO = 2.0; 
 
     //arco 
-    private Goal arcoIzquierdo; 
-    private Goal arcoDerecho; 
+    private Goal arcoIzquierdo;
+    private Goal arcoDerecho;
+    private static final int POSTE_IZQ = 72; 
+    private static final int POSTE_DER =  697; 
+    private static final int TOPE_ARCO = 295; 
+    private static final int BASE_ARCO = 417; 
 
     public FieldPanel() {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
@@ -95,8 +99,9 @@ public class FieldPanel extends JPanel {
         jugador1 = new Player();
         jugador2 = new Player();
         balon = new Ball();
-        arcoDerecho = new Goal(ANCHO - 45, 295, 45, 120);
-        arcoIzquierdo = new Goal(0, 295, 45, 120);
+        arcoIzquierdo = new Goal(-100, 290, (POSTE_IZQ - DIAMETRO_BALON / 2) + 100, 135);
+        arcoDerecho   = new Goal(POSTE_DER - DIAMETRO_BALON / 2, 290, 200, 135);
+        
         //posiciones iniciales
         jugador1.setInitialPosition(ANCHO * 0.18, SUELO_JUGADOR);
         jugador2.setInitialPosition(ANCHO * 0.75, SUELO_JUGADOR);
@@ -290,7 +295,7 @@ public class FieldPanel extends JPanel {
             balon.setVelocityX(0);
         }
 
-        //Limites de los jugadores (no salirse de la cancha) 
+        //Limites de los jugadores, no  se saleb de la cancha
         if (jugador1.getPositionX() < 0) jugador1.setPositionX(0);
         if (jugador1.getPositionX() > ANCHO - DIAMETRO_JUGADOR) jugador1.setPositionX(ANCHO - DIAMETRO_JUGADOR);
         if (jugador2.getPositionX() < 0) jugador2.setPositionX(0);
@@ -306,6 +311,7 @@ public class FieldPanel extends JPanel {
         dibujarCancha(g);
         dibujarJugadores(g);
         dibujarBalon(g);
+        dibujarArcos(g);
         dibujarHUD(g);
         
     }
@@ -344,6 +350,21 @@ public class FieldPanel extends JPanel {
         g.fillOval(x, y, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x, y, diametro, diametro);
+    }
+
+    /**
+     * Dibuja los postes del arco por encima de los jugadores y el balon
+     */
+    private void dibujarArcos(Graphics g){
+        g.setColor(Color.WHITE);
+        int grosor = 6;
+
+        //postes delanteros
+        g.fillRect(POSTE_IZQ - grosor/2, TOPE_ARCO, grosor, BASE_ARCO - TOPE_ARCO);
+        g.fillRect(POSTE_DER -grosor/2, TOPE_ARCO, grosor, BASE_ARCO - TOPE_ARCO);
+        //la parte de arriba del poste 
+        g.fillRect(0, TOPE_ARCO -grosor/2, POSTE_IZQ, grosor);
+        g.fillRect(POSTE_DER, TOPE_ARCO - grosor/2, getWidth()- POSTE_DER, grosor);
     }
 
     /** Dibuja el HUD: marcador, cronometro y barras de poder */

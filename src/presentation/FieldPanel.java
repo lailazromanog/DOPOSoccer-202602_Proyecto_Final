@@ -1,12 +1,10 @@
 package presentation;
 import domain.Ball;
-import domain.Player;
 import domain.Goal;
-import domain.Score;
 import domain.Match;
-import domain.Time; 
-
-
+import domain.Player;
+import domain.Score;
+import domain.Time;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -30,7 +28,7 @@ import javax.swing.Timer;
  * Primera pieza de la interfaz construida
  * 
  * Responsabilidades: 
- * 1. Dibujar la cancha, jugadores, balon y HUD
+ * 1. Dibujar la cancha, jugadores, ball y HUD
  * 2. ejecutar el teclado para los controles de ambos jugadores
  * 3. ejecutar 
  *   
@@ -39,93 +37,89 @@ import javax.swing.Timer;
 public class FieldPanel extends JPanel {
     
     // la imagen de la cancha ya cargada
-    private BufferedImage cancha;
+    private BufferedImage fieldImage;
     
     //objetos del dominio 
-    private Player jugador1;
-    private Player jugador2;
-    private Ball balon;
-    private Goal arcoIzquierdo;
-    private Goal arcoDerecho;
-    private Match partido;
+    private Player leftPlayer;
+    private Player rightPlayer;
+    private Ball ball;
+    private Goal leftGoal;
+    private Goal rightGoal;
+    private Match match;
  
 
-    private static final int ANCHO = 769;
-    private static final int ALTO = 450;
-    private static final int DIAMETRO_JUGADOR = 60;
-    private static final int DIAMETRO_BALON = 34; 
+    private static final int WIDTH = 769;
+    private static final int HEIGHT = 450;
+    private static final int PLAYER_DIAMETER = 60;
+    private static final int BALL_DIAMETER = 34; 
     //suelo de ambos objetos 
-    private static final int SUELO_JUGADOR = 348;
-    private static final int SUELO_BALON = 374;
+    private static final int PLAYER_GROUND = 348;
+    private static final int BALL_GROUND = 374;
     
     //las teclas que presionan los jugadores
-    private Set<Integer> teclasPresionadas;
+    private Set<Integer> pressedKeys;
     private Timer gameLoop;
-    private boolean partidoTerminado = false;
+    private boolean matchFinished = false;
 
-    //constantes para la fisica del balon
-    private static final double FRICCION_AIRE =0.97; //pierde rebote en el aire 
-    private static final double REBOTE_PISO = 0.7; //energia que se conserva al rebortar en el piso
-    private static final double REBOTE_PARED = 0.8; //'' al rebotar en una pared
-    private static final double VELOCIDAD_MINIMA = 0.5; //si el balone sta por debajo, se para
-    private static final double FUERZA_PATADA = 12; 
-    private static final double ANGULO_PATADA = 0.3; 
-    private static final double REBOTE_MINIMO = 2.0; 
+    //constantes para la fisica del ball
+    private static final double AIR_FRICTION =0.97; //pierde rebote en el aire 
+    private static final double FLOOR_BOUNCE = 0.7; //energia que se conserva al rebortar en el piso
+    private static final double WALL_BOUNCE = 0.8; //'' al rebotar en una pared
+    private static final double MIN_SPEED = 0.5; //si el balle sta por debajo, se para
+    private static final double KICK_FORCE = 12; 
+    private static final double KICK_ANGLE = 0.3; 
+    private static final double MIN_BOUNCE = 2.0; 
 
     //arco 
-    private static final int POSTE_IZQ = 72; 
-    private static final int POSTE_DER =  697; 
-    private static final int TOPE_ARCO = 295; 
-    private static final int BASE_ARCO = 417; 
+    private static final int LEFT_POST = 72; 
+    private static final int RIGHT_POST =  697; 
+    private static final int GOAL_TOP = 295; 
+    private static final int GOAL_BOTTON = 417; 
 
     public FieldPanel() {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
-            cancha = ImageIO.read(new File("resources/cancha.png"));
+            fieldImage = ImageIO.read(new File("resources/cancha.png"));
         } catch (IOException e) {
             System.out.println("No se pudo cargar la cancha: " + e.getMessage());
         }
         // el tamaño preferido del panel = tamaño real de la imagen
-        setPreferredSize(new Dimension(ANCHO, ALTO));
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
         //creamos los objetos del dominio 
         Player p1 = new Player();
         Player p2 = new Player();
         Ball b = new Ball();
-        Goal arcoIzq = new Goal(-100, 290, (POSTE_IZQ - DIAMETRO_BALON / 2) + 100, 135);
-        Goal arcoDer = new Goal(POSTE_DER - DIAMETRO_BALON / 2, 290, 200, 135);
-        domain.Timer cronometro = new domain.Timer(180);
-        Score marcador = new Score(p1, p2);
+        leftGoal = new Goal(-100, 290, (LEFT_POST - BALL_DIAMETER / 2) + 100, 135);
+        rightGoal = new Goal(RIGHT_POST - BALL_DIAMETER / 2, 290, 200, 135);
+        domain.Timer timer = new domain.Timer(180);
+        Score score = new Score(p1, p2);
 
-        //armamos el partido 
-        partido = new Time(p1, p2, b, arcoIzq, arcoDer, cronometro, marcador);
-        partido.start();
+        //armamos el match 
+        match = new Time(p1, p2, b, leftGoal, rightGoal, timer, score);
+        match.start();
 
-        jugador1 = partido.getPlayerOne();
-        jugador2 = partido.getPlayerTwo();
-        balon = partido.getBall();
-        arcoIzquierdo = partido.getLeftGoal();
-        arcoDerecho = partido.getRightGoal();
-
-
+        leftPlayer = match.getPlayerOne();
+        rightPlayer = match.getPlayerTwo();
+        ball = match.getBall();
 
         //posiciones iniciales
-        jugador1.setInitialPosition(ANCHO * 0.18, SUELO_JUGADOR);
-        jugador2.setInitialPosition(ANCHO * 0.75, SUELO_JUGADOR);
-        centrarBalon();
+        leftPlayer.setInitialPosition(WIDTH * 0.18, PLAYER_GROUND);
+        rightPlayer.setInitialPosition(WIDTH * 0.75, PLAYER_GROUND);
+        centerBall();
 
         //teclas 
-        teclasPresionadas = new HashSet<>();
+        pressedKeys = new HashSet<>();
 
         //kelistener
         addKeyListener(new KeyAdapter(){
             @Override
             public void keyPressed(KeyEvent e){
-                teclasPresionadas.add(e.getKeyCode());
+                pressedKeys.add(e.getKeyCode());
             }
             @Override 
             public void keyReleased(KeyEvent e){
-                teclasPresionadas.remove(e.getKeyCode());
+                pressedKeys.remove(e.getKeyCode());
             }
         });
         setFocusable(true);
@@ -134,9 +128,9 @@ public class FieldPanel extends JPanel {
         gameLoop = new Timer(16, new java.awt.event.ActionListener(){
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e){
-                procesarTeclas();
-                actualizarFisica();
-                actualizarTiempo();
+                processKeys();
+                updatePhysics();
+                updateTime();
                 repaint();
             }
         });
@@ -145,208 +139,208 @@ public class FieldPanel extends JPanel {
     /**
      * Descuenta el tiempo
      */
-    private void actualizarTiempo(){
-        partido.getTimer().update(16/1000.0);
-        if(partido.checkWinCondition()){
-            terminarPartido();
+    private void updateTime(){
+        match.getTimer().update(16/1000.0);
+        if(match.checkWinCondition()){
+            finishMatch();
         }
     }
 
-    private void terminarPartido(){
-        partidoTerminado = true;
-        partido.finish();
+    private void finishMatch(){
+        matchFinished = true;
+        match.finish();
         gameLoop.stop();
     }
-    private void procesarTeclas(){
+    private void processKeys(){
         // Jugador 1: A W S D Q 
-        if (teclasPresionadas.contains(KeyEvent.VK_A)) {
-            jugador1.moveLeft();
+        if (pressedKeys.contains(KeyEvent.VK_A)) {
+            leftPlayer.moveLeft();
         }
-        if (teclasPresionadas.contains(KeyEvent.VK_D)) {
-            jugador1.moveRight();
+        if (pressedKeys.contains(KeyEvent.VK_D)) {
+            leftPlayer.moveRight();
         }
-        if (teclasPresionadas.contains(KeyEvent.VK_W)) {
-            jugador1.jump();  // el dominio ya controla que solo salte si esta en el suelo
+        if (pressedKeys.contains(KeyEvent.VK_W)) {
+            leftPlayer.jump();  // el dominio ya controla que solo salte si esta en el suelo
         }
         // patear es one-shot: se quita del Set para que no patee 60 veces por segundo
-        if (teclasPresionadas.contains(KeyEvent.VK_S)) {
-            intentarPatear(jugador1, 1);  // 1 = direccion derecha
-            teclasPresionadas.remove(KeyEvent.VK_S);
+        if (pressedKeys.contains(KeyEvent.VK_S)) {
+            tryKick(leftPlayer, 1);  // 1 = direccion derecha
+            pressedKeys.remove(KeyEvent.VK_S);
         }
 
         // Jugador 2: flechas + Shift 
-        if (teclasPresionadas.contains(KeyEvent.VK_LEFT)) {
-            jugador2.moveLeft();
+        if (pressedKeys.contains(KeyEvent.VK_LEFT)) {
+            rightPlayer.moveLeft();
         }
-        if (teclasPresionadas.contains(KeyEvent.VK_RIGHT)) {
-            jugador2.moveRight();
+        if (pressedKeys.contains(KeyEvent.VK_RIGHT)) {
+            rightPlayer.moveRight();
         }
-        if (teclasPresionadas.contains(KeyEvent.VK_UP)) {
-            jugador2.jump();
+        if (pressedKeys.contains(KeyEvent.VK_UP)) {
+            rightPlayer.jump();
         }
-        if (teclasPresionadas.contains(KeyEvent.VK_DOWN)) {
-            intentarPatear(jugador2, -1);  // -1 = direccion izquierda
-            teclasPresionadas.remove(KeyEvent.VK_DOWN);
+        if (pressedKeys.contains(KeyEvent.VK_DOWN)) {
+            tryKick(rightPlayer, -1);  // -1 = direccion izquierda
+            pressedKeys.remove(KeyEvent.VK_DOWN);
         }
     }
     
-    private void intentarPatear(Player jugador, int direccion){
+    private void tryKick(Player player, int direccion){
         // calcular el centro de cada uno
-        double centroJugadorX = jugador.getPositionX() + DIAMETRO_JUGADOR / 2.0;
-        double centroJugadorY = jugador.getPositionY() + DIAMETRO_JUGADOR / 2.0;
-        double centroBalonX   = balon.getPositionX() + DIAMETRO_BALON / 2.0;
-        double centroBalonY   = balon.getPositionY() + DIAMETRO_BALON / 2.0;
+        double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
+        double ballCenterX   = ball.getPositionX() + BALL_DIAMETER / 2.0;
+        double ballCenterY   = ball.getPositionY() + BALL_DIAMETER / 2.0;
 
         // distancia entre centros
-        double distX = Math.abs(centroJugadorX - centroBalonX);
-        double distY = Math.abs(centroJugadorY - centroBalonY);
+        double distX = Math.abs(playerCenterX - ballCenterX);
+        double distY = Math.abs(playerCenterY - ballCenterY);
 
         // si esta lo suficientemente cerca, patear
-        if (distX < DIAMETRO_JUGADOR && distY < DIAMETRO_JUGADOR) {
+        if (distX < PLAYER_DIAMETER && distY < PLAYER_DIAMETER) {
             
-            double angulo;
+            double angle;
             if(direccion == 1){
-                angulo = -ANGULO_PATADA; //patea hacia la derecha
+                angle = -KICK_ANGLE; //patea hacia la derecha
             }else{
-                angulo = Math.PI + ANGULO_PATADA; //patea hacia la izq
+                angle = Math.PI + KICK_ANGLE; //patea hacia la izq
             }
-            balon.applyForce(FUERZA_PATADA, angulo);
+            ball.applyForce(KICK_FORCE, angle);
         }
     }
 
     /**
      * Evita que los jugadores se sobrepongan, si chocan de lado se separan
      */
-    private void colisionJugadores(){
-        double centro1X = jugador1.getPositionX() + DIAMETRO_JUGADOR/ 2.0;
-        double centro1Y = jugador1.getPositionY() + DIAMETRO_JUGADOR/ 2.0;
-        double centro2X = jugador2.getPositionX() + DIAMETRO_JUGADOR/ 2.0;
-        double centro2Y = jugador2.getPositionY() + DIAMETRO_JUGADOR/ 2.0;
+    private void playerCollision(){
+        double center1X = leftPlayer.getPositionX() + PLAYER_DIAMETER/ 2.0;
+        double center1Y = leftPlayer.getPositionY() + PLAYER_DIAMETER/ 2.0;
+        double center2X = rightPlayer.getPositionX() + PLAYER_DIAMETER/ 2.0;
+        double center2Y = rightPlayer.getPositionY() + PLAYER_DIAMETER/ 2.0;
 
         //cuanto se superponen en cada eje, si es positivo entonces lo estan
-        double solapeX = DIAMETRO_JUGADOR - Math.abs(centro1X -centro2X);
-        double solapeY = DIAMETRO_JUGADOR - Math.abs(centro1Y -centro2Y);
+        double overlapX = PLAYER_DIAMETER - Math.abs(center1X -center2X);
+        double overlapY = PLAYER_DIAMETER - Math.abs(center1Y -center2Y);
 
         //chocan solo si se superponen en ambos ejes
-        if(solapeX > 0 &&  solapeY >0){
-            if(centro1X < centro2X){
-                jugador1.setPositionX(jugador1.getPositionX() - solapeX/2);
-                jugador2.setPositionX(jugador2.getPositionX() + solapeX/2);
+        if(overlapX > 0 &&  overlapY >0){
+            if(center1X < center2X){
+                leftPlayer.setPositionX(leftPlayer.getPositionX() - overlapX/2);
+                rightPlayer.setPositionX(rightPlayer.getPositionX() + overlapX/2);
             }else{
-                jugador1.setPositionX(jugador1.getPositionX() + solapeX/2);
-                jugador2.setPositionX(jugador2.getPositionX() - solapeX/2);
+                leftPlayer.setPositionX(leftPlayer.getPositionX() + overlapX/2);
+                rightPlayer.setPositionX(rightPlayer.getPositionX() - overlapX/2);
             }
         }//si es el y, uno esta encima del otro, no importa 
     }
 
     /**
-     * Revisa si el balon entro a un arco y suma el gol al jugador que anoto
+     * Revisa si el ball entro a un arco y suma el gol al jugador que anoto
      */
-    private void revisarGol(){
+    private void checkGoal(){
         //gol en el arco izq, gol para el J2
-        if(arcoIzquierdo.isGoal(balon)){
-            partido.onGoal(jugador2);
-            centrarBalon();
-        }else if(arcoDerecho.isGoal(balon)){
-            partido.onGoal(jugador1);
-            centrarBalon();
+        if(leftGoal.isGoal(ball)){
+            match.onGoal(rightPlayer);
+            centerBall();
+        }else if(rightGoal.isGoal(ball)){
+            match.onGoal(leftPlayer);
+            centerBall();
         }
     }
 
     /**
-     * Vuelve el balon al centro y los jugadores a su posicion inicial
+     * Vuelve el ball al centro y los jugadores a su posicion inicial
      */
-    private void centrarBalon(){
-        balon.setPositionX(ANCHO/ 2.0 - DIAMETRO_BALON/2.0);
-        balon.setPositionY(SUELO_BALON);
-        balon.setVelocityX(0);
-        balon.setVelocityY(0);
+    private void centerBall(){
+        ball.setPositionX(WIDTH/ 2.0 - BALL_DIAMETER/2.0);
+        ball.setPositionY(BALL_GROUND);
+        ball.setVelocityX(0);
+        ball.setVelocityY(0);
     }
 
-    private void actualizarFisica() {
-        // Gravedad de los jugadores (para el salto) 
-        jugador1.update(SUELO_JUGADOR);
-        jugador2.update(SUELO_JUGADOR);
+    private void updatePhysics() {
+        // Gravedad de los jugadores (para el sHEIGHT) 
+        leftPlayer.update(PLAYER_GROUND);
+        rightPlayer.update(PLAYER_GROUND);
 
         //colision entre jugadores, pa que no se atraviesen 
-        colisionJugadores();
+        playerCollision();
 
-        // Mover el balon  
-        balon.move();
+        // Mover el ball  
+        ball.move();
         //friccion del aire
-        balon.setVelocityX(balon.getVelocityX() * FRICCION_AIRE);
-        balon.setVelocityY(balon.getVelocityY() * FRICCION_AIRE);
+        ball.setVelocityX(ball.getVelocityX() * AIR_FRICTION);
+        ball.setVelocityY(ball.getVelocityY() * AIR_FRICTION);
 
         //hay gol?
-        revisarGol();
+        checkGoal();
 
-        // Rebote del balon contra el suelo 
-        if (balon.getPositionY() > SUELO_BALON) {
-            balon.setPositionY(SUELO_BALON);
-            balon.bounceY();  
-            // amortiguar, el balon pierde energia en cada rebote
-            balon.setVelocityY(balon.getVelocityY() * REBOTE_PISO);
-            if(Math.abs(balon.getVelocityY()) < REBOTE_MINIMO){ //si el rebote es minimo, se detiene
-                balon.setVelocityY(0);
+        // Rebote del ball contra el suelo 
+        if (ball.getPositionY() > BALL_GROUND) {
+            ball.setPositionY(BALL_GROUND);
+            ball.bounceY();  
+            // amortiguar, el ball pierde energia en cada rebote
+            ball.setVelocityY(ball.getVelocityY() * FLOOR_BOUNCE);
+            if(Math.abs(ball.getVelocityY()) < MIN_BOUNCE){ //si el rebote es minimo, se detiene
+                ball.setVelocityY(0);
             }
         }
 
         // Rebote contra el techo 
-        if (balon.getPositionY() < 0) {
-            balon.setPositionY(0);
-            balon.bounceY();
+        if (ball.getPositionY() < 0) {
+            ball.setPositionY(0);
+            ball.bounceY();
         }
 
         // Rebote contra las paredes laterales 
-        if (balon.getPositionX() < 0) {
-            balon.setPositionX(0);
-            balon.bounceX();  // invierte velocityX
-            balon.setVelocityX(balon.getVelocityX() * REBOTE_PARED);
+        if (ball.getPositionX() < 0) {
+            ball.setPositionX(0);
+            ball.bounceX();  // invierte velocityX
+            ball.setVelocityX(ball.getVelocityX() * WALL_BOUNCE);
         }
-        if (balon.getPositionX() > ANCHO - DIAMETRO_BALON){
-            balon.setPositionX(ANCHO - DIAMETRO_BALON);
-            balon.bounceX();
-            balon.setVelocityX(balon.getVelocityX() * REBOTE_PARED);
+        if (ball.getPositionX() > WIDTH - BALL_DIAMETER){
+            ball.setPositionX(WIDTH - BALL_DIAMETER);
+            ball.bounceX();
+            ball.setVelocityX(ball.getVelocityX() * WALL_BOUNCE);
         }
 
-        //Friccion, el balon se frena poco a poco en X 
-        if (Math.abs(balon.getVelocityX()) < VELOCIDAD_MINIMA) {
-            balon.setVelocityX(0);
+        //Friccion, el ball se frena poco a poco en X 
+        if (Math.abs(ball.getVelocityX()) < MIN_SPEED) {
+            ball.setVelocityX(0);
         }
 
         //Limites de los jugadores, no  se saleb de la cancha
-        if (jugador1.getPositionX() < 0) jugador1.setPositionX(0);
-        if (jugador1.getPositionX() > ANCHO - DIAMETRO_JUGADOR) jugador1.setPositionX(ANCHO - DIAMETRO_JUGADOR);
-        if (jugador2.getPositionX() < 0) jugador2.setPositionX(0);
-        if (jugador2.getPositionX() > ANCHO - DIAMETRO_JUGADOR) jugador2.setPositionX(ANCHO - DIAMETRO_JUGADOR);
+        if (leftPlayer.getPositionX() < 0) leftPlayer.setPositionX(0);
+        if (leftPlayer.getPositionX() > WIDTH - PLAYER_DIAMETER) leftPlayer.setPositionX(WIDTH - PLAYER_DIAMETER);
+        if (rightPlayer.getPositionX() < 0) rightPlayer.setPositionX(0);
+        if (rightPlayer.getPositionX() > WIDTH - PLAYER_DIAMETER) rightPlayer.setPositionX(WIDTH - PLAYER_DIAMETER);
     }
 
     /**
-     * dibuja como finaliza el partido en diferentes casos
+     * dibuja como finaliza el match en diferentes casos
      */
-    private void dibujarFinPartido(Graphics g){
+    private void drawMatchEnd(Graphics g){
         g.setColor(new Color(0, 0, 0, 180));
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        Player ganador = partido.getScore().getWinner();
-        String resultado; 
-        if(ganador == jugador1){
-            resultado = "Gana Jugador 1";
-        }else if( ganador == jugador2){
-            resultado = "Gana Jugador 2";
+        Player winner = match.getScore().getWinner();
+        String result; 
+        if(winner == leftPlayer){
+            result = "Gana Jugador 1";
+        }else if( winner == rightPlayer){
+            result = "Gana Jugador 2";
         }else{
-            resultado = "EMPATE";
+            result = "EMPATE";
         }
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 40));
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(resultado, (getWidth() - fm.stringWidth(resultado))/2, getHeight()/2 - 20);
+        g.drawString(result, (getWidth() - fm.stringWidth(result))/2, getHeight()/2 - 20);
 
         g.setFont(new Font("Arial", Font.BOLD, 28));
-        String m = partido.getScore().getGoalsPlayerOne() + " - " + partido.getScore().getGoalsPlayerTwo();
+        String scoreText = match.getScore().getGoalsPlayerOne() + " - " + match.getScore().getGoalsPlayerTwo();
         FontMetrics fm2 = g.getFontMetrics();
-        g.drawString(m, (getWidth() - fm2.stringWidth(m))/2, getHeight()/2 + 30);
+        g.drawString(scoreText, (getWidth() - fm2.stringWidth(m))/2, getHeight()/2 + 30);
 
     }
     /**
@@ -354,47 +348,48 @@ public class FieldPanel extends JPanel {
      */
     @Override
     protected  void paintComponent(Graphics g){
-        if(partidoTerminado){
-            dibujarFinPartido(g);
-        }
         super.paintComponent(g); //limpiamos antes de dibujar el fondo 
-        dibujarCancha(g);
-        dibujarJugadores(g);
-        dibujarBalon(g);
-        dibujarArcos(g);
-        dibujarHUD(g);
+        drawField(g);
+        drawPlayers(g);
+        drawBall(g);
+        drawGoals(g);
+        drawHUD(g);
+
+        if(matchFinished){
+            drawMatchEnd(g);
+        }
     }
-    private void dibujarCancha(Graphics g) {
-        if (cancha != null) {
-            g.drawImage(cancha, 0, 0, getWidth(), getHeight(), this);
+    private void drawField(Graphics g) {
+        if (fieldImage != null) {
+            g.drawImage(fieldImage, 0, 0, getWidth(), getHeight(), this);
         }
     }
 
-     private void dibujarJugadores(Graphics g) {
-        int diametro = DIAMETRO_JUGADOR;
+     private void drawPlayers(Graphics g) {
+        int diametro = PLAYER_DIAMETER;
 
         // J1: posicion viene del dominio
-        int x1 = (int) jugador1.getPositionX();
-        int y1 = (int) jugador1.getPositionY();
+        int x1 = (int) leftPlayer.getPositionX();
+        int y1 = (int) leftPlayer.getPositionY();
         g.setColor(new Color(0xE8A033));
         g.fillOval(x1, y1, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x1, y1, diametro, diametro);
 
         // J2: posicion viene del dominio
-        int x2 = (int) jugador2.getPositionX();
-        int y2 = (int) jugador2.getPositionY();
+        int x2 = (int) rightPlayer.getPositionX();
+        int y2 = (int) rightPlayer.getPositionY();
         g.setColor(new Color(0xDD1144));
         g.fillOval(x2, y2, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x2, y2, diametro, diametro);
     }
 
-    /** Dibuja el balon leyendo su posicion del dominio */
-    private void dibujarBalon(Graphics g) {
-        int diametro = DIAMETRO_BALON;
-        int x = (int) balon.getPositionX();
-        int y = (int) balon.getPositionY();
+    /** Dibuja el ball leyendo su posicion del dominio */
+    private void drawBall(Graphics g) {
+        int diametro = BALL_DIAMETER;
+        int x = (int) ball.getPositionX();
+        int y = (int) ball.getPositionY();
         g.setColor(Color.WHITE);
         g.fillOval(x, y, diametro, diametro);
         g.setColor(Color.BLACK);
@@ -402,23 +397,23 @@ public class FieldPanel extends JPanel {
     }
 
     /**
-     * Dibuja los postes del arco por encima de los jugadores y el balon
+     * Dibuja los postes del arco por encima de los jugadores y el ball
      */
-    private void dibujarArcos(Graphics g){
+    private void drawGoals(Graphics g){
         g.setColor(Color.WHITE);
         int grosor = 6;
 
         //postes delanteros
-        g.fillRect(POSTE_IZQ - grosor/2, TOPE_ARCO, grosor, BASE_ARCO - TOPE_ARCO);
-        g.fillRect(POSTE_DER -grosor/2, TOPE_ARCO, grosor, BASE_ARCO - TOPE_ARCO);
+        g.fillRect(LEFT_POST - grosor/2, GOAL_TOP, grosor, GOAL_BOTTON - GOAL_TOP);
+        g.fillRect(RIGHT_POST -grosor/2, GOAL_TOP, grosor, GOAL_BOTTON - GOAL_TOP);
         //la parte de arriba del poste 
-        g.fillRect(0, TOPE_ARCO -grosor/2, POSTE_IZQ, grosor);
-        g.fillRect(POSTE_DER, TOPE_ARCO - grosor/2, getWidth()- POSTE_DER, grosor);
+        g.fillRect(0, GOAL_TOP -grosor/2, LEFT_POST, grosor);
+        g.fillRect(RIGHT_POST, GOAL_TOP - grosor/2, getWidth()- RIGHT_POST, grosor);
     }
 
-    /** Dibuja el HUD: marcador, cronometro y barras de poder */
-    private void dibujarHUD(Graphics g) {
-        Score marcador = partido.getScore();
+    /** Dibuja el HUD: score, timer y barras de poder */
+    private void drawHUD(Graphics g) {
+        Score score = match.getScore();
 
         // fondo semitransparente
         g.setColor(new Color(0, 0, 0, 150));
@@ -428,29 +423,29 @@ public class FieldPanel extends JPanel {
         g.setColor(Color.WHITE);
         FontMetrics fm = g.getFontMetrics();
 
-        // marcador centrado
-        String marcadorTexto = marcador.getGoalsPlayerOne() + " - " + marcador.getGoalsPlayerTwo();
-        int anchoMarcador = fm.stringWidth(marcadorTexto);
-        g.drawString(marcadorTexto, (getWidth() - anchoMarcador) / 2, 28);
+        // score centrado
+        String scoreTexto = score.getGoalsPlayerOne() + " - " + score.getGoalsPlayerTwo();
+        int WIDTHscore = fm.stringWidth(scoreTexto);
+        g.drawString(scoreTexto, (getWidth() - WIDTHscore) / 2, 28);
 
         // etiquetas J1 y J2
         g.setFont(new Font("Arial", Font.PLAIN, 14));
         FontMetrics fmSmall = g.getFontMetrics();
-        g.drawString("J1", getWidth()/2 - anchoMarcador/2 - fmSmall.stringWidth("J1") - 8, 28);
-        g.drawString("J2", getWidth()/2 + anchoMarcador/2 + 8, 28);
+        g.drawString("J1", getWidth()/2 - WIDTHscore/2 - fmSmall.stringWidth("J1") - 8, 28);
+        g.drawString("J2", getWidth()/2 + WIDTHscore/2 + 8, 28);
 
-        // cronometro
-        int t = partido.getTimer().getCurrentTime();
+        // timer
+        int t = match.getTimer().getCurrentTime();
         int minutos = t/60;
         int segundos = t % 60;
-        String tiempo = String.format("%d:%02d", minutos, segundos);
+        String timeText = String.format("%d:%02d", minutos, segundos);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         FontMetrics fmTime = g.getFontMetrics();
-        g.drawString(tiempo, getWidth() - fmTime.stringWidth(tiempo) - 15, 28);
+        g.drawString(timeText, getWidth() - fmTime.stringWidth(timeText) - 15, 28);
 
-        double poderJ1 = jugador1.getPowerBar().getCurrentCharge() / jugador1.getPowerBar().getMaxCharge();
-        double poderJ2 = jugador2.getPowerBar().getCurrentCharge() / jugador2.getPowerBar().getMaxCharge();
-        
+        double leftPower = leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge();
+        double rightPower = rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge();
+
         // barras de poder
         int barW = 100, barH = 10, barY = 34;
         // J1
@@ -458,7 +453,7 @@ public class FieldPanel extends JPanel {
         g.setColor(Color.DARK_GRAY);
         g.fillRect(barX1, barY, barW, barH);
         g.setColor(new Color(0xE8A033));
-        g.fillRect(barX1, barY, (int)(barW * poderJ1), barH);
+        g.fillRect(barX1, barY, (int)(barW * leftPower), barH);
         g.setColor(Color.WHITE);
         g.drawRect(barX1, barY, barW, barH);
         // J2
@@ -466,7 +461,7 @@ public class FieldPanel extends JPanel {
         g.setColor(Color.DARK_GRAY);
         g.fillRect(barX2, barY, barW, barH);
         g.setColor(new Color(0xE8A033));
-        g.fillRect(barX2, barY, (int)(barW * poderJ2), barH);
+        g.fillRect(barX2, barY, (int)(barW * rightPower), barH);
         g.setColor(Color.WHITE);
         g.drawRect(barX2, barY, barW, barH);
     }

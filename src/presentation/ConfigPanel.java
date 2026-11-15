@@ -20,7 +20,7 @@ public class ConfigPanel extends JPanel {
     private JRadioButton byTimeOption;
     private JRadioButton byGoalsOption;
     private JLabel valueLabel;
-    private JTextField valuedField;
+    private JTextField valueField;
     private JButton playButton;
 
 
@@ -51,8 +51,8 @@ public class ConfigPanel extends JPanel {
         //tiempo de la partida o numero de goles que elija el usuario
         valueLabel = label("Minutos: ", new Font("Arial", Font.PLAIN, 16), Color.WHITE);
         valueField = new JTextField("3", 5);
-        valuedField.setMaximumSize(new Dimension(90, 32));
-        valuedField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        valueField.setMaximumSize(new Dimension(90, 32));
+        valueField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         playButton = new JButton("JUGAR");
         playButton.setFont(new Font("Arial", Font.BOLD, 20));

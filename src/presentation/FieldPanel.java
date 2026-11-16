@@ -341,10 +341,7 @@ public class FieldPanel extends JPanel {
             result = "EMPATE";
         }
 
-        g.setFont(new Font("Arial", Font.PLAIN, 20));
-        String puntos = "Puntos   J1: " + leftPlayer.getPoints() + "    J2: " + rightPlayer.getPoints();
-        FontMetrics fm3 = g.getFontMetrics();
-        g.drawString(puntos, (getWidth() - fm3.stringWidth(puntos))/2, getHeight()/2 + 72);
+        
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 40));
@@ -356,6 +353,10 @@ public class FieldPanel extends JPanel {
         FontMetrics fm2 = g.getFontMetrics();
         g.drawString(scoreText, (getWidth() - fm2.stringWidth(scoreText))/2, getHeight()/2 + 30);
 
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        String puntos = "Puntos   J1: " + leftPlayer.getPoints() + "    J2: " + rightPlayer.getPoints();
+        FontMetrics fm3 = g.getFontMetrics();
+        g.drawString(puntos, (getWidth() - fm3.stringWidth(puntos))/2, getHeight()/2 + 72);
     }
     /**
      * Swing llama para dibujar el panel, aqui pintamos la imagen

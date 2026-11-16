@@ -445,11 +445,11 @@ public class FieldPanel extends JPanel {
         // J1: posicion viene del dominio
         int x1 = (int) leftPlayer.getPositionX();
         int y1 = (int) leftPlayer.getPositionY();
-        g.setColor(new Color(0xE8A033));
         if(leftPlayer.isAuraActive()){
             g.setColor(new Color(80, 180, 255, 150)); // aura
             g.fillOval(x1 - 8, y1 - 8, diametro + 16, diametro + 16);
         }
+        g.setColor(new Color(0xE8A033));
         g.fillOval(x1, y1, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x1, y1, diametro, diametro);
@@ -457,11 +457,11 @@ public class FieldPanel extends JPanel {
         // J2: posicion viene del dominio
         int x2 = (int) rightPlayer.getPositionX();
         int y2 = (int) rightPlayer.getPositionY();
-        g.setColor(new Color(0xDD1144));
         if(rightPlayer.isAuraActive()){
             g.setColor(new Color(80, 180, 255, 150)); 
             g.fillOval(x1 - 8, y1 - 8, diametro + 16, diametro + 16);
         }
+        g.setColor(new Color(0xDD1144));
         g.fillOval(x2, y2, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x2, y2, diametro, diametro);

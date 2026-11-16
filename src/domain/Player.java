@@ -90,6 +90,18 @@ public class Player {
             onGround = false; //se encuentra en el aire
         }
     }
+
+    /**
+     * descuenta el aturdimiento con el tiempo, al llegar a 0 se reinicia la viida
+     */
+    public void updateStun(double deltaTime){
+        if(stunned){
+            stunTimer -= deltaTime;
+            if(stunTimer <= 0){
+                resetHealth(); //la vida vuelve al maximo
+            }
+        }
+    }
     public void kick(Ball ball) {
         if (!stunned && !"unconscious".equals(currentEffect)) {
             ball.applyForce(kick, 0);

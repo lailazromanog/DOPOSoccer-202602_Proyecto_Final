@@ -161,7 +161,8 @@ public class FieldPanel extends JPanel {
     }
 
     private void processKeys(){
-        // Jugador 1: A W S D Q 
+        // Jugador 1 A/W/S/D si esta aturdido no responde
+    if (!leftPlayer.isStunned()) {
         if (pressedKeys.contains(KeyEvent.VK_A)) {
             leftPlayer.moveLeft();
         }
@@ -169,15 +170,16 @@ public class FieldPanel extends JPanel {
             leftPlayer.moveRight();
         }
         if (pressedKeys.contains(KeyEvent.VK_W)) {
-            leftPlayer.jump();  // el dominio ya controla que solo salte si esta en el suelo
+            leftPlayer.jump();
         }
-        // patear es one-shot: se quita del Set para que no patee 60 veces por segundo
         if (pressedKeys.contains(KeyEvent.VK_S)) {
-            tryKick(leftPlayer, 1);  // 1 = direccion derecha
+            tryKick(leftPlayer, rightPlayer, 1);  // patea a la derecha; rightPlayer es el rival
             pressedKeys.remove(KeyEvent.VK_S);
         }
+    }
 
-        // Jugador 2: flechas + Shift 
+    // Jugador 2 flechas si esta aturdido no responde
+    if (!rightPlayer.isStunned()) {
         if (pressedKeys.contains(KeyEvent.VK_LEFT)) {
             rightPlayer.moveLeft();
         }
@@ -188,32 +190,34 @@ public class FieldPanel extends JPanel {
             rightPlayer.jump();
         }
         if (pressedKeys.contains(KeyEvent.VK_DOWN)) {
-            tryKick(rightPlayer, -1);  // -1 = direccion izquierda
+            tryKick(rightPlayer, leftPlayer, -1); // patea a la izquierda; leftPlayer es el rival
             pressedKeys.remove(KeyEvent.VK_DOWN);
         }
     }
+    }
     
-    private void tryKick(Player player, int direccion){
-        // calcular el centro de cada uno
+    private void tryKick(Player player, Player opponent, int direccion){
         double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
         double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
-        double ballCenterX   = ball.getPositionX() + BALL_DIAMETER / 2.0;
-        double ballCenterY   = ball.getPositionY() + BALL_DIAMETER / 2.0;
 
-        // distancia entre centros
-        double distX = Math.abs(playerCenterX - ballCenterX);
-        double distY = Math.abs(playerCenterY - ballCenterY);
-
-        // si esta lo suficientemente cerca, patear
-        if (distX < PLAYER_DIAMETER && distY < PLAYER_DIAMETER) {
-            
+        //si el balon esta cerca, lo impulsa
+        double ballCenterX = ball.getPositionX() + BALL_DIAMETER / 2.0;
+        double ballCenterY = ball.getPositionY() + BALL_DIAMETER / 2.0;
+        if (Math.abs(playerCenterX - ballCenterX) < PLAYER_DIAMETER && Math.abs(playerCenterY - ballCenterY) < PLAYER_DIAMETER) {
             double angle;
             if(direccion == 1){
-                angle = -KICK_ANGLE; //patea hacia la derecha
+                angle = -KICK_ANGLE;
             }else{
-                angle = Math.PI + KICK_ANGLE; //patea hacia la izq
+                angle = Math.PI + KICK_ANGLE;
             }
             ball.applyForce(KICK_FORCE, angle);
+        }
+
+        //si el rival esta dentro del alcance del pie, le hace daño
+        double oppCenterX = opponent.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double oppCenterY = opponent.getPositionY() + PLAYER_DIAMETER / 2.0;
+        if (Math.abs(playerCenterX - oppCenterX) < PLAYER_DIAMETER && Math.abs(playerCenterY - oppCenterY) < PLAYER_DIAMETER) {
+            match.checkKickContact(player, opponent); 
         }
     }
 
@@ -270,6 +274,10 @@ public class FieldPanel extends JPanel {
         // Gravedad de los jugadores (para el sHEIGHT) 
         leftPlayer.update(PLAYER_GROUND);
         rightPlayer.update(PLAYER_GROUND);
+
+        //bajar el aturdimiento y reiniciar vida cuando termine
+        leftPlayer.updateStun(16/1000.0);
+        rightPlayer.updateStun(16/1000.0);
 
         //colision entre jugadores, pa que no se atraviesen 
         playerCollision();
@@ -453,7 +461,7 @@ public class FieldPanel extends JPanel {
 
         // fondo semitransparente
         g.setColor(new Color(0, 0, 0, 150));
-        g.fillRect(0, 0, getWidth(), 48);
+        g.fillRect(0, 0, getWidth(), 58);
 
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.setColor(Color.WHITE);
@@ -500,5 +508,20 @@ public class FieldPanel extends JPanel {
         g.fillRect(barX2, barY, (int)(barW * rightPower), barH);
         g.setColor(Color.WHITE);
         g.drawRect(barX2, barY, barW, barH);
+
+        // barras de vida (verde) debajo de las de poder
+        double leftLife  = leftPlayer.getHealth()  / leftPlayer.getMaxHealth();
+        double rightLife = rightPlayer.getHealth() / rightPlayer.getMaxHealth();
+        int lifeY = 47, lifeH = 6;
+        // J1
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(barX1, lifeY, barW, lifeH);
+        g.setColor(new Color(0x3ddc84));
+        g.fillRect(barX1, lifeY, (int)(barW * leftLife), lifeH);
+        // J2
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(barX2, lifeY, barW, lifeH);
+        g.setColor(new Color(0x3ddc84));
+        g.fillRect(barX2, lifeY, (int)(barW * rightLife), lifeH);
     }
 }

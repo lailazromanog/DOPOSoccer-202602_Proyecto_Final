@@ -10,6 +10,12 @@ import domain.Player;
 import domain.Score;
 import domain.Time;
 import domain.Timer;
+import domain.Character;
+import domain.Appereance;
+import domain.BlueAura;
+import domain.Lightning;
+import domain.Tornado;
+import domain.Illusion;
 
 /**
  * Ventana principal de DOPOSoccer
@@ -62,8 +68,22 @@ public class GameGUI extends JFrame {
         }
 
     }
-    public void startGame(boolean byTime, int value){
+
+    /**
+     * Muestra la pantalla de selección de personajes
+     */
+    public void showCharacterSelect(boolean byTime, int value){
+        CharacterSelectPanel characterPanel = new CharacterSelectPanel(this, byTime, value);
+        setContentPane(characterPanel);
+        revalidate();
+        pack();
+        setLocationRelativeTo(null);
+    }
+
+    public void startGame(boolean byTime, int value, String country1, String country2){
         Match match = buildMatch(byTime, value);
+        match.getPlayerOne().setCharacter(createCharacter(country1));
+        match.getPlayerTwo().setCharacter(createCharacter(country2));
         FieldPanel fieldPanel = new FieldPanel(match);
         setContentPane(fieldPanel);
         revalidate();
@@ -72,6 +92,20 @@ public class GameGUI extends JFrame {
         fieldPanel.requestFocusInWindow();
     }
 
+    /**
+     * Crea el personaje según el país elegido, con su poder
+     */
+    private Character createCharacter(String country){
+        if(country.equals("Camerun")){
+            return new Character("Camerun", "Camerun", new Lightning(), new Appereance());
+        }else if(country.equals("Nigeria")){
+            return new Character("Nigeria", "Nigeria", new Tornado(), new Appereance());
+        }else if(country.equals("Estados Unidos")){
+            return new Character("Estados Unidos", "Estados Unidos", new Illusion(), new Appereance());
+        }else{
+            return new Character("Corea del Sur", "Corea del Sur", new BlueAura(), new Appereance());
+        }
+    }
     public static void main(String[] args) {
         GameGUI ventana = new GameGUI();
         ventana.setVisible(true);

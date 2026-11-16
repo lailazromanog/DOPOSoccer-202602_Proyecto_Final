@@ -1,5 +1,6 @@
 package presentation;
 
+import domain.DOPOSoccerException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -16,14 +17,11 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-
-import javax.swing.JOptionPane;
-import domain.DOPOSoccerException;
 
 /**
  * Pantalla de configuracion del partido
@@ -144,7 +142,7 @@ public class ConfigPanel extends JPanel {
                 try {
                     boolean byTime = byTimeOption.isSelected();
                     int value = readValue();          // puede lanzar DOPOSoccerException
-                gui.startGame(byTime, value);
+                gui.showCharacterSelect(byTime, value);
                 }catch (DOPOSoccerException ex) {
                     GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
                     JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario

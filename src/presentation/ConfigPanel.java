@@ -149,6 +149,7 @@ public class ConfigPanel extends JPanel {
                     GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
                     JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario
                 }
+            }
         });
     }
 

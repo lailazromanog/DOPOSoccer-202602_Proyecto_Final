@@ -107,7 +107,7 @@ public class Player {
      *baja el efecto (electrocutado, insciente, confundido) 
      * y lo quita al terminar
      */
-    private void updateEffect(double deltaTime){
+    public void updateEffect(double deltaTime){
         if(currentEffect != null){
             effectTimer -= deltaTime;
             if(effectTimer <= 0){

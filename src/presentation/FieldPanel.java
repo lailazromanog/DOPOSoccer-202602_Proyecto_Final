@@ -113,9 +113,8 @@ public class FieldPanel extends JPanel {
                     paused = !paused; //P:pausar o reanudar
                 }else if(code == KeyEvent.VK_ESCAPE){
                     finishMatch(); //ESC:terminar el partido
-                }else if(code == KeyEvent.VK_Q){}
+                }else if(code == KeyEvent.VK_Q){
                     leftPlayer.usePower(); //q activa el power
-                }
                 }else if(code == KeyEvent.VK_M){
                     rightPlayer.usePower(); //activa el pawer
                 }else{

@@ -20,7 +20,6 @@ public class Player {
     private PowerBar powerBar;
 
     public Player() {
-        this.health = getMaxHealth();
         this.stunned = false;
         this.stunTimer = 0;
         this.auraActive = false;
@@ -29,6 +28,7 @@ public class Player {
         this.kick = 1;
         this.survival = 1;
         this.points = 0;
+        this.health = getMaxHealth();
         this.currentEffect = null;
         this.effectTimer = 0;
         this.powerBar = new PowerBar();

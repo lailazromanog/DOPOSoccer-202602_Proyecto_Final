@@ -102,6 +102,20 @@ public class Player {
             }
         }
     }
+    
+    /**
+     *baja el efecto (electrocutado, insciente, confundido) 
+     * y lo quita al terminar
+     */
+    private void updateEffect(double deltaTime){
+        if(currentEffect != null){
+            effectTimer -= deltaTime;
+            if(effectTimer <= 0){
+                clearEffect();
+            }
+        }
+    }
+
     public void kick(Ball ball) {
         if (!stunned && !"unconscious".equals(currentEffect)) {
             ball.applyForce(kick, 0);

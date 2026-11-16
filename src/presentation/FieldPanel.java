@@ -113,6 +113,11 @@ public class FieldPanel extends JPanel {
                     paused = !paused; //P:pausar o reanudar
                 }else if(code == KeyEvent.VK_ESCAPE){
                     finishMatch(); //ESC:terminar el partido
+                }else if(code == KeyEvent.VK_Q){}
+                    leftPlayer.usePower(); //q activa el power
+                }
+                }else if(code == KeyEvent.VK_M){
+                    rightPlayer.usePower(); //activa el pawer
                 }else{
                     pressedKeys.add(code);
                 }
@@ -279,6 +284,12 @@ public class FieldPanel extends JPanel {
         leftPlayer.updateStun(16/1000.0);
         rightPlayer.updateStun(16/1000.0);
 
+        //carga la barra de poder
+        leftPlayer.getPowerBar().update(16/1000.0);
+        rightPlayer.getPowerBar().update(16/1000.0);
+        leftPlayer.updateEffect(16/1000.0);
+        rightPlayer.updateEffect(16/1000.0);
+
         //colision entre jugadores, pa que no se atraviesen 
         playerCollision();
 
@@ -291,6 +302,13 @@ public class FieldPanel extends JPanel {
         //hay gol?
         checkGoal();
 
+        //si un jugador con aura toca el arco, se ejecuta su poder
+        if(ballTouches(leftPlayer)){
+            match.checkBallContact(leftPlayer);
+        }
+        if(ballTouches(rightPlayer)){
+            match.checkBallContact(rightPlayer);
+        }
         // Rebote del ball contra el suelo 
         if (ball.getPositionY() > BALL_GROUND) {
             ball.setPositionY(BALL_GROUND);
@@ -330,6 +348,19 @@ public class FieldPanel extends JPanel {
         if (leftPlayer.getPositionX() > WIDTH - PLAYER_DIAMETER) leftPlayer.setPositionX(WIDTH - PLAYER_DIAMETER);
         if (rightPlayer.getPositionX() < 0) rightPlayer.setPositionX(0);
         if (rightPlayer.getPositionX() > WIDTH - PLAYER_DIAMETER) rightPlayer.setPositionX(WIDTH - PLAYER_DIAMETER);
+    }
+
+
+    /**
+     * cuando el jugador este tocando el balon, se dispara el poder
+     */
+    private boolean ballTouches(Player player){
+        double pCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double pCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
+        double bCenterX = ball.getPositionX() + BALL_DIAMETER / 2.0;
+        double bCenterY = ball.getPositionY() + BALL_DIAMETER / 2.0;
+        double alcance = (PLAYER_DIAMETER + BALL_DIAMETER) / 2.0;
+        return Math.abs(pCenterX - bCenterX) < alcance && Math.abs(pCenterY - bCenterY) < alcance;
     }
 
     /**
@@ -416,6 +447,10 @@ public class FieldPanel extends JPanel {
         int x1 = (int) leftPlayer.getPositionX();
         int y1 = (int) leftPlayer.getPositionY();
         g.setColor(new Color(0xE8A033));
+        if(leftPlayer.isAuraActive()){
+            g.setColor(new Color(80, 180, 255, 150)); // aura
+            g.fillOval(x1 - 8, y1 - 8, diametro + 16, diametro + 16);
+        }
         g.fillOval(x1, y1, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x1, y1, diametro, diametro);
@@ -424,6 +459,10 @@ public class FieldPanel extends JPanel {
         int x2 = (int) rightPlayer.getPositionX();
         int y2 = (int) rightPlayer.getPositionY();
         g.setColor(new Color(0xDD1144));
+        if(rightPlayer.isAuraActive()){
+            g.setColor(new Color(80, 180, 255, 150)); 
+            g.fillOval(x1 - 8, y1 - 8, diametro + 16, diametro + 16);
+        }
         g.fillOval(x2, y2, diametro, diametro);
         g.setColor(Color.BLACK);
         g.drawOval(x2, y2, diametro, diametro);

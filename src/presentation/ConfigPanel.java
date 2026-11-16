@@ -22,6 +22,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import javax.swing.JOptionPane;
+import domain.DOPOSoccerException;
+
 /**
  * Pantalla de configuracion del partido
  * Deja elegir el tipo de partido, por tiempo o por goles y el valor.
@@ -138,29 +141,30 @@ public class ConfigPanel extends JPanel {
         playButton.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e){
-                boolean byTime = byTimeOption.isSelected();
-                int value = readValue();
+                try {
+                    boolean byTime = byTimeOption.isSelected();
+                    int value = readValue();          // puede lanzar DOPOSoccerException
                 gui.startGame(byTime, value);
-            }
+                }catch (DOPOSoccerException ex) {
+                    GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
+                    JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario
+                }
         });
     }
 
     /**
      * lee el numero escrito, si no es valido usa un valor por defecto 
      */
-    private int readValue(){
+    private int readValue() throws DOPOSoccerException{
+        String text = valueField.getText().trim();
         try{
-            int v = Integer.parseInt(valueField.getText().trim());
-            if(v >0){
-                return v;
+            int v = Integer.parseInt(text);
+            if(v <= 0){
+                throw new DOPOSoccerException("El valor debe ser un numero mayor que 0. Escribiste: ");
             }
+            return v;
         }catch(NumberFormatException ex){
-            //se escribe el valor por defecto, ya que lo que escribio el usuario no es un numero
-        }
-        if(byTimeOption.isSelected()){
-            return 2; // min por defecto 
-        }else{
-            return 4; //goles por defecto
+            throw new DOPOSoccerException("El valor debe ser un numero entero valido.");
         }
     }
 

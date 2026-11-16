@@ -1,21 +1,21 @@
 package presentation;
 
 
-import javax.swing.JFrame;
+import domain.Appereance;
 import domain.Ball;
+import domain.BlueAura;
+import domain.Character;
 import domain.Goal;
 import domain.Goals;
+import domain.Illusion;
+import domain.Lightning;
 import domain.Match;
 import domain.Player;
 import domain.Score;
 import domain.Time;
 import domain.Timer;
-import domain.Character;
-import domain.Appereance;
-import domain.BlueAura;
-import domain.Lightning;
 import domain.Tornado;
-import domain.Illusion;
+import javax.swing.JFrame;
 
 /**
  * Ventana principal de DOPOSoccer
@@ -29,7 +29,8 @@ import domain.Illusion;
 public class GameGUI extends JFrame {
     //la cancha 
     private ConfigPanel configPanel;
-    
+    private int resW = 769;
+    private int resH = 450;
 
     
     public GameGUI(){
@@ -72,7 +73,9 @@ public class GameGUI extends JFrame {
     /**
      * Muestra la pantalla de selección de personajes
      */
-    public void showCharacterSelect(boolean byTime, int value){
+    public void showCharacterSelect(boolean byTime, int value, int resW, int resH){
+        this.resW = resW; 
+        this.resH = resH;
         CharacterSelectPanel characterPanel = new CharacterSelectPanel(this, byTime, value);
         setContentPane(characterPanel);
         revalidate();
@@ -84,7 +87,7 @@ public class GameGUI extends JFrame {
         Match match = buildMatch(byTime, value);
         match.getPlayerOne().setCharacter(createCharacter(country1));
         match.getPlayerTwo().setCharacter(createCharacter(country2));
-        FieldPanel fieldPanel = new FieldPanel(match);
+        FieldPanel fieldPanel = new FieldPanel(match, resW, resH);
         setContentPane(fieldPanel);
         revalidate();
         pack();

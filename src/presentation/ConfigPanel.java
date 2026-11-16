@@ -17,6 +17,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -36,6 +37,7 @@ public class ConfigPanel extends JPanel {
     private JLabel valueLabel;
     private JTextField valueField;
     private RoundedButton playButton;
+    private JComboBox<String> resolutionBox;
 
 
     public ConfigPanel(GameGUI gui){
@@ -95,6 +97,12 @@ public class ConfigPanel extends JPanel {
         valueField.setMaximumSize(new Dimension(90, 34));
         valueField.setFont(new Font("Arial", Font.BOLD, 16));
         valueField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        String[] resoluciones = {"Pequena (640x375)", "Mediana (769x450)", "Grande (1024x600)"};
+        resolutionBox = new JComboBox<>(resoluciones);
+        resolutionBox.setSelectedIndex(1); // mediana por defecto
+        resolutionBox.setMaximumSize(new Dimension(220, 32));
+        resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);   
 
         playButton = new RoundedButton("JUGAR", new Color(0xF28C28));
         playButton.setFont(new Font("Arial", Font.BOLD, 22));
@@ -112,7 +120,10 @@ public class ConfigPanel extends JPanel {
         card.add(valueLabel);
         card.add(Box.createVerticalStrut(6));
         card.add(valueField);
-        card.add(Box.createVerticalStrut(26));
+        card.add(Box.createVerticalStrut(16));
+        card.add(label("Resolucion:", new Font("Arial", Font.PLAIN, 14), new Color(0xbcd4df)));
+        card.add(resolutionBox);
+        card.add(Box.createVerticalStrut(22));
         card.add(playButton);
 
         add(card);
@@ -142,7 +153,10 @@ public class ConfigPanel extends JPanel {
                 try {
                     boolean byTime = byTimeOption.isSelected();
                     int value = readValue();          // puede lanzar DOPOSoccerException
-                gui.showCharacterSelect(byTime, value);
+                int[] anchos = {640, 769, 1024};
+                int[] altos  = {375, 450, 600};
+                int r = resolutionBox.getSelectedIndex();
+                gui.showCharacterSelect(byTime, value, anchos[r], altos[r]);
                 }catch (DOPOSoccerException ex) {
                     GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
                     JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario

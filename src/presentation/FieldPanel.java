@@ -4,6 +4,8 @@ import domain.Goal;
 import domain.Match;
 import domain.Player;
 import domain.Score;
+
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -19,6 +21,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import java.awt.Graphics2D;
 
 
 /**
@@ -60,11 +63,11 @@ public class FieldPanel extends JPanel {
     private Timer gameLoop;
     private boolean matchFinished = false;
 
-    //constantes para la fisica del ball
+    //constantes para la fisica del balon
     private static final double AIR_FRICTION =0.97; //pierde rebote en el aire 
     private static final double FLOOR_BOUNCE = 0.7; //energia que se conserva al rebortar en el piso
     private static final double WALL_BOUNCE = 0.8; //'' al rebotar en una pared
-    private static final double MIN_SPEED = 0.5; //si el balle sta por debajo, se para
+    private static final double MIN_SPEED = 0.5; //si el ballon esta por debajo, se para
     private static final double KICK_FORCE = 12; 
     private static final double KICK_ANGLE = 0.3; 
     private static final double MIN_BOUNCE = 2.0; 
@@ -77,7 +80,7 @@ public class FieldPanel extends JPanel {
 
     private boolean paused = false;
 
-    public FieldPanel(Match match) {
+    public FieldPanel(Match match, int resW, int resH) {
         // cargamos la imagen; puede fallar si no existe, por eso el try/catch
         try {
             fieldImage = ImageIO.read(new File("resources/cancha.png"));
@@ -85,7 +88,7 @@ public class FieldPanel extends JPanel {
             System.out.println("No se pudo cargar la cancha: " + e.getMessage());
         }
         // el tamaño preferido del panel = tamaño real de la imagen
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setPreferredSize(new Dimension(resW, resH));
 
         this.match = match;
 
@@ -308,11 +311,11 @@ public class FieldPanel extends JPanel {
         if(ballTouches(rightPlayer)){
             match.checkBallContact(rightPlayer);
         }
-        // Rebote del ball contra el suelo 
+        // Rebote del balon contra el suelo 
         if (ball.getPositionY() > BALL_GROUND) {
             ball.setPositionY(BALL_GROUND);
             ball.bounceY();  
-            // amortiguar, el ball pierde energia en cada rebote
+            // amortiguar, el balon pierde energia en cada rebote
             ball.setVelocityY(ball.getVelocityY() * FLOOR_BOUNCE);
             if(Math.abs(ball.getVelocityY()) < MIN_BOUNCE){ //si el rebote es minimo, se detiene
                 ball.setVelocityY(0);
@@ -367,7 +370,7 @@ public class FieldPanel extends JPanel {
      */
     private void drawMatchEnd(Graphics g){
         g.setColor(new Color(0, 0, 0, 180));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.fillRect(0, 0, WIDTH, HEIGHT);
 
         Player winner = match.getScore().getWinner();
         String result; 
@@ -384,24 +387,27 @@ public class FieldPanel extends JPanel {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 40));
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(result, (getWidth() - fm.stringWidth(result))/2, getHeight()/2 - 20);
+        g.drawString(result, (WIDTH - fm.stringWidth(result))/2, HEIGHT/2 - 20);
 
         g.setFont(new Font("Arial", Font.BOLD, 28));
         String scoreText = match.getScore().getGoalsPlayerOne() + " - " + match.getScore().getGoalsPlayerTwo();
         FontMetrics fm2 = g.getFontMetrics();
-        g.drawString(scoreText, (getWidth() - fm2.stringWidth(scoreText))/2, getHeight()/2 + 30);
+        g.drawString(scoreText, (WIDTH - fm2.stringWidth(scoreText))/2, HEIGHT/2 + 30);
 
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         String puntos = "Puntos   J1: " + leftPlayer.getPoints() + "    J2: " + rightPlayer.getPoints();
         FontMetrics fm3 = g.getFontMetrics();
-        g.drawString(puntos, (getWidth() - fm3.stringWidth(puntos))/2, getHeight()/2 + 72);
+        g.drawString(puntos, (WIDTH - fm3.stringWidth(puntos))/2, HEIGHT/2 + 72);
     }
     /**
      * Swing llama para dibujar el panel, aqui pintamos la imagen
      */
     @Override
     protected  void paintComponent(Graphics g){
-        super.paintComponent(g); //limpiamos antes de dibujar el fondo 
+        super.paintComponent(g); //limpiamos antes de dibujar el fondo
+        //escala todo el dibujo 
+        Graphics2D g2 = (Graphics2D) g;
+        g2.scale(getSize().width / (double) WIDTH, getSize().height/ (double) HEIGHT);
         drawField(g);
         drawPlayers(g);
         drawBall(g);
@@ -420,22 +426,22 @@ public class FieldPanel extends JPanel {
      */
     private void drawPaused(Graphics g){
         g.setColor(new Color(0, 0, 0, 170));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.fillRect(0, 0, WIDTH, HEIGHT);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 44));
         FontMetrics fm = g.getFontMetrics();
         String text = "PAUSA";
-        g.drawString(text, (getWidth() - fm.stringWidth(text))/2, getHeight()/2 - 10);
+        g.drawString(text, (WIDTH - fm.stringWidth(text))/2, HEIGHT/2 - 10);
 
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         FontMetrics fm2 = g.getFontMetrics();
         String ayuda = "P: reanudar    ESC: terminar";
-        g.drawString(ayuda, (getWidth() - fm2.stringWidth(ayuda))/2, getHeight()/2 + 30);
+        g.drawString(ayuda, (WIDTH - fm2.stringWidth(ayuda))/2, HEIGHT/2 + 30);
     }
     private void drawField(Graphics g) {
         if (fieldImage != null) {
-            g.drawImage(fieldImage, 0, 0, getWidth(), getHeight(), this);
+            g.drawImage(fieldImage, 0, 0, WIDTH, HEIGHT, this);
         }
     }
 
@@ -490,7 +496,7 @@ public class FieldPanel extends JPanel {
         g.fillRect(RIGHT_POST -grosor/2, GOAL_TOP, grosor, GOAL_BOTTON - GOAL_TOP);
         //la parte de arriba del poste 
         g.fillRect(0, GOAL_TOP -grosor/2, LEFT_POST, grosor);
-        g.fillRect(RIGHT_POST, GOAL_TOP - grosor/2, getWidth()- RIGHT_POST, grosor);
+        g.fillRect(RIGHT_POST, GOAL_TOP - grosor/2, WIDTH- RIGHT_POST, grosor);
     }
 
     /** Dibuja el HUD: score, timer y barras de poder */
@@ -499,7 +505,7 @@ public class FieldPanel extends JPanel {
 
         // fondo semitransparente
         g.setColor(new Color(0, 0, 0, 150));
-        g.fillRect(0, 0, getWidth(), 58);
+        g.fillRect(0, 0, WIDTH, 58);
 
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.setColor(Color.WHITE);
@@ -508,13 +514,13 @@ public class FieldPanel extends JPanel {
         // score centrado
         String scoreTexto = score.getGoalsPlayerOne() + " - " + score.getGoalsPlayerTwo();
         int WIDTHscore = fm.stringWidth(scoreTexto);
-        g.drawString(scoreTexto, (getWidth() - WIDTHscore) / 2, 28);
+        g.drawString(scoreTexto, (WIDTH - WIDTHscore) / 2, 28);
 
         // etiquetas J1 y J2
         g.setFont(new Font("Arial", Font.PLAIN, 14));
         FontMetrics fmSmall = g.getFontMetrics();
-        g.drawString("J1", getWidth()/2 - WIDTHscore/2 - fmSmall.stringWidth("J1") - 8, 28);
-        g.drawString("J2", getWidth()/2 + WIDTHscore/2 + 8, 28);
+        g.drawString("J1", WIDTH/2 - WIDTHscore/2 - fmSmall.stringWidth("J1") - 8, 28);
+        g.drawString("J2", WIDTH/2 + WIDTHscore/2 + 8, 28);
 
         // timer
         int t = match.getTimer().getCurrentTime();
@@ -523,7 +529,7 @@ public class FieldPanel extends JPanel {
         String timeText = String.format("%d:%02d", minutos, segundos);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         FontMetrics fmTime = g.getFontMetrics();
-        g.drawString(timeText, getWidth() - fmTime.stringWidth(timeText) - 15, 28);
+        g.drawString(timeText, WIDTH - fmTime.stringWidth(timeText) - 15, 28);
 
         double leftPower = leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge();
         double rightPower = rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge();
@@ -539,7 +545,7 @@ public class FieldPanel extends JPanel {
         g.setColor(Color.WHITE);
         g.drawRect(barX1, barY, barW, barH);
         // J2
-        int barX2 = getWidth() - barW - 15;
+        int barX2 = WIDTH - barW - 15;
         g.setColor(Color.DARK_GRAY);
         g.fillRect(barX2, barY, barW, barH);
         g.setColor(new Color(0xE8A033));

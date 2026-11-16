@@ -149,7 +149,12 @@ public class FieldPanel extends JPanel {
     }
 
     private void finishMatch(){
+        if(matchFinished){
+            return; //no termina y no reparte puntos,
+        }
+
         matchFinished = true;
+        match.awardPoints();
         match.finish();
         gameLoop.stop();
         repaint();
@@ -335,6 +340,11 @@ public class FieldPanel extends JPanel {
         }else{
             result = "EMPATE";
         }
+
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        String puntos = "Puntos   J1: " + leftPlayer.getPoints() + "    J2: " + rightPlayer.getPoints();
+        FontMetrics fm3 = g.getFontMetrics();
+        g.drawString(puntos, (getWidth() - fm3.stringWidth(puntos))/2, getHeight()/2 + 72);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 40));

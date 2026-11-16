@@ -19,6 +19,23 @@ public abstract class Match {
         this.score = score;
     }
 
+    //reparte los puntos al terminar: 100 al ganador y 25 al perdedor (regla del juego)
+    public void awardPoints(){
+        Player winner = score.getWinner();
+        if (winner == playerOne) {
+            playerOne.addPoints(100);
+            playerTwo.addPoints(25);
+        }else if (winner == playerTwo) {
+            playerTwo.addPoints(100);
+            playerOne.addPoints(25);
+        }else {
+            //empate 
+            playerOne.addPoints(25);
+            playerTwo.addPoints(25);
+        }
+    }
+
+    
     public void start(){
         timer.start();
     }

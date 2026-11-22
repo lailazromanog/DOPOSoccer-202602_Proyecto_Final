@@ -59,8 +59,8 @@ public class FieldPanel extends JPanel {
         }
 
         //carga los sprites segun la clave de cada jugador (la da la apariencia del dominio)
-        String sprite1 = game.getPlayerOneSprite();
-        String sprite2 = game.getPlayerTwoSprite();
+        String sprite1 = game.getLeftPlayerSprite();
+        String sprite2 = game.getRightPlayerSprite();
         try {
             p1Head = ImageIO.read(new File("resources/personajes/cabeza/" + sprite1 + "_derecha.png"));
             p1Shoe = ImageIO.read(new File("resources/personajes/zapato/" + sprite1 + "_derecha.png"));
@@ -81,9 +81,9 @@ public class FieldPanel extends JPanel {
                 }else if(code == KeyEvent.VK_ESCAPE){
                     game.finishMatch();            // ESC: terminar el partido
                 }else if(code == KeyEvent.VK_Q){
-                    game.usePowerPlayerOne();      // Q: poder J1
+                    game.usePowerLeftPlayer();      // Q: poder J1
                 }else if(code == KeyEvent.VK_M){
-                    game.usePowerPlayerTwo();      // M: poder J2
+                    game.usePowerRightPlayer();      // M: poder J2
                 }else{
                     pressedKeys.add(code);
                 }
@@ -114,19 +114,19 @@ public class FieldPanel extends JPanel {
     /** Lee las teclas presionadas y le manda las ordenes a la fachada. */
     private void processKeys(){
         // Jugador 1: A/D/W/S
-        if(pressedKeys.contains(KeyEvent.VK_A)){ game.movePlayerOneLeft(); }
-        if(pressedKeys.contains(KeyEvent.VK_D)){ game.movePlayerOneRight(); }
-        if(pressedKeys.contains(KeyEvent.VK_W)){ game.jumpPlayerOne(); }
+        if(pressedKeys.contains(KeyEvent.VK_A)){ game.moveLeftPlayerLeft(); }
+        if(pressedKeys.contains(KeyEvent.VK_D)){ game.moveLeftPlayerRight(); }
+        if(pressedKeys.contains(KeyEvent.VK_W)){ game.jumpLeftPlayer(); }
         if(pressedKeys.contains(KeyEvent.VK_S)){
-            game.kickPlayerOne();
+            game.kickLeftPlayer();
             pressedKeys.remove(KeyEvent.VK_S);     // patear es one-shot
         }
         // Jugador 2: flechas
-        if(pressedKeys.contains(KeyEvent.VK_LEFT)){  game.movePlayerTwoLeft(); }
-        if(pressedKeys.contains(KeyEvent.VK_RIGHT)){ game.movePlayerTwoRight(); }
-        if(pressedKeys.contains(KeyEvent.VK_UP)){    game.jumpPlayerTwo(); }
+        if(pressedKeys.contains(KeyEvent.VK_LEFT)){  game.moveRightPlayerLeft(); }
+        if(pressedKeys.contains(KeyEvent.VK_RIGHT)){ game.moveRightPlayerRight(); }
+        if(pressedKeys.contains(KeyEvent.VK_UP)){    game.jumpRightPlayer(); }
         if(pressedKeys.contains(KeyEvent.VK_DOWN)){
-            game.kickPlayerTwo();
+            game.kickRightPlayer();
             pressedKeys.remove(KeyEvent.VK_DOWN);
         }
     }
@@ -158,11 +158,11 @@ public class FieldPanel extends JPanel {
         private void drawPlayers(Graphics g){
         // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
         drawCharacter(g, p1Head, p1Shoe,
-                (int) game.getPlayerOneX(), (int) game.getPlayerOneY(),
-                game.isPlayerOneAura(), 1);
+                (int) game.getLeftPlayerX(), (int) game.getLeftPlayerY(),
+                game.isLeftPlayerAura(), 1);
         drawCharacter(g, p2Head, p2Shoe,
-                (int) game.getPlayerTwoX(), (int) game.getPlayerTwoY(),
-                game.isPlayerTwoAura(), -1);
+                (int) game.getRightPlayerX(), (int) game.getRightPlayerY(),
+                game.isRightPlayerAura(), -1);
     }
 
     /** Dibuja un personaje: aura (atras) + cabeza + zapato, por separado. */
@@ -222,7 +222,7 @@ public class FieldPanel extends JPanel {
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.setColor(Color.WHITE);
         FontMetrics fm = g.getFontMetrics();
-        String scoreText = game.getScoreOne() + " - " + game.getScoreTwo();
+        String scoreText = game.getLeftScore() + " - " + game.getRightScore();
         int sw = fm.stringWidth(scoreText);
         g.drawString(scoreText, (WIDTH - sw) / 2, 28);
 
@@ -241,11 +241,11 @@ public class FieldPanel extends JPanel {
         int barX1 = 15;
         int barX2 = WIDTH - barW - 15;
         // barras de poder (naranja, con borde)
-        drawBar(g, barX1, barY, barW, 10, game.getPlayerOnePower(), new Color(0xE8A033), true);
-        drawBar(g, barX2, barY, barW, 10, game.getPlayerTwoPower(), new Color(0xE8A033), true);
+        drawBar(g, barX1, barY, barW, 10, game.getLeftPlayerPower(), new Color(0xE8A033), true);
+        drawBar(g, barX2, barY, barW, 10, game.getRightPlayerPower(), new Color(0xE8A033), true);
         // barras de vida (verde)
-        drawBar(g, barX1, 47, barW, 6, game.getPlayerOneLife(), new Color(0x3ddc84), false);
-        drawBar(g, barX2, 47, barW, 6, game.getPlayerTwoLife(), new Color(0x3ddc84), false);
+        drawBar(g, barX1, 47, barW, 6, game.getLeftPlayerLife(), new Color(0x3ddc84), false);
+        drawBar(g, barX2, 47, barW, 6, game.getRightPlayerLife(), new Color(0x3ddc84), false);
     }
 
     /** Dibuja una barra (fondo gris + relleno segun el porcentaje). */
@@ -280,12 +280,12 @@ public class FieldPanel extends JPanel {
         g.drawString(result, (WIDTH - fm.stringWidth(result))/2, HEIGHT/2 - 20);
 
         g.setFont(new Font("Arial", Font.BOLD, 28));
-        String scoreText = game.getScoreOne() + " - " + game.getScoreTwo();
+        String scoreText = game.getLeftScore() + " - " + game.getRightScore();
         FontMetrics fm2 = g.getFontMetrics();
         g.drawString(scoreText, (WIDTH - fm2.stringWidth(scoreText))/2, HEIGHT/2 + 30);
 
         g.setFont(new Font("Arial", Font.PLAIN, 20));
-        String puntos = "Puntos   J1: " + game.getPlayerOnePoints() + "    J2: " + game.getPlayerTwoPoints();
+        String puntos = "Puntos   J1: " + game.getLeftPlayerPoints() + "    J2: " + game.getRightPlayerPoints();
         FontMetrics fm3 = g.getFontMetrics();
         g.drawString(puntos, (WIDTH - fm3.stringWidth(puntos))/2, HEIGHT/2 + 72);
     }

@@ -10,8 +10,8 @@ public class Expert extends Bot {
     public void decideAction(Match match) {
         Ball ball = match.getBall();
         Score score = match.getScore();
-        int myGoals = score.getGoalsPlayerTwo();
-        int opponentGoals = score.getGoalsPlayerOne();
+        int myGoals = score.getGoalsRightPlayer();
+        int opponentGoals = score.getGoalsLeftPlayer();
         double distanceToBall = Math.abs(ball.getPositionX() - getPositionX());
 
         if(myGoals <= opponentGoals){

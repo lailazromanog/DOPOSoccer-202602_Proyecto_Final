@@ -3,16 +3,16 @@ package domain;
 public class Time extends Match {
     private boolean goldenGoal;
 
-    public Time(Player playerOne, Player playerTwo, Ball ball, Goal leftGoal, Goal rightGoal, Timer timer, Score score) {
-        super(playerOne, playerTwo, ball, leftGoal, rightGoal, timer, score);
+    public Time(Player leftPlayer, Player rightPlayer, Ball ball, Goal leftGoal, Goal rightGoal, Timer timer, Score score) {
+        super(leftPlayer, rightPlayer, ball, leftGoal, rightGoal, timer, score);
         this.goldenGoal = false;
     }
 
     @Override 
     public boolean checkWinCondition(){
         if (timer.isTimeUp()){
-            int goalsOne = score.getGoalsPlayerOne();
-            int goalsTwo = score.getGoalsPlayerTwo();
+            int goalsOne = score.getGoalsLeftPlayer();
+            int goalsTwo = score.getGoalsRightPlayer();
 
             if (goalsOne != goalsTwo){
                 return true;
@@ -23,8 +23,8 @@ public class Time extends Match {
         }
 
         if(goldenGoal){
-            int goalsOne = score.getGoalsPlayerOne();
-            int goalsTwo = score.getGoalsPlayerTwo();
+            int goalsOne = score.getGoalsLeftPlayer();
+            int goalsTwo = score.getGoalsRightPlayer();
 
             return goalsOne != goalsTwo;
             

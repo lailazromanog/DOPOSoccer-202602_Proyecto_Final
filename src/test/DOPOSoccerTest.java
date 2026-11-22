@@ -9,17 +9,17 @@ public class DOPOSoccerTest {
     private Timer timer;
     private Score score;
     private PowerBar powerBar;
-    private Player playerOne;
-    private Player playerTwo;
+    private Player leftPlayer;
+    private Player rightPlayer;
 
     @Before
     public void setUp() {
         player = new Player();
         timer = new Timer();
         powerBar = new PowerBar();
-        playerOne = new Player();
-        playerTwo = new Player();
-        score = new Score(playerOne, playerTwo);
+        leftPlayer = new Player();
+        rightPlayer = new Player();
+        score = new Score(leftPlayer, rightPlayer);
     }
 
     // Test Player
@@ -144,24 +144,24 @@ public class DOPOSoccerTest {
     // Test Score
 
     @Test
-    public void testScoreAddGoalPlayerOne(){
-        score.addGoal(playerOne);
-        assertEquals(1, score.getGoalsPlayerOne());
-        assertEquals(0, score.getGoalsPlayerTwo());
+    public void testScoreAddGoalLeftPlayer(){
+        score.addGoal(leftPlayer);
+        assertEquals(1, score.getGoalsLeftPlayer());
+        assertEquals(0, score.getGoalsRightPlayer());
     }
 
     @Test
     public void testScoreGetWinner() {
-        score.addGoal(playerOne);
-        score.addGoal(playerOne);
-        score.addGoal(playerTwo);
-        assertEquals(playerOne, score.getWinner());
+        score.addGoal(leftPlayer);
+        score.addGoal(leftPlayer);
+        score.addGoal(rightPlayer);
+        assertEquals(leftPlayer, score.getWinner());
     }
 
     @Test
     public void testScoreGetWinnerTie() {
-        score.addGoal(playerOne);
-        score.addGoal(playerTwo);
+        score.addGoal(leftPlayer);
+        score.addGoal(rightPlayer);
         assertNull(score.getWinner());
     }
 
@@ -221,8 +221,8 @@ public class DOPOSoccerTest {
 
     @Test 
     public void testTimeMatchWinWhenTimeUpAndDifferentScore(){
-        Time timeMatch = new Time(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
-        score.addGoal(playerOne);
+        Time timeMatch = new Time(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
+        score.addGoal(leftPlayer);
         timer.start();
         timer.update(61.0);
         assertTrue(timeMatch.checkWinCondition());
@@ -230,7 +230,7 @@ public class DOPOSoccerTest {
 
     @Test
     public void testTimeMatchGoldenGoalOnTie(){
-        Time timeMatch = new Time(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
+        Time timeMatch = new Time(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
         timer.start();
         timer.update(61.0);
         timeMatch.checkWinCondition();
@@ -239,11 +239,11 @@ public class DOPOSoccerTest {
 
     @Test
     public void testTimeMatchGoldenGoalWin(){
-        Time timeMatch = new Time(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
+        Time timeMatch = new Time(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
         timer.start();
         timer.update(61.0);
         timeMatch.checkWinCondition();
-        score.addGoal(playerOne);
+        score.addGoal(leftPlayer);
         assertTrue(timeMatch.checkWinCondition());
     }
 
@@ -251,18 +251,18 @@ public class DOPOSoccerTest {
 
     @Test
     public void testGoalsMatchWinUnderLimit(){
-        Goals goalsMatch = new Goals(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score, 3);
-        score.addGoal(playerOne);
-        score.addGoal(playerOne);
+        Goals goalsMatch = new Goals(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score, 3);
+        score.addGoal(leftPlayer);
+        score.addGoal(leftPlayer);
         assertFalse(goalsMatch.checkWinCondition());
     }
 
     @Test
     public void testGoalsMatchWinAtLimit(){
-        Goals goalsMatch = new Goals(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score, 3);
-        score.addGoal(playerTwo);
-        score.addGoal(playerTwo);
-        score.addGoal(playerTwo);
+        Goals goalsMatch = new Goals(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score, 3);
+        score.addGoal(rightPlayer);
+        score.addGoal(rightPlayer);
+        score.addGoal(rightPlayer);
         assertTrue(goalsMatch.checkWinCondition());
     }
 
@@ -270,16 +270,16 @@ public class DOPOSoccerTest {
 
     @Test
     public void testMatchInGoalIncrementsScoreAndChargesPowerBar() {
-        Time timeMatch = new Time(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
-        timeMatch.onGoal(playerOne);
-        assertEquals(1, score.getGoalsPlayerOne());
-        assertEquals(25.0, playerTwo.getPowerBar().getCurrentCharge(), 0.01);
+        Time timeMatch = new Time(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
+        timeMatch.onGoal(leftPlayer);
+        assertEquals(1, score.getGoalsLeftPlayer());
+        assertEquals(25.0, rightPlayer.getPowerBar().getCurrentCharge(), 0.01);
     }
 
     @Test
     public void testMatchCheckKickContactDoesDamage() {
-        Time timeMatch = new Time(playerOne, playerTwo, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
-        timeMatch.checkKickContact(playerOne, playerTwo);
-        assertTrue(playerTwo.getHealth() < 100.0);
+        Time timeMatch = new Time(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
+        timeMatch.checkKickContact(leftPlayer, rightPlayer);
+        assertTrue(rightPlayer.getHealth() < 100.0);
     }
 }

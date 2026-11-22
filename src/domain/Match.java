@@ -1,17 +1,17 @@
 package domain;
 
 public abstract class Match {
-    protected Player playerOne;
-    protected Player playerTwo;
+    protected Player leftPlayer;
+    protected Player rightPlayer;
     protected Ball ball;
     protected Goal leftGoal;
     protected Goal rightGoal;
     protected Timer timer;
     protected Score score;
 
-    public Match(Player playerOne, Player playerTwo, Ball ball, Goal leftGoal, Goal rightGoal, Timer timer, Score score) {
-        this.playerOne = playerOne;
-        this.playerTwo = playerTwo;
+    public Match(Player leftPlayer, Player rightPlayer, Ball ball, Goal leftGoal, Goal rightGoal, Timer timer, Score score) {
+        this.leftPlayer = leftPlayer;
+        this.rightPlayer = rightPlayer;
         this.ball = ball;
         this.leftGoal = leftGoal;
         this.rightGoal = rightGoal;
@@ -22,16 +22,16 @@ public abstract class Match {
     //reparte los puntos al terminar: 100 al ganador y 25 al perdedor (regla del juego)
     public void awardPoints(){
         Player winner = score.getWinner();
-        if (winner == playerOne) {
-            playerOne.addPoints(100);
-            playerTwo.addPoints(25);
-        }else if (winner == playerTwo) {
-            playerTwo.addPoints(100);
-            playerOne.addPoints(25);
+        if (winner == leftPlayer) {
+            leftPlayer.addPoints(100);
+            rightPlayer.addPoints(25);
+        }else if (winner == rightPlayer) {
+            rightPlayer.addPoints(100);
+            leftPlayer.addPoints(25);
         }else {
             //empate 
-            playerOne.addPoints(25);
-            playerTwo.addPoints(25);
+            leftPlayer.addPoints(25);
+            rightPlayer.addPoints(25);
         }
     }
 
@@ -55,24 +55,24 @@ public abstract class Match {
     public void onGoal(Player player){
         score.addGoal(player);
 
-        if(player == playerOne){
-            playerTwo.getPowerBar().chargeOnGoal();
+        if(player == leftPlayer){
+            rightPlayer.getPowerBar().chargeOnGoal();
         } else {
-            playerOne.getPowerBar().chargeOnGoal();
+            leftPlayer.getPowerBar().chargeOnGoal();
         }
-        playerOne.resetPosition();
-        playerTwo.resetPosition();
+        leftPlayer.resetPosition();
+        rightPlayer.resetPosition();
         ball.reset();
     }
 
     public abstract boolean checkWinCondition();
 
-    public Player getPlayerOne() {
-        return playerOne;
+    public Player getLeftPlayer() {
+        return leftPlayer;
     }
 
-    public Player getPlayerTwo() {
-        return playerTwo;
+    public Player getRightPlayer() {
+        return rightPlayer;
     }
 
     public Ball getBall() {

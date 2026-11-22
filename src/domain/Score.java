@@ -1,40 +1,40 @@
 package domain;
 
 public class Score {
-    private int goalsPlayerOne;
-    private int goalsPlayerTwo;
-    private Player playerOne;
-    private Player playerTwo;
+    private int goalsLeftPlayer;
+    private int goalsRightPlayer;
+    private Player leftPlayer;
+    private Player rightPlayer;
 
-    public Score(Player playerOne, Player playerTwo) {
-        this.playerOne = playerOne;
-        this.playerTwo = playerTwo;
-        this.goalsPlayerOne = 0;
-        this.goalsPlayerTwo = 0;
+    public Score(Player leftPlayer, Player rightPlayer) {
+        this.leftPlayer = leftPlayer;
+        this.rightPlayer = rightPlayer;
+        this.goalsLeftPlayer = 0;
+        this.goalsRightPlayer = 0;
     }
 
     public void addGoal(Player player) {
-        if (player == playerOne) {
-            goalsPlayerOne++;
+        if (player == leftPlayer) {
+            goalsLeftPlayer++;
         } else {
-            goalsPlayerTwo++;
+            goalsRightPlayer++;
         }
     }
 
     public Player getWinner() {
-        if (goalsPlayerOne > goalsPlayerTwo) {
-            return playerOne;
-        } else if (goalsPlayerTwo > goalsPlayerOne) {
-            return playerTwo;
+        if (goalsLeftPlayer > goalsRightPlayer) {
+            return leftPlayer;
+        } else if (goalsRightPlayer > goalsLeftPlayer) {
+            return rightPlayer;
         }
         return null;
     }
 
-    public int getGoalsPlayerOne() {
-        return goalsPlayerOne;
+    public int getGoalsLeftPlayer() {
+        return goalsLeftPlayer;
     }
 
-    public int getGoalsPlayerTwo() {
-        return goalsPlayerTwo;
+    public int getGoalsRightPlayer() {
+        return goalsRightPlayer;
     }
 }

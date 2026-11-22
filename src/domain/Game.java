@@ -40,9 +40,10 @@ public class Game {
     private static final double KICK_ANGLE = 0.3;
 
     //  Objetos del dominio que coordina la fachada.
+    private CharacterFactory characterFactory;
     private Match match;
-    private Player playerOne;
-    private Player playerTwo;
+    private Player leftPlayer;
+    private Player rightPlayer;
     private Ball ball;
     private Goal leftGoal;
     private Goal rightGoal;
@@ -57,59 +58,47 @@ public class Game {
      * @param country2 pais/personaje del jugador 2
      */
     public Game(boolean byTime, int value, String country1, String country2) {
-        playerOne = new Player();
-        playerTwo = new Player();
-        playerOne.setCharacter(createCharacter(country1));
-        playerTwo.setCharacter(createCharacter(country2));
+        characterFactory = new CharacterFactory();
+        leftPlayer = new Player();
+        rightPlayer = new Player();
+        leftPlayer.setCharacter(characterFactory.create(country1));
+        rightPlayer.setCharacter(characterFactory.create(country2));
 
         ball = new Ball();
         leftGoal  = new Goal(-100, 290, (LEFT_POST - BALL_DIAMETER / 2) + 100, 135);
         rightGoal = new Goal(RIGHT_POST - BALL_DIAMETER / 2, 290, 200, 135);
-        Score score = new Score(playerOne, playerTwo);
+        Score score = new Score(leftPlayer, rightPlayer);
 
         if (byTime) {
             Timer timer = new Timer(value * 60);                 // value = minutos
-            match = new Time(playerOne, playerTwo, ball, leftGoal, rightGoal, timer, score);
+            match = new Time(leftPlayer, rightPlayer, ball, leftGoal, rightGoal, timer, score);
         } else {
             Timer timer = new Timer(0);
-            match = new Goals(playerOne, playerTwo, ball, leftGoal, rightGoal, timer, score, value); // value = goles
+            match = new Goals(leftPlayer, rightPlayer, ball, leftGoal, rightGoal, timer, score, value); // value = goles
         }
 
         // posiciones iniciales y balon al centro
-        playerOne.setInitialPosition(WIDTH * 0.18, PLAYER_GROUND);
-        playerTwo.setInitialPosition(WIDTH * 0.75, PLAYER_GROUND);
+        leftPlayer.setInitialPosition(WIDTH * 0.18, PLAYER_GROUND);
+        rightPlayer.setInitialPosition(WIDTH * 0.75, PLAYER_GROUND);
         centerBall();
 
         match.start();
         finished = false;
     }
 
-    /** Crea el personaje segun el pais elegido, con su poder (Anexo 1). */
-    private Character createCharacter(String country) {
-        if (country.equals("Camerun")) {
-            return new Character("Camerun", "Camerun", new Lightning(), new Appereance("camerun"));
-        }else if (country.equals("Nigeria")) {
-            return new Character("Nigeria", "Nigeria", new Tornado(), new Appereance("nigeria"));
-        }else if (country.equals("Estados Unidos")) {
-            return new Character("Estados Unidos", "Estados Unidos", new Illusion(), new Appereance("usa"));
-        }else {
-            return new Character("Corea del Sur", "Corea del Sur", new BlueAura(), new Appereance("corea"));
-        }
-    }
-
     //ordenes, lo que la interfaz manda
 
-    public void movePlayerOneLeft()  { if (!playerOne.isStunned()) playerOne.moveLeft();  }
-    public void movePlayerOneRight() { if (!playerOne.isStunned()) playerOne.moveRight(); }
-    public void jumpPlayerOne()      { if (!playerOne.isStunned()) playerOne.jump();      }
-    public void kickPlayerOne()      { if (!playerOne.isStunned()) tryKick(playerOne, playerTwo, 1); }
-    public void usePowerPlayerOne()  { playerOne.usePower(); }
+    public void moveLeftPlayerLeft()  { if (!leftPlayer.isStunned()) leftPlayer.moveLeft();  }
+    public void moveLeftPlayerRight() { if (!leftPlayer.isStunned()) leftPlayer.moveRight(); }
+    public void jumpLeftPlayer()      { if (!leftPlayer.isStunned()) leftPlayer.jump();      }
+    public void kickLeftPlayer()      { if (!leftPlayer.isStunned()) tryKick(leftPlayer, rightPlayer, 1); }
+    public void usePowerLeftPlayer()  { leftPlayer.usePower(); }
 
-    public void movePlayerTwoLeft()  { if (!playerTwo.isStunned()) playerTwo.moveLeft();  }
-    public void movePlayerTwoRight() { if (!playerTwo.isStunned()) playerTwo.moveRight(); }
-    public void jumpPlayerTwo()      { if (!playerTwo.isStunned()) playerTwo.jump();      }
-    public void kickPlayerTwo()      { if (!playerTwo.isStunned()) tryKick(playerTwo, playerOne, -1); }
-    public void usePowerPlayerTwo()  { playerTwo.usePower(); }
+    public void moveRightPlayerLeft()  { if (!rightPlayer.isStunned()) rightPlayer.moveLeft();  }
+    public void moveRightPlayerRight() { if (!rightPlayer.isStunned()) rightPlayer.moveRight(); }
+    public void jumpRightPlayer()      { if (!rightPlayer.isStunned()) rightPlayer.jump();      }
+    public void kickRightPlayer()      { if (!rightPlayer.isStunned()) tryKick(rightPlayer, leftPlayer, -1); }
+    public void usePowerRightPlayer()  { rightPlayer.usePower(); }
 
     /** Termina el partido ya (por ejemplo con ESC): reparte puntos y detiene. */
     public void finishMatch() {
@@ -133,14 +122,14 @@ public class Game {
         }
 
         // gravedad de los jugadores, aturdimiento, carga de poder y efectos
-        playerOne.update(PLAYER_GROUND);
-        playerTwo.update(PLAYER_GROUND);
-        playerOne.updateStun(deltaTime);
-        playerTwo.updateStun(deltaTime);
-        playerOne.getPowerBar().update(deltaTime);
-        playerTwo.getPowerBar().update(deltaTime);
-        playerOne.updateEffect(deltaTime);
-        playerTwo.updateEffect(deltaTime);
+        leftPlayer.update(PLAYER_GROUND);
+        rightPlayer.update(PLAYER_GROUND);
+        leftPlayer.updateStun(deltaTime);
+        rightPlayer.updateStun(deltaTime);
+        leftPlayer.getPowerBar().update(deltaTime);
+        rightPlayer.getPowerBar().update(deltaTime);
+        leftPlayer.updateEffect(deltaTime);
+        rightPlayer.updateEffect(deltaTime);
 
         // choque entre jugadores
         playerCollision();
@@ -154,11 +143,11 @@ public class Game {
         checkGoal();
 
         // si un jugador con aura toca el balon, se ejecuta su poder
-        if (ballTouches(playerOne)) {
-            match.checkBallContact(playerOne);
+        if (ballTouches(leftPlayer)) {
+            match.checkBallContact(leftPlayer);
         }
-        if (ballTouches(playerTwo)) {
-            match.checkBallContact(playerTwo);
+        if (ballTouches(rightPlayer)) {
+            match.checkBallContact(rightPlayer);
         }
 
         // rebote contra el piso
@@ -192,8 +181,8 @@ public class Game {
         }
 
         // limites de los jugadores (que no se salgan de la cancha)
-        clampPlayer(playerOne);
-        clampPlayer(playerTwo);
+        clampPlayer(leftPlayer);
+        clampPlayer(rightPlayer);
 
         // cronometro + condicion de victoria (la decide el dominio)
         match.getTimer().update(deltaTime);
@@ -232,31 +221,31 @@ public class Game {
     }
 
     private void playerCollision() {
-        double center1X = playerOne.getPositionX() + PLAYER_DIAMETER / 2.0;
-        double center1Y = playerOne.getPositionY() + PLAYER_DIAMETER / 2.0;
-        double center2X = playerTwo.getPositionX() + PLAYER_DIAMETER / 2.0;
-        double center2Y = playerTwo.getPositionY() + PLAYER_DIAMETER / 2.0;
+        double center1X = leftPlayer.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double center1Y = leftPlayer.getPositionY() + PLAYER_DIAMETER / 2.0;
+        double center2X = rightPlayer.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double center2Y = rightPlayer.getPositionY() + PLAYER_DIAMETER / 2.0;
 
         double overlapX = PLAYER_DIAMETER - Math.abs(center1X - center2X);
         double overlapY = PLAYER_DIAMETER - Math.abs(center1Y - center2Y);
 
         if (overlapX > 0 && overlapY > 0) {
             if (center1X < center2X) {
-                playerOne.setPositionX(playerOne.getPositionX() - overlapX / 2);
-                playerTwo.setPositionX(playerTwo.getPositionX() + overlapX / 2);
+                leftPlayer.setPositionX(leftPlayer.getPositionX() - overlapX / 2);
+                rightPlayer.setPositionX(rightPlayer.getPositionX() + overlapX / 2);
             } else {
-                playerOne.setPositionX(playerOne.getPositionX() + overlapX / 2);
-                playerTwo.setPositionX(playerTwo.getPositionX() - overlapX / 2);
+                leftPlayer.setPositionX(leftPlayer.getPositionX() + overlapX / 2);
+                rightPlayer.setPositionX(rightPlayer.getPositionX() - overlapX / 2);
             }
         }
     }
 
     private void checkGoal() {
         if (leftGoal.isGoal(ball)) {
-            match.onGoal(playerTwo);   //gol en el arco izquierdo,  punto para el J2
+            match.onGoal(rightPlayer);   //gol en el arco izquierdo,  punto para el J2
             centerBall();
         } else if (rightGoal.isGoal(ball)) {
-            match.onGoal(playerOne);
+            match.onGoal(leftPlayer);
             centerBall();
         }
     }
@@ -288,17 +277,17 @@ public class Game {
 
     //DATOS PARA DIBUJAR (solo lectura)
 
-    public double getPlayerOneX(){ 
-        return playerOne.getPositionX(); 
+    public double getLeftPlayerX(){ 
+        return leftPlayer.getPositionX(); 
     }
-    public double getPlayerOneY() { 
-        return playerOne.getPositionY(); 
+    public double getLeftPlayerY() { 
+        return leftPlayer.getPositionY(); 
     }
-    public double getPlayerTwoX(){ 
-        return playerTwo.getPositionX(); 
+    public double getRightPlayerX(){ 
+        return rightPlayer.getPositionX(); 
     }
-    public double getPlayerTwoY(){ 
-        return playerTwo.getPositionY(); 
+    public double getRightPlayerY(){ 
+        return rightPlayer.getPositionY(); 
     }
     public double getBallX(){ 
         return ball.getPositionX(); 
@@ -307,49 +296,49 @@ public class Game {
         return ball.getPositionY(); 
     }
 
-    public boolean isPlayerOneAura(){ 
-        return playerOne.isAuraActive(); 
+    public boolean isLeftPlayerAura(){ 
+        return leftPlayer.isAuraActive(); 
     }
-    public boolean isPlayerTwoAura(){ 
-        return playerTwo.isAuraActive(); 
+    public boolean isRightPlayerAura(){ 
+        return rightPlayer.isAuraActive(); 
     }
 
-    public double getPlayerOnePower(){ 
-        return playerOne.getPowerBar().getCurrentCharge() / playerOne.getPowerBar().getMaxCharge(); 
+    public double getLeftPlayerPower(){ 
+        return leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge(); 
     }
-    public double getPlayerTwoPower(){ 
-        return playerTwo.getPowerBar().getCurrentCharge() / playerTwo.getPowerBar().getMaxCharge(); 
+    public double getRightPlayerPower(){ 
+        return rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge(); 
     }
-    public double getPlayerOneLife(){ 
-        return playerOne.getHealth() / playerOne.getMaxHealth(); 
+    public double getLeftPlayerLife(){ 
+        return leftPlayer.getHealth() / leftPlayer.getMaxHealth(); 
     }
-    public double getPlayerTwoLife(){ 
-        return playerTwo.getHealth() / playerTwo.getMaxHealth(); 
+    public double getRightPlayerLife(){ 
+        return rightPlayer.getHealth() / rightPlayer.getMaxHealth(); 
     }
 
     //clave del sprite de cada jugador (la usa la presentacion para elegir la imagen)
-    public String getPlayerOneSprite() {
-        return playerOne.getCharacter().getAppereance().getHead().getType();
+    public String getLeftPlayerSprite() {
+        return leftPlayer.getCharacter().getAppereance().getHead().getType();
     }
 
-    public String getPlayerTwoSprite() {
-        return playerTwo.getCharacter().getAppereance().getHead().getType();
+    public String getRightPlayerSprite() {
+        return rightPlayer.getCharacter().getAppereance().getHead().getType();
     }
 
-    public int getScoreOne(){ 
-        return match.getScore().getGoalsPlayerOne(); 
+    public int getLeftScore(){ 
+        return match.getScore().getGoalsLeftPlayer(); 
     }
 
-    public int getScoreTwo(){ 
-        return match.getScore().getGoalsPlayerTwo(); 
+    public int getRightScore(){ 
+        return match.getScore().getGoalsRightPlayer(); 
     }
 
-    public int getPlayerOnePoints(){ 
-        return playerOne.getPoints(); 
+    public int getLeftPlayerPoints(){ 
+        return leftPlayer.getPoints(); 
     }
 
-    public int getPlayerTwoPoints(){ 
-        return playerTwo.getPoints(); 
+    public int getRightPlayerPoints(){ 
+        return rightPlayer.getPoints(); 
     }
 
     public int getTimeLeft(){ 
@@ -363,9 +352,9 @@ public class Game {
     /** Ganador: 1 (J1), 2 (J2) o 0 (empate). Asi la interfaz no necesita Player. */
     public int getWinner() {
         Player w = match.getScore().getWinner();
-        if (w == playerOne) {
+        if (w == leftPlayer) {
             return 1;
-        } else if (w == playerTwo) {
+        } else if (w == rightPlayer) {
             return 2;
         } else {
             return 0;

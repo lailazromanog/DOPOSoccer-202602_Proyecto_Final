@@ -9,16 +9,16 @@ public class BlueAura extends Power {
     @Override
     public void activate(Match match, Player attacker) {
         Player opponent;
-        if(attacker == match.getPlayerOne()){
-            opponent = match.getPlayerTwo();
+        if(attacker == match.getLeftPlayer()){
+            opponent = match.getRightPlayer();
         } else {
-            opponent = match.getPlayerOne();
+            opponent = match.getLeftPlayer();
         }
 
         double damage = getDamageTiro() * attacker.getMultiplicadorKick();
         opponent.takeDamage(damage);
 
-        if(opponent == match.getPlayerOne()){
+        if(opponent == match.getLeftPlayer()){
             opponent.setPositionX(opponent.getPositionX() - 100);
         } else {
             opponent.setPositionX(opponent.getPositionX() + 100);

@@ -2,11 +2,11 @@ package domain;
 
 public class Shoes {
     private String color;
-    private String type;
-    
-    public Shoes() {
+    private String type;   //mismo nombre base de la imagen que la cabeza
+
+    public Shoes(String type) {
+        this.type = type;
         this.color = "default";
-        this.type = "default";
     }
 
     public String getColor() {

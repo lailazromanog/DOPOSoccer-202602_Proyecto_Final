@@ -1,7 +1,6 @@
 package presentation;
 
 import domain.Game;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -31,6 +30,12 @@ public class FieldPanel extends JPanel {
     private BufferedImage fieldImage;
     private Game game;   // la fachada: lo unico del dominio que usamos
 
+    // imagenes de los personajes (cabeza y zapato, por separado)
+    private BufferedImage p1Head;
+    private BufferedImage p1Shoe;
+    private BufferedImage p2Head;
+    private BufferedImage p2Shoe;
+
     // constantes de dibujo, tomadas de la fachada (el mundo logico es 769x450)
     private static final int WIDTH = Game.WIDTH;
     private static final int HEIGHT = Game.HEIGHT;
@@ -51,6 +56,18 @@ public class FieldPanel extends JPanel {
             fieldImage = ImageIO.read(new File("resources/cancha.png"));
         } catch (IOException e) {
             System.out.println("No se pudo cargar la cancha: " + e.getMessage());
+        }
+
+        //carga los sprites segun la clave de cada jugador (la da la apariencia del dominio)
+        String sprite1 = game.getPlayerOneSprite();
+        String sprite2 = game.getPlayerTwoSprite();
+        try {
+            p1Head = ImageIO.read(new File("resources/personajes/cabeza/" + sprite1 + "_derecha.png"));
+            p1Shoe = ImageIO.read(new File("resources/personajes/zapato/" + sprite1 + "_derecha.png"));
+            p2Head = ImageIO.read(new File("resources/personajes/cabeza/" + sprite2 + "_izquierda.png"));
+            p2Shoe = ImageIO.read(new File("resources/personajes/zapato/" + sprite2 + "_izquierda.png"));
+        } catch (IOException e) {
+            System.out.println("No se pudieron cargar los personajes: " + e.getMessage());
         }
         setPreferredSize(new Dimension(resW, resH));
 
@@ -138,30 +155,45 @@ public class FieldPanel extends JPanel {
         }
     }
 
-    private void drawPlayers(Graphics g){
+        private void drawPlayers(Graphics g){
+        // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
+        drawCharacter(g, p1Head, p1Shoe,
+                (int) game.getPlayerOneX(), (int) game.getPlayerOneY(),
+                game.isPlayerOneAura(), 1);
+        drawCharacter(g, p2Head, p2Shoe,
+                (int) game.getPlayerTwoX(), (int) game.getPlayerTwoY(),
+                game.isPlayerTwoAura(), -1);
+    }
+
+    /** Dibuja un personaje: aura (atras) + cabeza + zapato, por separado. */
+    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir){
         int d = PLAYER_DIAMETER;
+        int bottom = y + d;          // el piso del jugador (abajo del hitbox)
+        int cx = x + d / 2;          // centro horizontal
 
-        int x1 = (int) game.getPlayerOneX();
-        int y1 = (int) game.getPlayerOneY();
-        if(game.isPlayerOneAura()){
+        // aura primero, para que quede DETRAS del personaje
+        if(aura){
             g.setColor(new Color(80, 180, 255, 150));
-            g.fillOval(x1 - 8, y1 - 8, d + 16, d + 16);
+            g.fillOval(x - 8, y - 8, d + 16, d + 16);
         }
-        g.setColor(new Color(0xE8A033));
-        g.fillOval(x1, y1, d, d);
-        g.setColor(Color.BLACK);
-        g.drawOval(x1, y1, d, d);
 
-        int x2 = (int) game.getPlayerTwoX();
-        int y2 = (int) game.getPlayerTwoY();
-        if(game.isPlayerTwoAura()){
-            g.setColor(new Color(80, 180, 255, 150));
-            g.fillOval(x2 - 8, y2 - 8, d + 16, d + 16);
+        // cabeza: un poco mas grande que el hitbox (estilo cabezon)
+        if(head != null){
+            int headW = 66;
+            int headH = headW * head.getHeight() / head.getWidth();
+            int headX = cx - headW / 2;
+            int headY = bottom - headH - 4;
+            g.drawImage(head, headX, headY, headW, headH, this);
         }
-        g.setColor(new Color(0xDD1144));
-        g.fillOval(x2, y2, d, d);
-        g.setColor(Color.BLACK);
-        g.drawOval(x2, y2, d, d);
+
+        // zapato: pegado al piso, corrido un poco hacia el frente
+        if(shoe != null){
+            int shoeW = 44;
+            int shoeH = shoeW * shoe.getHeight() / shoe.getWidth();
+            int shoeX = cx - shoeW / 2 + frontDir * 8;
+            int shoeY = bottom - shoeH;
+            g.drawImage(shoe, shoeX, shoeY, shoeW, shoeH, this);
+        }
     }
 
     private void drawBall(Graphics g){

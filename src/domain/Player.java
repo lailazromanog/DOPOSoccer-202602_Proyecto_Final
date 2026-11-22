@@ -23,7 +23,7 @@ public class Player {
 
 
     public Player() {
-        this.health = getMaxHealth();
+        
         this.stunned = false;
         this.stunTimer = 0;
         this.auraActive = false;
@@ -31,6 +31,7 @@ public class Player {
         this.jump = 1;
         this.kick = 1;
         this.survival = 1;
+        this.health = getMaxHealth();
         this.points = 0;
         this.currentEffect = null;
         this.effectTimer = 0;

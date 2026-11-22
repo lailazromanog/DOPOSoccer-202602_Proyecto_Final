@@ -87,13 +87,13 @@ public class Game {
     /** Crea el personaje segun el pais elegido, con su poder (Anexo 1). */
     private Character createCharacter(String country) {
         if (country.equals("Camerun")) {
-            return new Character("Camerun", "Camerun", new Lightning(), new Appereance());
-        } else if (country.equals("Nigeria")) {
-            return new Character("Nigeria", "Nigeria", new Tornado(), new Appereance());
-        } else if (country.equals("Estados Unidos")) {
-            return new Character("Estados Unidos", "Estados Unidos", new Illusion(), new Appereance());
-        } else {
-            return new Character("Corea del Sur", "Corea del Sur", new BlueAura(), new Appereance());
+            return new Character("Camerun", "Camerun", new Lightning(), new Appereance("camerun"));
+        }else if (country.equals("Nigeria")) {
+            return new Character("Nigeria", "Nigeria", new Tornado(), new Appereance("nigeria"));
+        }else if (country.equals("Estados Unidos")) {
+            return new Character("Estados Unidos", "Estados Unidos", new Illusion(), new Appereance("usa"));
+        }else {
+            return new Character("Corea del Sur", "Corea del Sur", new BlueAura(), new Appereance("corea"));
         }
     }
 
@@ -288,28 +288,77 @@ public class Game {
 
     //DATOS PARA DIBUJAR (solo lectura)
 
-    public double getPlayerOneX() { return playerOne.getPositionX(); }
-    public double getPlayerOneY() { return playerOne.getPositionY(); }
-    public double getPlayerTwoX() { return playerTwo.getPositionX(); }
-    public double getPlayerTwoY() { return playerTwo.getPositionY(); }
-    public double getBallX()      { return ball.getPositionX(); }
-    public double getBallY()      { return ball.getPositionY(); }
+    public double getPlayerOneX(){ 
+        return playerOne.getPositionX(); 
+    }
+    public double getPlayerOneY() { 
+        return playerOne.getPositionY(); 
+    }
+    public double getPlayerTwoX(){ 
+        return playerTwo.getPositionX(); 
+    }
+    public double getPlayerTwoY(){ 
+        return playerTwo.getPositionY(); 
+    }
+    public double getBallX(){ 
+        return ball.getPositionX(); 
+    }
+    public double getBallY(){ 
+        return ball.getPositionY(); 
+    }
 
-    public boolean isPlayerOneAura() { return playerOne.isAuraActive(); }
-    public boolean isPlayerTwoAura() { return playerTwo.isAuraActive(); }
+    public boolean isPlayerOneAura(){ 
+        return playerOne.isAuraActive(); 
+    }
+    public boolean isPlayerTwoAura(){ 
+        return playerTwo.isAuraActive(); 
+    }
 
-    public double getPlayerOnePower() { return playerOne.getPowerBar().getCurrentCharge() / playerOne.getPowerBar().getMaxCharge(); }
-    public double getPlayerTwoPower() { return playerTwo.getPowerBar().getCurrentCharge() / playerTwo.getPowerBar().getMaxCharge(); }
-    public double getPlayerOneLife()  { return playerOne.getHealth() / playerOne.getMaxHealth(); }
-    public double getPlayerTwoLife()  { return playerTwo.getHealth() / playerTwo.getMaxHealth(); }
+    public double getPlayerOnePower(){ 
+        return playerOne.getPowerBar().getCurrentCharge() / playerOne.getPowerBar().getMaxCharge(); 
+    }
+    public double getPlayerTwoPower(){ 
+        return playerTwo.getPowerBar().getCurrentCharge() / playerTwo.getPowerBar().getMaxCharge(); 
+    }
+    public double getPlayerOneLife(){ 
+        return playerOne.getHealth() / playerOne.getMaxHealth(); 
+    }
+    public double getPlayerTwoLife(){ 
+        return playerTwo.getHealth() / playerTwo.getMaxHealth(); 
+    }
 
-    public int getScoreOne()        { return match.getScore().getGoalsPlayerOne(); }
-    public int getScoreTwo()        { return match.getScore().getGoalsPlayerTwo(); }
-    public int getPlayerOnePoints() { return playerOne.getPoints(); }
-    public int getPlayerTwoPoints() { return playerTwo.getPoints(); }
-    public int getTimeLeft()        { return match.getTimer().getCurrentTime(); }
+    //clave del sprite de cada jugador (la usa la presentacion para elegir la imagen)
+    public String getPlayerOneSprite() {
+        return playerOne.getCharacter().getAppereance().getHead().getType();
+    }
 
-    public boolean isFinished() { return finished; }
+    public String getPlayerTwoSprite() {
+        return playerTwo.getCharacter().getAppereance().getHead().getType();
+    }
+
+    public int getScoreOne(){ 
+        return match.getScore().getGoalsPlayerOne(); 
+    }
+
+    public int getScoreTwo(){ 
+        return match.getScore().getGoalsPlayerTwo(); 
+    }
+
+    public int getPlayerOnePoints(){ 
+        return playerOne.getPoints(); 
+    }
+
+    public int getPlayerTwoPoints(){ 
+        return playerTwo.getPoints(); 
+    }
+
+    public int getTimeLeft(){ 
+        return match.getTimer().getCurrentTime(); 
+    }
+
+    public boolean isFinished(){ 
+        return finished; 
+    }
 
     /** Ganador: 1 (J1), 2 (J2) o 0 (empate). Asi la interfaz no necesita Player. */
     public int getWinner() {

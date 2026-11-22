@@ -2,11 +2,11 @@ package domain;
 
 public class Head {
     private String color;
-    private String type;
+    private String type; //nombre base de la imagen del personaje
     
-    public Head() {
+    public Head(String type) {
+        this.type = type;
         this.color = "default";
-        this.type = "default";
     }
 
     public String getColor() {

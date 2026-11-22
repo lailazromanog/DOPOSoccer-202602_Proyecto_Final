@@ -10,7 +10,7 @@ public class Character {
         this.name = name;
         this.country = country;
         this.power = power;
-        this.appereance = new Appereance();
+        this.appereance = appereance;
     }
     
     public String getName() {

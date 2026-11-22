@@ -4,9 +4,9 @@ public class Appereance {
     private Head head;
     private Shoes shoes;
 
-    public Appereance() {
-        this.head = new Head();
-        this.shoes = new Shoes();
+    public Appereance(String type) {
+        this.head = new Head(type);
+        this.shoes = new Shoes(type);
     }
 
     public Head getHead() {

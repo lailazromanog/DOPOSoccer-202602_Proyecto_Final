@@ -150,10 +150,15 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e){
                 try {
-                    boolean byTime = byTimeOption.isSelected();
+                    String matchType;
+                    if (byTimeOption.isSelected()) {
+                        matchType = "time";
+                    } else {
+                        matchType = "goals";
+                    }
                     int value = readValue();          // puede lanzar DOPOSoccerException
                 Resolution res = (Resolution) resolutionBox.getSelectedItem();
-                gui.showCharacterSelect(byTime, value, res.getWidth(), res.getHeight());
+                gui.showCharacterSelect(matchType, value, res.getWidth(), res.getHeight());
                 }catch (DOPOSoccerException ex) {
                     GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
                     JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario

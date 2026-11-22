@@ -30,11 +30,11 @@ public class CharacterSelectPanel extends JPanel{
     private RoundedButton playButton;
 
     
-    private boolean byTime;
+    private String matchType;
     private int value;
 
-    public CharacterSelectPanel(GameGUI gui, boolean byTime, int value){
-        this.byTime = byTime; 
+    public CharacterSelectPanel(GameGUI gui, String matchType, int value){
+        this.matchType = matchType; 
         this.value = value; 
         loadBackground();
         prepareElements();
@@ -104,7 +104,7 @@ public class CharacterSelectPanel extends JPanel{
             public void actionPerformed(ActionEvent e){
                 String country1 = (String) leftCharacter.getSelectedItem();
                 String country2 = (String) rightCharacter.getSelectedItem();
-                gui.startGame(byTime, value, country1, country2);
+                gui.startGame(matchType, value, country1, country2);
             }
         });
     }

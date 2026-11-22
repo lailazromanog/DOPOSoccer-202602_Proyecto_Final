@@ -41,6 +41,7 @@ public class Game {
 
     //  Objetos del dominio que coordina la fachada.
     private CharacterFactory characterFactory;
+    private MatchFactory matchFactory;
     private Match match;
     private Player leftPlayer;
     private Player rightPlayer;
@@ -57,8 +58,9 @@ public class Game {
      * @param country1 pais/personaje del jugador 1
      * @param country2 pais/personaje del jugador 2
      */
-    public Game(boolean byTime, int value, String country1, String country2) {
+    public Game(String matchType, int value, String country1, String country2) {
         characterFactory = new CharacterFactory();
+        matchFactory = new MatchFactory();
         leftPlayer = new Player();
         rightPlayer = new Player();
         leftPlayer.setCharacter(characterFactory.create(country1));
@@ -69,14 +71,7 @@ public class Game {
         rightGoal = new Goal(RIGHT_POST - BALL_DIAMETER / 2, 290, 200, 135);
         Score score = new Score(leftPlayer, rightPlayer);
 
-        if (byTime) {
-            Timer timer = new Timer(value * 60);                 // value = minutos
-            match = new Time(leftPlayer, rightPlayer, ball, leftGoal, rightGoal, timer, score);
-        } else {
-            Timer timer = new Timer(0);
-            match = new Goals(leftPlayer, rightPlayer, ball, leftGoal, rightGoal, timer, score, value); // value = goles
-        }
-
+        match = matchFactory.create(matchType, value, leftPlayer, rightPlayer, ball, leftGoal, rightGoal, score);
         // posiciones iniciales y balon al centro
         leftPlayer.setInitialPosition(WIDTH * 0.18, PLAYER_GROUND);
         rightPlayer.setInitialPosition(WIDTH * 0.75, PLAYER_GROUND);

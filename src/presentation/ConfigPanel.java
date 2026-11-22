@@ -37,7 +37,7 @@ public class ConfigPanel extends JPanel {
     private JLabel valueLabel;
     private JTextField valueField;
     private RoundedButton playButton;
-    private JComboBox<String> resolutionBox;
+    private JComboBox<Resolution> resolutionBox;
 
 
     public ConfigPanel(GameGUI gui){
@@ -98,9 +98,8 @@ public class ConfigPanel extends JPanel {
         valueField.setFont(new Font("Arial", Font.BOLD, 16));
         valueField.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        String[] resoluciones = {"Pequena (640x375)", "Mediana (769x450)", "Grande (1024x600)"};
-        resolutionBox = new JComboBox<>(resoluciones);
-        resolutionBox.setSelectedIndex(1); // mediana por defecto
+        resolutionBox = new JComboBox<>(Resolution.values());
+        resolutionBox.setSelectedItem(Resolution.MEDIANA); // mediana por defecto
         resolutionBox.setMaximumSize(new Dimension(220, 32));
         resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);   
 
@@ -153,10 +152,8 @@ public class ConfigPanel extends JPanel {
                 try {
                     boolean byTime = byTimeOption.isSelected();
                     int value = readValue();          // puede lanzar DOPOSoccerException
-                int[] anchos = {640, 769, 1024};
-                int[] altos  = {375, 450, 600};
-                int r = resolutionBox.getSelectedIndex();
-                gui.showCharacterSelect(byTime, value, anchos[r], altos[r]);
+                Resolution res = (Resolution) resolutionBox.getSelectedItem();
+                gui.showCharacterSelect(byTime, value, res.getWidth(), res.getHeight());
                 }catch (DOPOSoccerException ex) {
                     GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
                     JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario

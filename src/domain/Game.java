@@ -56,7 +56,7 @@ public class Game {
      * @param country1 pais/personaje del jugador 1
      * @param country2 pais/personaje del jugador 2
      */
-    public Game(String matchType, int value, String country1, String country2, String Opponent) {
+    public Game(String matchType, int value, String country1, String country2, String opponent) {
         characterFactory = new CharacterFactory();
         matchFactory = new MatchFactory();
         botFactory = new BotFactory();
@@ -119,7 +119,7 @@ public class Game {
     public void moveRightPlayerRight(){ 
         if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveRight(); 
     }
-    
+
     public void jumpRightPlayer(){ 
         if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.jump();      
     }

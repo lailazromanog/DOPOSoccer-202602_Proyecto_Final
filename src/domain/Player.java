@@ -165,6 +165,16 @@ public class Player {
         this.positionY = initialY;
     }
 
+    /** Mantiene al jugador dentro de la cancha en X (antes lo hacia Game). */
+    public void clampToField(int width, int diameter) {
+        if (positionX < 0) {
+            positionX = 0;
+        }
+        if (positionX > width - diameter) {
+            positionX = width - diameter;
+        }
+    }
+
     public double getMultiplicadorKick() {
         return 1 + 0.10 * (kick - 1);
     }

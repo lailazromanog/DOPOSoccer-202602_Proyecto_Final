@@ -31,11 +31,6 @@ public class Game {
     // Constantes internas (fisica); solo las usa Game.
     private static final int PLAYER_GROUND = 348;
     private static final int BALL_GROUND = 374;
-    private static final double AIR_FRICTION = 0.97;
-    private static final double FLOOR_BOUNCE = 0.7;
-    private static final double WALL_BOUNCE = 0.8;
-    private static final double MIN_SPEED = 0.5;
-    private static final double MIN_BOUNCE = 2.0;
     private static final double KICK_FORCE = 12;
     private static final double KICK_ANGLE = 0.3;
 
@@ -129,10 +124,8 @@ public class Game {
         // choque entre jugadores
         playerCollision();
 
-        // mover el balon + friccion del aire
-        ball.move();
-        ball.setVelocityX(ball.getVelocityX() * AIR_FRICTION);
-        ball.setVelocityY(ball.getVelocityY() * AIR_FRICTION);
+        //el balon avanza (se mueve con su gravedad y su friccion)
+        ball.advance();
 
         // gol
         checkGoal();
@@ -145,39 +138,17 @@ public class Game {
             match.checkBallContact(rightPlayer);
         }
 
-        // rebote contra el piso
-        if (ball.getPositionY() > BALL_GROUND) {
-            ball.setPositionY(BALL_GROUND);
-            ball.bounceY();
-            ball.setVelocityY(ball.getVelocityY() * FLOOR_BOUNCE);
-            if (Math.abs(ball.getVelocityY()) < MIN_BOUNCE) {
-                ball.setVelocityY(0);
-            }
-        }
-        // rebote contra el techo
-        if (ball.getPositionY() < 0) {
-            ball.setPositionY(0);
-            ball.bounceY();
-        }
-        // rebote contra las paredes
-        if (ball.getPositionX() < 0) {
-            ball.setPositionX(0);
-            ball.bounceX();
-            ball.setVelocityX(ball.getVelocityX() * WALL_BOUNCE);
-        }
-        if (ball.getPositionX() > WIDTH - BALL_DIAMETER) {
-            ball.setPositionX(WIDTH - BALL_DIAMETER);
-            ball.bounceX();
-            ball.setVelocityX(ball.getVelocityX() * WALL_BOUNCE);
-        }
+        // el balon rebota contra los bordes y se frena si va muy lento
+        ball.bounceInBounds(WIDTH, BALL_DIAMETER, BALL_GROUND);
+
         // friccion horizontal: si va muy lento, se para
         if (Math.abs(ball.getVelocityX()) < MIN_SPEED) {
             ball.setVelocityX(0);
         }
 
         // limites de los jugadores (que no se salgan de la cancha)
-        clampPlayer(leftPlayer);
-        clampPlayer(rightPlayer);
+        leftPlayer.clampToField(WIDTH, PLAYER_DIAMETER);
+        rightPlayer.clampToField(WIDTH, PLAYER_DIAMETER);
 
         // cronometro + condicion de victoria (la decide el dominio)
         match.getTimer().update(deltaTime);
@@ -261,14 +232,6 @@ public class Game {
         return Math.abs(pCenterX - bCenterX) < alcance && Math.abs(pCenterY - bCenterY) < alcance;
     }
 
-    private void clampPlayer(Player player) {
-        if (player.getPositionX() < 0) {
-            player.setPositionX(0);
-        }
-        if (player.getPositionX() > WIDTH - PLAYER_DIAMETER) {
-            player.setPositionX(WIDTH - PLAYER_DIAMETER);
-        }
-    }
 
     //DATOS PARA DIBUJAR (solo lectura)
 

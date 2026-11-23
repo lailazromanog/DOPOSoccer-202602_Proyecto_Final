@@ -41,6 +41,8 @@ public class Game implements Serializable{
     private transient MatchFactory matchFactory;
     private transient BotFactory botFactory;
     private boolean vsMachine;
+    private transient Profile leftProfile;
+    private transient Profile rightProfile;
     private Bot bot;
     private Match match;
     private Player leftPlayer;
@@ -58,7 +60,7 @@ public class Game implements Serializable{
      * @param country1 pais/personaje del jugador 1
      * @param country2 pais/personaje del jugador 2
      */
-    public Game(String matchType, int value, String country1, String country2, String opponent) {
+    public Game(String matchType, int value, String country1, String country2, String opponent, Profile leftProfile, Profile rightProfile) {
         characterFactory = new CharacterFactory();
         matchFactory = new MatchFactory();
         botFactory = new BotFactory();
@@ -76,6 +78,14 @@ public class Game implements Serializable{
             rightPlayer = bot;
         }
         rightPlayer.setCharacter(characterFactory.create(country2));
+
+        
+        // aplica el progreso: las estadisticas vienen del perfil de cada jugador
+        this.leftProfile = leftProfile;
+        this.rightProfile = rightProfile;
+        leftPlayer.setStats(leftProfile.getSpeed(), leftProfile.getKick(), leftProfile.getJump(), leftProfile.getSurvival());
+        rightPlayer.setStats(rightProfile.getSpeed(), rightProfile.getKick(), rightProfile.getJump(), rightProfile.getSurvival());
+
 
         ball = new Ball();
         leftGoal  = new Goal(-100, 290, (LEFT_POST - BALL_DIAMETER / 2) + 100, 135);
@@ -141,10 +151,29 @@ public class Game implements Serializable{
         }
         finished = true; 
         match.awardPoints();
+        awardToProfiles();
         match.finish();
     }
 
-    //UN FRAME DEL JUEGO 
+    /** 
+     * Reparte los puntos del partido a los perfiles persistentes (si los hay). 
+     * */
+    private void awardToProfiles() {
+        if (leftProfile == null || rightProfile == null) {
+            return;   // partida abierta desde archivo: sin perfiles vivos
+        }
+        int w = getWinner();
+        if (w == 1) {
+            leftProfile.addPoints(100);
+            rightProfile.addPoints(25);
+        } else if (w == 2) {
+            rightProfile.addPoints(100);
+            leftProfile.addPoints(25);
+        } else {
+            leftProfile.addPoints(25);
+            rightProfile.addPoints(25);
+        }
+    }
 
     /**
      * Avanza el juego un paso (lo llama el reloj de la interfaz cada 16 ms).

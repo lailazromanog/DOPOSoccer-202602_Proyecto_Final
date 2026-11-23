@@ -14,10 +14,12 @@ import javax.swing.JFrame;
 public class GameGUI extends JFrame {
     private static GameGUI instance;
     private ConfigPanel configPanel;
+    private domain.ProfileStore profileStore;
     private int resW = 769;   // resolucion elegida (por defecto mediana)
     private int resH = 450;
 
     private GameGUI() {
+        profileStore = new domain.ProfileStore(); //carga el progreso guardado
         prepareElements();
     }
 
@@ -55,8 +57,8 @@ public class GameGUI extends JFrame {
 
     /** Lo llama CharacterSelectPanel al dar "JUGAR": crea la fachada y entra a la cancha. */
     public void startGame(String matchType, int value, String country1, String country2, String opponent) {
-        Game game = new Game(matchType, value, country1, country2, opponent);
-        FieldPanel fieldPanel = new FieldPanel(game, resW, resH);
+        Game game = new Game(matchType, value, country1, country2, opponent, profileStore.getLeft(), profileStore.getRight());
+        FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);
         setContentPane(fieldPanel);
         revalidate();
         pack();
@@ -68,12 +70,46 @@ public class GameGUI extends JFrame {
     public void openGame(Game game, int resW, int resH) {
         this.resW = resW;
         this.resH = resH;
-        FieldPanel fieldPanel = new FieldPanel(game, resW, resH);
+        FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);
         setContentPane(fieldPanel);
         revalidate();
         pack();
         setLocationRelativeTo(null);
         fieldPanel.requestFocusInWindow();
+    }
+
+    /** 
+     * Muestra la tienda de mejoras. 
+     */
+    public void showShop() {
+        setContentPane(new ShopPanel(this));
+        revalidate();
+        pack();
+        setLocationRelativeTo(null);
+    }
+
+    /** 
+     * Vuelve a la pantalla de configuracion. 
+     */
+    public void showConfig() {
+        setContentPane(new ConfigPanel(this));
+        revalidate();
+        pack();
+        setLocationRelativeTo(null);
+    }
+    
+    /** 
+     * Guarda el progreso de los jugadores (puntos y estadisticas). 
+     */
+    public void saveProgress() {
+        profileStore.save();
+    }
+
+    /** 
+     * Acceso al progreso, para la pantalla de mejoras. 
+     */
+    public domain.ProfileStore getProfileStore() {
+        return profileStore;
     }
 
     public static void main(String[] args) {

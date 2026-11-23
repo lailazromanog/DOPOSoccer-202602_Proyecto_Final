@@ -32,6 +32,7 @@ public class FieldPanel extends JPanel {
 
     private BufferedImage fieldImage;
     private Game game;   // la fachada: lo unico del dominio que usamos
+    private GameGUI gui;
 
     // imagenes de los personajes (cabeza y zapato, por separado)
     private BufferedImage p1Head;
@@ -53,7 +54,8 @@ public class FieldPanel extends JPanel {
     private Timer gameLoop;
     private boolean paused = false;
 
-    public FieldPanel(Game game, int resW, int resH) {
+    public FieldPanel(GameGUI gui, Game game, int resW, int resH) {
+        this.gui = gui;
         this.game = game;
         try {
             fieldImage = ImageIO.read(new File("resources/cancha.png"));
@@ -110,6 +112,7 @@ public class FieldPanel extends JPanel {
                 repaint();
                 if(game.isFinished()){
                     gameLoop.stop();
+                    gui.saveProgress(); //guarda puntos o estadisticas al terminar
                 }
             }
         });

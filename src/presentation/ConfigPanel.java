@@ -40,6 +40,7 @@ public class ConfigPanel extends JPanel {
     private JTextField valueField;
     private RoundedButton playButton;
     private RoundedButton openButton;
+    private RoundedButton shopButton;
     private JComboBox<Resolution> resolutionBox;
     private JComboBox<String> opponentBox;
 
@@ -75,7 +76,7 @@ public class ConfigPanel extends JPanel {
      * Crea y ubica los componentes de la pantalla
      */
     private void prepareElements(){
-        setPreferredSize(new Dimension(769, 450));
+        setPreferredSize(new Dimension(769, 600));
         setLayout(new GridBagLayout()); // centra la tarjeta en la pantalla
 
         // tarjeta oscura para que todo se lea sobre la foto
@@ -126,6 +127,12 @@ public class ConfigPanel extends JPanel {
         openButton.setPreferredSize(new Dimension(220, 40));
         openButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        shopButton = new RoundedButton("Mejorar estadisticas", new Color(0x3a4a57));
+        shopButton.setFont(new Font("Arial", Font.BOLD, 16));
+        shopButton.setMaximumSize(new Dimension(220, 40));
+        shopButton.setPreferredSize(new Dimension(220, 40));
+        shopButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         // todo va en la card
         card.add(subtitle);
         card.add(Box.createVerticalStrut(22));
@@ -146,6 +153,8 @@ public class ConfigPanel extends JPanel {
         card.add(playButton);
         card.add(Box.createVerticalStrut(10));
         card.add(openButton);
+        card.add(Box.createVerticalStrut(8));
+        card.add(shopButton);
 
         add(card);
     }
@@ -168,7 +177,7 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        
+
         openButton.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e){
@@ -184,6 +193,13 @@ public class ConfigPanel extends JPanel {
                         JOptionPane.showMessageDialog(ConfigPanel.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
+            }
+        });
+
+        shopButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                gui.showShop();
             }
         });
 

@@ -67,7 +67,7 @@ public class Player implements Serializable{
     public void jump() {
         if(!stunned && !"unconscious".equals(currentEffect) && !"electrocuted".equals(currentEffect)){
             if(onGround){ //solo salta si esta en el suelo
-                velocityY = -10; // un impulso hacia arriba
+                velocityY = -10 * (1+ 0.10 *(jump -1)); //mas nivel de salto
                 onGround = false; //para que no salga de pantalla
             }
         }
@@ -200,6 +200,17 @@ public class Player implements Serializable{
     public void clearEffect() {
         this.currentEffect = null;
         this.effectTimer = 0;
+    }
+
+    /** 
+     * Fija las estadisticas del jugador desde su perfil, al empezar el partido.
+     */
+    public void setStats(int speed, int kick, int jump, int survival) {
+        this.speed = speed;
+        this.kick = kick;
+        this.jump = jump;
+        this.survival = survival;
+        this.health = getMaxHealth();   //la vida maxima depende de survival
     }
 
     public void upgradeStat(String stat){

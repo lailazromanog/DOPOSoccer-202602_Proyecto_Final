@@ -100,7 +100,7 @@ public class ConfigPanel extends JPanel {
         valueField.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         resolutionBox = new JComboBox<>(Resolution.values());
-        resolutionBox.setSelectedItem(Resolution.MEDIANA); // mediana por defecto
+        resolutionBox.setSelectedItem(Resolution.MEDIUM); // mediana por defecto
         resolutionBox.setMaximumSize(new Dimension(220, 32));
         resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         
@@ -172,11 +172,11 @@ public class ConfigPanel extends JPanel {
                     int oi = opponentBox.getSelectedIndex();
                     if (oi == 0) {
                         opponent = "human";
-                    } else if (oi == 1) {
+                    }else if (oi == 1) {
                         opponent = "stupid";
-                    } else if (oi == 2) {
+                    }else if (oi == 2) {
                         opponent = "offensive";
-                    } else {
+                    }else if(oi == 3){
                         opponent = "defensive";
                     }else{
                         opponent = "expert";

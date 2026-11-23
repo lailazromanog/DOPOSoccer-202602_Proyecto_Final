@@ -8,9 +8,9 @@ package presentation;
  * aqui; ConfigPanel y el resto NO cambian.
  */
 public enum Resolution {
-    PEQUENA("Pequena (640x375)", 640, 375),
-    MEDIANA("Mediana (769x450)", 769, 450),
-    GRANDE("Grande (1024x600)", 1024, 600);
+    SMALL("Pequena (640x375)", 640, 375),
+    MEDIUM("Mediana (769x450)", 769, 450),
+    LARGE("Grande (1024x600)", 1024, 600);
 
     private final String label;
     private final int width;

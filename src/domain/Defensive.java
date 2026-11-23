@@ -1,7 +1,7 @@
 package domain;
 
 public class Defensive extends Bot {
-    
+
     public Defensive() {
         super();
     }
@@ -10,22 +10,32 @@ public class Defensive extends Bot {
     public void decideAction(Match match) {
         Ball ball = match.getBall();
         Goal myGoal = match.getRightGoal();
-        double distanceToBall = Math.abs(ball.getPositionX() - getPositionX());
+        double dx = ball.getPositionX() - getPositionX();
+        double dist = Math.abs(dx);
+        double guardX = myGoal.getPositionX() - 90;   // puesto de guardia frente al arco
 
-
-        if(getPositionX() > myGoal.getPositionX() + 100){
-            moveLeft();
-        } else if (getPositionX() < myGoal.getPositionX()){
-            moveRight();
+        if (dist < 130) {
+            // el balon esta cerca: sale a despejarlo
+            if (dx > 10) {
+                moveRight();
+            } else if (dx < -10) {
+                moveLeft();
+            }
+        } else {
+            // el balon esta lejos: vuelve a cuidar el arco
+            if (getPositionX() < guardX - 10) {
+                moveRight();
+            } else if (getPositionX() > guardX + 10) {
+                moveLeft();
+            }
         }
-        
 
-        if (ball.getPositionY() > getPositionY()) {
+        if (ball.getPositionY() < getPositionY() - 20 && dist < 60) {
             jump();
         }
 
-        if (distanceToBall < 50) {
-            if(getPowerBar().isFull() && !isAuraActive()){
+        if (dist < 55) {
+            if (getPowerBar().isFull() && !isAuraActive()) {
                 usePower();
             }
             wantsToKick = true;

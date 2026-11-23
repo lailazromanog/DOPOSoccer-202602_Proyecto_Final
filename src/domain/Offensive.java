@@ -1,7 +1,7 @@
 package domain;
 
 public class Offensive extends Bot {
-    
+
     public Offensive() {
         super();
     }
@@ -9,20 +9,24 @@ public class Offensive extends Bot {
     @Override
     public void decideAction(Match match) {
         Ball ball = match.getBall();
-        double distanceToBall = Math.abs(ball.getPositionX() - getPositionX());
+        double dx = ball.getPositionX() - getPositionX();
+        double dist = Math.abs(dx);
 
-        if(ball.getPositionX() > getPositionX()){
+        // persigue el balon en horizontal (con zona muerta para no vibrar en el sitio)
+        if (dx > 10) {
             moveRight();
-        } else if (ball.getPositionX() < getPositionX()){
+        } else if (dx < -10) {
             moveLeft();
-       }
+        }
 
-        if (ball.getPositionY() > getPositionY()) {
+        // salta SOLO si el balon esta por encima y cerca (para cabecear)
+        if (ball.getPositionY() < getPositionY() - 20 && dist < 60) {
             jump();
         }
 
-        if (distanceToBall < 50) {
-            if(getPowerBar().isFull() && !isAuraActive()){
+        // patea cuando el balon esta al alcance del pie
+        if (dist < 55) {
+            if (getPowerBar().isFull() && !isAuraActive()) {
                 usePower();
             }
             wantsToKick = true;

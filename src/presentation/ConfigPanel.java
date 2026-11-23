@@ -104,8 +104,8 @@ public class ConfigPanel extends JPanel {
         resolutionBox.setMaximumSize(new Dimension(220, 32));
         resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        String[] rivales = {"Humano", "Maquina (facil)", "Maquina (media)", "Maquina (dificil)"};
-        opponentBox = new JComboBox<>(rivales);
+        String[] opponents = {"Humano", "Torpe (facil)", "Ofensiva (media)", "Defensiva (media)", "Experta (dificil)"};
+        opponentBox = new JComboBox<>(opponents);
         opponentBox.setSelectedIndex(0); // humano por defecto
         opponentBox.setMaximumSize(new Dimension(220, 32));
         opponentBox.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -173,11 +173,13 @@ public class ConfigPanel extends JPanel {
                     if (oi == 0) {
                         opponent = "human";
                     } else if (oi == 1) {
-                        opponent = "facil";
+                        opponent = "stupid";
                     } else if (oi == 2) {
-                        opponent = "medio";
+                        opponent = "offensive";
                     } else {
-                        opponent = "dificil";
+                        opponent = "defensive";
+                    }else{
+                        opponent = "expert";
                     }
                     gui.showCharacterSelect(matchType, value, opponent, res.getWidth(), res.getHeight());
                 }catch (DOPOSoccerException ex) {

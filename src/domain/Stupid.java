@@ -1,26 +1,28 @@
 package domain;
 
 public class Stupid extends Bot {
-    
+
     public Stupid() {
         super();
     }
 
     @Override
     public void decideAction(Match match) {
-        int random = (int) (Math.random() * 5); // Genera un numero random entre 0 y 4
-        Ball ball = match.getBall();
-
-        if (random == 0) {
+        // perfil Torpe: escoge sus movimientos al azar, sin estrategia
+        int r = (int) (Math.random() * 3);
+        if (r == 0) {
             moveLeft();
-        } else if (random == 1) {
+        } else if (r == 1) {
             moveRight();
-        } else if (random == 2) {
+        }
+        // r == 2 -> se queda quieto ese frame
+
+        // de vez en cuando salta o patea, tambien al azar
+        if ((int) (Math.random() * 120) == 0) {
             jump();
-        } else if (random == 3) {
+        }
+        if ((int) (Math.random() * 15) == 0) {
             wantsToKick = true;
-        } else if (random == 4) {
-            usePower();
         }
     }
 }

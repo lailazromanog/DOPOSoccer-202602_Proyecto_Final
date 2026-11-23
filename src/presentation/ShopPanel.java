@@ -115,7 +115,7 @@ public class ShopPanel extends JPanel {
             btn.setText("FALTAN " + (profile.upgradeCost(stat) - profile.getPoints()) + " pts");
             btn.setEnabled(false);
         }
-        
+
         final String statName = name;
         btn.addActionListener(new ActionListener(){
             @Override public void actionPerformed(ActionEvent e){
@@ -125,7 +125,6 @@ public class ShopPanel extends JPanel {
                         "Mejorar estadistica", JOptionPane.YES_NO_OPTION);
                 if (option == JOptionPane.YES_OPTION) {
                     profile.upgrade(stat);
-                    store.save();     // persiste la mejora solo si confirma
                     buildUI();        // refresca la pantalla
                 }
             }

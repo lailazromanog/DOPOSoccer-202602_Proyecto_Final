@@ -112,7 +112,6 @@ public class FieldPanel extends JPanel {
                 repaint();
                 if(game.isFinished()){
                     gameLoop.stop();
-                    gui.saveProgress(); //guarda puntos o estadisticas al terminar
                     gui.showEndScreen(game); //pantalla de fin con navegación
                 }
             }

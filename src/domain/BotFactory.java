@@ -10,7 +10,7 @@ package domain;
 public class BotFactory {
 
     public Bot create(String profile) {
-        if (profile.equals("clumsy")) {
+        if (profile.equals("stupid")) {
             return new Stupid();
         } else if (profile.equals("defensive")) {
             return new Defensive();

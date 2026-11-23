@@ -78,7 +78,9 @@ public class GameGUI extends JFrame {
         fieldPanel.requestFocusInWindow();
     }
 
-    /** Muestra la pantalla de fin de partido. */
+    /** 
+     * Muestra la pantalla de fin de partido. 
+     */
     public void showEndScreen(Game game) {
         setContentPane(new EndPanel(this, game));
         revalidate();
@@ -106,12 +108,6 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
     }
     
-    /** 
-     * Guarda el progreso de los jugadores (puntos y estadisticas). 
-     */
-    public void saveProgress() {
-        profileStore.save();
-    }
 
     /** 
      * Acceso al progreso, para la pantalla de mejoras. 

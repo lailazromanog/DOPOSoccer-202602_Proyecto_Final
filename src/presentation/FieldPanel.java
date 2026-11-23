@@ -1,6 +1,7 @@
 package presentation;
 
 import domain.Game;
+import domain.DOPOSoccerException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -83,7 +86,9 @@ public class FieldPanel extends JPanel {
                 }else if(code == KeyEvent.VK_Q){
                     game.usePowerLeftPlayer();      // Q: poder J1
                 }else if(code == KeyEvent.VK_M){
-                    game.usePowerRightPlayer();      // M: poder J2
+                    game.usePowerRightPlayer();  // M: poder J2
+                }else if(code == KeyEvent.VK_G){
+                    saveGame();    // G: guardar la partida
                 }else{
                     pressedKeys.add(code);
                 }
@@ -147,6 +152,23 @@ public class FieldPanel extends JPanel {
         }else if(paused){
             drawPaused(g);
         }
+    }
+
+    /** Pausa, pide un archivo y guarda la partida. */
+    private void saveGame(){
+        paused = true;   // que no avance mientras elijo el archivo
+        JFileChooser chooser = new JFileChooser();
+        int result = chooser.showSaveDialog(this);
+        if(result == JFileChooser.APPROVE_OPTION){
+            try {
+                game.saveTo(chooser.getSelectedFile());
+            } catch (DOPOSoccerException ex) {
+                GameLogger.error("No se pudo guardar la partida", ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        paused = false;
+        requestFocusInWindow();
     }
 
     private void drawField(Graphics g){

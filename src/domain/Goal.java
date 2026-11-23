@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Goal {
+public class Goal implements Serializable{
     private double positionX;
     private double positionY;
     private int width;

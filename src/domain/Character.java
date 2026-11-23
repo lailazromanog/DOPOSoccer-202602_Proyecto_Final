@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Character {
+public class Character implements Serializable{
     private String name;
     private String country;
     private Power power;

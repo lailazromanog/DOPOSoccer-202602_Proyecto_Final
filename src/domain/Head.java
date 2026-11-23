@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Head {
+public class Head implements Serializable{
     private String color;
     private String type; //nombre base de la imagen del personaje
     

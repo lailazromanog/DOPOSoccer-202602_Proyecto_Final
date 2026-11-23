@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public abstract class Match {
+public abstract class Match implements Serializable{
     protected Player leftPlayer;
     protected Player rightPlayer;
     protected Ball ball;

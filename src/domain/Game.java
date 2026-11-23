@@ -1,4 +1,6 @@
 package domain;
+import java.io.Serializable;
+import java.io.File;
 
 /**
  * Fachada del dominio (patron Facade).
@@ -15,7 +17,7 @@ package domain;
  *
  * Referencia del patron: Refactoring.Guru - Facade (patrones estructurales).
  */
-public class Game {
+public class Game implements Serializable{
 
     // Geometria del mundo, en unidades logicas (la cancha por default 769x450).
     // el mundo del juego siempre vive en estas unidades.
@@ -35,9 +37,9 @@ public class Game {
     private static final double KICK_ANGLE = 0.3;
 
     //  Objetos del dominio que coordina la fachada.
-    private CharacterFactory characterFactory;
-    private MatchFactory matchFactory;
-    private BotFactory botFactory;
+    private transient CharacterFactory characterFactory;
+    private transient MatchFactory matchFactory;
+    private transient BotFactory botFactory;
     private boolean vsMachine;
     private Bot bot;
     private Match match;
@@ -363,5 +365,19 @@ public class Game {
         } else {
             return 0;
         }
+    }
+
+    // persistencia 
+
+    /** Guarda este partido en un archivo. */
+    public void saveTo(File file) throws DOPOSoccerException {
+        GamePersistence persistence = new GamePersistence();
+        persistence.save(this, file);
+    }
+
+    /** Abre un partido guardado en un archivo. */
+    public static Game openFrom(File file) throws DOPOSoccerException {
+        GamePersistence persistence = new GamePersistence();
+        return persistence.open(file);
     }
 }

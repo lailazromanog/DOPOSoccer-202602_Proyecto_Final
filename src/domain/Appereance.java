@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Appereance {
+public class Appereance implements Serializable{
     private Head head;
     private Shoes shoes;
 

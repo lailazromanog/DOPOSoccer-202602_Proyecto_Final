@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class PowerBar {
+public class PowerBar implements Serializable{
     private double currentCharge;
     private double maxCharge;
 

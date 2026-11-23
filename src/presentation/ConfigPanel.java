@@ -1,6 +1,8 @@
 package presentation;
 
 import domain.DOPOSoccerException;
+import domain.Game;
+import javax.swing.JFileChooser;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -37,6 +39,7 @@ public class ConfigPanel extends JPanel {
     private JLabel valueLabel;
     private JTextField valueField;
     private RoundedButton playButton;
+    private RoundedButton openButton;
     private JComboBox<Resolution> resolutionBox;
     private JComboBox<String> opponentBox;
 
@@ -116,6 +119,13 @@ public class ConfigPanel extends JPanel {
         playButton.setPreferredSize(new Dimension(220, 52));
         playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+
+        openButton = new RoundedButton("Abrir partida", new Color(0x3a4a57));
+        openButton.setFont(new Font("Arial", Font.BOLD, 16));
+        openButton.setMaximumSize(new Dimension(220, 40));
+        openButton.setPreferredSize(new Dimension(220, 40));
+        openButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         // todo va en la card
         card.add(subtitle);
         card.add(Box.createVerticalStrut(22));
@@ -134,6 +144,8 @@ public class ConfigPanel extends JPanel {
         card.add(opponentBox);
         card.add(Box.createVerticalStrut(22));
         card.add(playButton);
+        card.add(Box.createVerticalStrut(10));
+        card.add(openButton);
 
         add(card);
     }
@@ -155,6 +167,26 @@ public class ConfigPanel extends JPanel {
                 valueLabel.setText("Goles para ganar: ");
             }
         });
+
+        
+        openButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                JFileChooser chooser = new JFileChooser();
+                int result = chooser.showOpenDialog(ConfigPanel.this);
+                if(result == JFileChooser.APPROVE_OPTION){
+                    try {
+                        Game game = Game.openFrom(chooser.getSelectedFile());
+                        Resolution res = (Resolution) resolutionBox.getSelectedItem();
+                        gui.openGame(game, res.getWidth(), res.getHeight());
+                    } catch (DOPOSoccerException ex) {
+                        GameLogger.error("No se pudo abrir la partida", ex);
+                        JOptionPane.showMessageDialog(ConfigPanel.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
 
         playButton.addActionListener(new ActionListener(){
             @Override

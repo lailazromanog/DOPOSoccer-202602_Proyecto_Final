@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Player {
+public class Player implements Serializable{
     private double positionX;
     private double positionY;
     private double initialX;

@@ -64,6 +64,18 @@ public class GameGUI extends JFrame {
         fieldPanel.requestFocusInWindow();
     }
 
+    /** Entra a la cancha con un partido ya cargado desde archivo. */
+    public void openGame(Game game, int resW, int resH) {
+        this.resW = resW;
+        this.resH = resH;
+        FieldPanel fieldPanel = new FieldPanel(game, resW, resH);
+        setContentPane(fieldPanel);
+        revalidate();
+        pack();
+        setLocationRelativeTo(null);
+        fieldPanel.requestFocusInWindow();
+    }
+
     public static void main(String[] args) {
         GameGUI ventana = GameGUI.getInstance();
         ventana.setVisible(true);

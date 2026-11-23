@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Shoes {
+public class Shoes implements Serializable{
     private String color;
     private String type;   //mismo nombre base de la imagen que la cabeza
 

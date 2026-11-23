@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Timer {
+public class Timer implements Serializable{
     private int totalTime;
     private double  currentTime;
     private boolean running;

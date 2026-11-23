@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public abstract class Power {
+public abstract class Power implements Serializable{
     private String name;
     private int damageTiro;
     private boolean active;

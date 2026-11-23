@@ -1,6 +1,7 @@
 package domain;
+import java.io.Serializable;
 
-public class Score {
+public class Score implements Serializable{
     private int goalsLeftPlayer;
     private int goalsRightPlayer;
     private Player leftPlayer;

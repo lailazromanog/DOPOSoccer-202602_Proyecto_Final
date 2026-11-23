@@ -8,7 +8,7 @@ import javax.swing.JFrame;
  *
  * Maneja el flujo de pantallas (configuracion -> personajes -> cancha) y la
  * resolucion. Ya NO arma el partido ni crea personajes: eso ahora lo hace la
- * fachada del dominio (Game). GameGUI solo le pide un Game listo y se lo pasa
+ * fachada del dominio (Game). GameGUI solo le  pide un Game listo y se lo pasa
  * al FieldPanel.
  */
 public class GameGUI extends JFrame {

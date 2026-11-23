@@ -21,14 +21,14 @@ public class Player implements Serializable{
     private PowerBar powerBar;
     private double velocityY; //velocidad vertical, para la fisica del salto del jugador
     private boolean onGround = true; //para que salga solo si esta en el suelo
-
+    private double knockbackVX = 0; //empuje horizontal (lo usa el poder Aura Azul)
 
     public Player() {
         
         this.stunned = false;
         this.stunTimer = 0;
         this.auraActive = false;
-        this.speed = 5; //era 1, pero a 1 pxel por frame no vamos notar el cambio de movimmiento
+        this.speed = 1; 
         this.jump = 1;
         this.kick = 1;
         this.survival = 1;
@@ -43,9 +43,9 @@ public class Player implements Serializable{
     public void moveLeft() {
         if(!stunned && !"unconscious".equals(currentEffect)){
             if ("electrocuted".equals(currentEffect)) {
-                positionX -= speed * 0.5;
+                positionX -= getMoveSpeed() * 0.5;
             } else {
-                positionX -= speed;
+                positionX -= getMoveSpeed();
             }
         }
     }
@@ -53,12 +53,32 @@ public class Player implements Serializable{
     public void moveRight() {
         if(!stunned && !"unconscious".equals(currentEffect)){
             if ("electrocuted".equals(currentEffect)) {
-                positionX += speed * 0.5;
+                positionX += getMoveSpeed() * 0.5;
             } else {
-                positionX += speed;
+                positionX += getMoveSpeed();
             }
         }
     }
+    /**
+     * Mueve al jugador en horizontal. dir = -1 izquierda, +1 derecha.
+     * Electrocutado (poder Lightning): se mueve a la mitad de velocidad.
+     * Confundido (poder Illusion): los controles se invierten.
+     */
+    private void move(int dir) {
+        if (stunned || "unconscious".equals(currentEffect)) {
+            return;
+        }
+        double step = speed;
+        if ("electrocuted".equals(currentEffect)) {
+            step = speed * 0.5;
+        }
+        if ("confused".equals(currentEffect)) {
+            dir = -dir;   // los controles quedan al reves
+        }
+        positionX += dir * step;
+    }
+
+
     /**
      * El jugador salta solo si esta en el suelo. Pone la velocidad en y
      * en negativo porque en la pantalla y= 0 es arriba, entonces 
@@ -73,12 +93,34 @@ public class Player implements Serializable{
         }
     }
 
+
+        /**
+     * Lanza al jugador hacia arriba (lo usa el poder Tornado).
+     * Pone la velocidad vertical en negativo (Y=0 es arriba) y lo despega
+     * del suelo; la gravedad de update() se encarga de bajarlo despues.
+     */
+    public void launchUp(double strength) {
+        this.velocityY = -strength;
+        this.onGround = false;
+    }
+
+
     /**
      * Actualiza la posicion vertical del jugador en cada frame.
      * Aplica gravedad y lo detiene en el suelo.
      * @para, groundY la coordenada Y del suelo, donde se apoyan los jugadores
      */
     public void update(double  groundY){
+
+        //empuje horizontal (knockback): se desliza y se va frenando
+        if(knockbackVX != 0){
+            positionX += knockbackVX;
+            knockbackVX *= 0.85;
+            if(Math.abs(knockbackVX) < 0.5){
+                knockbackVX = 0;
+            }
+        }
+        
         //la gravedad aumenta la velocidad hacia abajo en cada frame
         velocityY += 0.5;
         positionY += velocityY; 
@@ -178,6 +220,11 @@ public class Player implements Serializable{
 
     public double getMultiplicadorKick() {
         return 1 + 0.10 * (kick - 1);
+    }
+
+    /** Velocidad real en pixeles/frame: base 5 escalada por el nivel (igual que las otras stats). */
+    public double getMoveSpeed() {
+        return 5 * (1 + 0.10 * (speed - 1));
     }
 
     public double getMaxHealth() {

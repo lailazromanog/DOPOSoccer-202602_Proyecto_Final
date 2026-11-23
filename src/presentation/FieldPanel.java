@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -39,6 +41,7 @@ public class FieldPanel extends JPanel {
     private BufferedImage p1Shoe;
     private BufferedImage p2Head;
     private BufferedImage p2Shoe;
+    private Image auraGif;   //aura animada
 
     // constantes de dibujo, tomadas de la fachada (el mundo logico es 769x450)
     private static final int WIDTH = Game.WIDTH;
@@ -74,6 +77,8 @@ public class FieldPanel extends JPanel {
         } catch (IOException e) {
             System.out.println("No se pudieron cargar los personajes: " + e.getMessage());
         }
+        //aura animada, ImageIcon reproduce el GIF
+        auraGif = new ImageIcon("resources/aura_azul.gif").getImage();
         setPreferredSize(new Dimension(resW, resH));
 
         pressedKeys = new HashSet<>();
@@ -196,10 +201,12 @@ public class FieldPanel extends JPanel {
         int bottom = y + d;          // el piso del jugador (abajo del hitbox)
         int cx = x + d / 2;          // centro horizontal
 
-        // aura primero, para que quede DETRAS del personaje
-        if(aura){
-            g.setColor(new Color(80, 180, 255, 150));
-            g.fillOval(x - 8, y - 8, d + 16, d + 16);
+        //aura animada (GIF) primero, para que quede DETRAS del personaje
+        if(aura && auraGif != null){
+            int auraSize = (int)(d * 1.7);           // un poco mas grande que el jugador
+            int auraX = cx - auraSize / 2;           // centrada en horizontal
+            int auraY = (y + d / 2) - auraSize / 2;  // centrada en el cuerpo
+            g.drawImage(auraGif, auraX, auraY, auraSize, auraSize, this);
         }
 
         // cabeza: un poco mas grande que el hitbox (estilo cabezon)

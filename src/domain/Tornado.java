@@ -17,7 +17,7 @@ public class Tornado extends Power {
         double damage = getDamageTiro() * attacker.getMultiplicadorKick();
         opponent.takeDamage(damage);
 
-        opponent.setPositionY(opponent.getPositionY() + 200);
+        opponent.launchUp(15);   //el tornado lo levanta del piso
         opponent.applyEffect("unconscious", getEffectDuration());
     }
 }

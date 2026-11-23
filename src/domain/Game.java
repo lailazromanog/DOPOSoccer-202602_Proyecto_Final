@@ -141,11 +141,6 @@ public class Game {
         // el balon rebota contra los bordes y se frena si va muy lento
         ball.bounceInBounds(WIDTH, BALL_DIAMETER, BALL_GROUND);
 
-        // friccion horizontal: si va muy lento, se para
-        if (Math.abs(ball.getVelocityX()) < MIN_SPEED) {
-            ball.setVelocityX(0);
-        }
-
         // limites de los jugadores (que no se salgan de la cancha)
         leftPlayer.clampToField(WIDTH, PLAYER_DIAMETER);
         rightPlayer.clampToField(WIDTH, PLAYER_DIAMETER);

@@ -12,13 +12,23 @@ import javax.swing.JFrame;
  * al FieldPanel.
  */
 public class GameGUI extends JFrame {
-
+    private static GameGUI instance;
     private ConfigPanel configPanel;
     private int resW = 769;   // resolucion elegida (por defecto mediana)
     private int resH = 450;
 
-    public GameGUI() {
+    private GameGUI() {
         prepareElements();
+    }
+
+    /**
+     * Punto unico de acceso a la venta
+     */
+    public static GameGUI getInstance(){
+        if(instance == null){
+            instance = new GameGUI();
+        }
+        return instance;
     }
 
     private void prepareElements() {
@@ -55,7 +65,7 @@ public class GameGUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        GameGUI ventana = new GameGUI();
+        GameGUI ventana = GameGUI.getInstance();
         ventana.setVisible(true);
     }
 }

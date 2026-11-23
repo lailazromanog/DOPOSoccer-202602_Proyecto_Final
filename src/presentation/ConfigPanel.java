@@ -45,11 +45,6 @@ public class ConfigPanel extends JPanel {
         loadBackground();
         prepareElements();
         prepareActions(gui);
-        String[] rivales = {"Humano", "Maquina (facil)", "Maquina (media)", "Maquina (dificil)"};
-        opponentBox = new JComboBox<>(rivales);
-        opponentBox.setSelectedIndex(0); // humano por defecto
-        opponentBox.setMaximumSize(new Dimension(220, 32));
-        opponentBox.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
     /**
@@ -107,7 +102,13 @@ public class ConfigPanel extends JPanel {
         resolutionBox = new JComboBox<>(Resolution.values());
         resolutionBox.setSelectedItem(Resolution.MEDIANA); // mediana por defecto
         resolutionBox.setMaximumSize(new Dimension(220, 32));
-        resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);   
+        resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        String[] rivales = {"Humano", "Maquina (facil)", "Maquina (media)", "Maquina (dificil)"};
+        opponentBox = new JComboBox<>(rivales);
+        opponentBox.setSelectedIndex(0); // humano por defecto
+        opponentBox.setMaximumSize(new Dimension(220, 32));
+        opponentBox.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         playButton = new RoundedButton("JUGAR", new Color(0xF28C28));
         playButton.setFont(new Font("Arial", Font.BOLD, 22));

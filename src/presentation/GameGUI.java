@@ -78,6 +78,14 @@ public class GameGUI extends JFrame {
         fieldPanel.requestFocusInWindow();
     }
 
+    /** Muestra la pantalla de fin de partido. */
+    public void showEndScreen(Game game) {
+        setContentPane(new EndPanel(this, game));
+        revalidate();
+        pack();
+        setLocationRelativeTo(null);
+    }
+
     /** 
      * Muestra la tienda de mejoras. 
      */

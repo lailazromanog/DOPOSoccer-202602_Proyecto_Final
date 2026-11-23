@@ -1,7 +1,7 @@
 package presentation;
 
-import domain.Game;
 import domain.DOPOSoccerException;
+import domain.Game;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -113,6 +113,7 @@ public class FieldPanel extends JPanel {
                 if(game.isFinished()){
                     gameLoop.stop();
                     gui.saveProgress(); //guarda puntos o estadisticas al terminar
+                    gui.showEndScreen(game); //pantalla de fin con navegación
                 }
             }
         });

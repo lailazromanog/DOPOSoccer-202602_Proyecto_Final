@@ -16,7 +16,9 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 
 /**
  * Pantalla "Mejorar estadisticas" (la tienda de puntos).
@@ -113,11 +115,19 @@ public class ShopPanel extends JPanel {
             btn.setText("FALTAN " + (profile.upgradeCost(stat) - profile.getPoints()) + " pts");
             btn.setEnabled(false);
         }
+        
+        final String statName = name;
         btn.addActionListener(new ActionListener(){
             @Override public void actionPerformed(ActionEvent e){
-                profile.upgrade(stat);
-                store.save();     // persiste la mejora
-                buildUI();        // refresca la pantalla
+                int cost = profile.upgradeCost(stat);
+                int option = JOptionPane.showConfirmDialog(ShopPanel.this,
+                        "Gastar " + cost + " pts para subir " + statName + " al nivel " + (levelOf(profile, stat) + 1) + "?",
+                        "Mejorar estadistica", JOptionPane.YES_NO_OPTION);
+                if (option == JOptionPane.YES_OPTION) {
+                    profile.upgrade(stat);
+                    store.save();     // persiste la mejora solo si confirma
+                    buildUI();        // refresca la pantalla
+                }
             }
         });
 

@@ -37,6 +37,9 @@ public class Game {
     //  Objetos del dominio que coordina la fachada.
     private CharacterFactory characterFactory;
     private MatchFactory matchFactory;
+    private BotFactory botFactory;
+    private boolean vsMachine;
+    private Bot bot;
     private Match match;
     private Player leftPlayer;
     private Player rightPlayer;
@@ -53,12 +56,23 @@ public class Game {
      * @param country1 pais/personaje del jugador 1
      * @param country2 pais/personaje del jugador 2
      */
-    public Game(String matchType, int value, String country1, String country2) {
+    public Game(String matchType, int value, String country1, String country2, String Opponent) {
         characterFactory = new CharacterFactory();
         matchFactory = new MatchFactory();
+        botFactory = new BotFactory();
+
         leftPlayer = new Player();
-        rightPlayer = new Player();
         leftPlayer.setCharacter(characterFactory.create(country1));
+
+        // el jugador derecho es humano o maquina segun el modo
+        if (opponent.equals("human")) {
+            vsMachine = false;
+            rightPlayer = new Player();
+        } else {
+            vsMachine = true;
+            bot = botFactory.create(opponent);   // opponent = facil/medio/dificil
+            rightPlayer = bot;
+        }
         rightPlayer.setCharacter(characterFactory.create(country2));
 
         ball = new Ball();
@@ -78,17 +92,45 @@ public class Game {
 
     //ordenes, lo que la interfaz manda
 
-    public void moveLeftPlayerLeft()  { if (!leftPlayer.isStunned()) leftPlayer.moveLeft();  }
-    public void moveLeftPlayerRight() { if (!leftPlayer.isStunned()) leftPlayer.moveRight(); }
-    public void jumpLeftPlayer()      { if (!leftPlayer.isStunned()) leftPlayer.jump();      }
-    public void kickLeftPlayer()      { if (!leftPlayer.isStunned()) tryKick(leftPlayer, rightPlayer, 1); }
-    public void usePowerLeftPlayer()  { leftPlayer.usePower(); }
+    public void moveLeftPlayerLeft(){ 
+        if (!leftPlayer.isStunned()) leftPlayer.moveLeft();  
+    }
 
-    public void moveRightPlayerLeft()  { if (!rightPlayer.isStunned()) rightPlayer.moveLeft();  }
-    public void moveRightPlayerRight() { if (!rightPlayer.isStunned()) rightPlayer.moveRight(); }
-    public void jumpRightPlayer()      { if (!rightPlayer.isStunned()) rightPlayer.jump();      }
-    public void kickRightPlayer()      { if (!rightPlayer.isStunned()) tryKick(rightPlayer, leftPlayer, -1); }
-    public void usePowerRightPlayer()  { rightPlayer.usePower(); }
+    public void moveLeftPlayerRight(){ 
+        if (!leftPlayer.isStunned()) leftPlayer.moveRight(); 
+    }
+
+    public void jumpLeftPlayer(){ 
+        if (!leftPlayer.isStunned()) leftPlayer.jump();      
+    }
+
+    public void kickLeftPlayer(){ 
+        if (!leftPlayer.isStunned()) tryKick(leftPlayer, rightPlayer, 1); 
+    }
+
+    public void usePowerLeftPlayer(){ 
+        leftPlayer.usePower(); 
+    }
+
+    public void moveRightPlayerLeft(){ 
+        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveLeft();  
+    }
+
+    public void moveRightPlayerRight(){ 
+        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveRight(); 
+    }
+    
+    public void jumpRightPlayer(){ 
+        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.jump();      
+    }
+
+    public void kickRightPlayer(){ 
+        if (!vsMachine && !rightPlayer.isStunned()) tryKick(rightPlayer, leftPlayer, -1); 
+    }
+
+    public void usePowerRightPlayer(){ 
+        if (!vsMachine) rightPlayer.usePower(); 
+    }
 
     /** Termina el partido ya (por ejemplo con ESC): reparte puntos y detiene. */
     public void finishMatch() {
@@ -109,6 +151,15 @@ public class Game {
     public void update(double deltaTime) {
         if (finished) {
             return;
+        }
+
+        // si es contra la maquina, el bot decide su jugada; su patada pasa por el camino real
+        if (vsMachine) {
+            bot.decideAction(match);
+            if (bot.wantsToKick()) {
+                tryKick(rightPlayer, leftPlayer, -1);
+                bot.clearKickIntent();
+            }
         }
 
         // gravedad de los jugadores, aturdimiento, carga de poder y efectos

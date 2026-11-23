@@ -37,7 +37,7 @@ public class Expert extends Bot {
             if(getPowerBar().isFull() && !isAuraActive()){
                 usePower();
             }
-            kick(ball);
+            wantsToKick = true;
         }
     }
 }

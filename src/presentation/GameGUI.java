@@ -33,10 +33,10 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    public void showCharacterSelect(String matchType, int value, int resW, int resH) {
+    public void showCharacterSelect(String matchType, int value,String opponent, int resW, int resH) {
         this.resW = resW;
         this.resH = resH;
-        CharacterSelectPanel characterPanel = new CharacterSelectPanel(this, matchType, value);
+        CharacterSelectPanel characterPanel = new CharacterSelectPanel(this, matchType, value, opponent);
         setContentPane(characterPanel);
         revalidate();
         pack();
@@ -44,8 +44,8 @@ public class GameGUI extends JFrame {
     }
 
     /** Lo llama CharacterSelectPanel al dar "JUGAR": crea la fachada y entra a la cancha. */
-    public void startGame(String matchType, int value, String country1, String country2) {
-        Game game = new Game(matchType, value, country1, country2);
+    public void startGame(String matchType, int value, String country1, String country2, String opponent) {
+        Game game = new Game(matchType, value, country1, country2, opponent);
         FieldPanel fieldPanel = new FieldPanel(game, resW, resH);
         setContentPane(fieldPanel);
         revalidate();

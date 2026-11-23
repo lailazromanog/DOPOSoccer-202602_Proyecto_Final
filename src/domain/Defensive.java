@@ -28,7 +28,7 @@ public class Defensive extends Bot {
             if(getPowerBar().isFull() && !isAuraActive()){
                 usePower();
             }
-            kick(ball);
+            wantsToKick = true;
         }
     }
 }

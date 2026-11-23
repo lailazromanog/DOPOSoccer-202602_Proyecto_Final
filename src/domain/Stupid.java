@@ -18,7 +18,7 @@ public class Stupid extends Bot {
         } else if (random == 2) {
             jump();
         } else if (random == 3) {
-            kick(ball);
+            wantsToKick = true;
         } else if (random == 4) {
             usePower();
         }

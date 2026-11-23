@@ -32,10 +32,12 @@ public class CharacterSelectPanel extends JPanel{
     
     private String matchType;
     private int value;
+    private String opponent;
 
-    public CharacterSelectPanel(GameGUI gui, String matchType, int value){
+    public CharacterSelectPanel(GameGUI gui, String matchType, int value, String opponent){
         this.matchType = matchType; 
         this.value = value; 
+        this.opponent = opponent;
         loadBackground();
         prepareElements();
         prepareActions(gui);
@@ -104,7 +106,7 @@ public class CharacterSelectPanel extends JPanel{
             public void actionPerformed(ActionEvent e){
                 String country1 = (String) leftCharacter.getSelectedItem();
                 String country2 = (String) rightCharacter.getSelectedItem();
-                gui.startGame(matchType, value, country1, country2);
+                gui.startGame(matchType, value, country1, country2, opponent);
             }
         });
     }

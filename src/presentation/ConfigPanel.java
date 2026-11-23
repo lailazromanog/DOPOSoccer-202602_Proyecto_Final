@@ -38,12 +38,18 @@ public class ConfigPanel extends JPanel {
     private JTextField valueField;
     private RoundedButton playButton;
     private JComboBox<Resolution> resolutionBox;
+    private JComboBox<String> opponentBox;
 
 
     public ConfigPanel(GameGUI gui){
         loadBackground();
         prepareElements();
         prepareActions(gui);
+        String[] rivales = {"Humano", "Maquina (facil)", "Maquina (media)", "Maquina (dificil)"};
+        opponentBox = new JComboBox<>(rivales);
+        opponentBox.setSelectedIndex(0); // humano por defecto
+        opponentBox.setMaximumSize(new Dimension(220, 32));
+        opponentBox.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
     /**
@@ -122,6 +128,9 @@ public class ConfigPanel extends JPanel {
         card.add(Box.createVerticalStrut(16));
         card.add(label("Resolucion:", new Font("Arial", Font.PLAIN, 14), new Color(0xbcd4df)));
         card.add(resolutionBox);
+        card.add(Box.createVerticalStrut(12));
+        card.add(label("Rival:", new Font("Arial", Font.PLAIN, 14), new Color(0xbcd4df)));
+        card.add(opponentBox);
         card.add(Box.createVerticalStrut(22));
         card.add(playButton);
 
@@ -157,8 +166,19 @@ public class ConfigPanel extends JPanel {
                         matchType = "goals";
                     }
                     int value = readValue();          // puede lanzar DOPOSoccerException
-                Resolution res = (Resolution) resolutionBox.getSelectedItem();
-                gui.showCharacterSelect(matchType, value, res.getWidth(), res.getHeight());
+                    Resolution res = (Resolution) resolutionBox.getSelectedItem();
+                    String opponent;
+                    int oi = opponentBox.getSelectedIndex();
+                    if (oi == 0) {
+                        opponent = "human";
+                    } else if (oi == 1) {
+                        opponent = "facil";
+                    } else if (oi == 2) {
+                        opponent = "medio";
+                    } else {
+                        opponent = "dificil";
+                    }
+                    gui.showCharacterSelect(matchType, value, opponent, res.getWidth(), res.getHeight());
                 }catch (DOPOSoccerException ex) {
                     GameLogger.error("Configuracion invalida del partido", ex);  // para los programadores
                     JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // para el usuario

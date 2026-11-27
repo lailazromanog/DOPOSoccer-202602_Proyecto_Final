@@ -28,7 +28,7 @@ public class DOPOSoccerTest {
     }
 
     
-    // Player: estado inicial
+    // Player: estaPdo inicial
     
 
     // La vida inicial debe ser 100

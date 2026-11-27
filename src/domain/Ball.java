@@ -13,6 +13,7 @@ public class Ball implements Serializable {
     private double velocityX;
     private double velocityY;
     private double gravity;
+    private boolean straightFlight;   // vuelo recto de un tiro de poder, sin gravedad ni friccion
 
     //constantes de la fisica del balon
     private static final double AIR_FRICTION = 0.97;
@@ -31,6 +32,7 @@ public class Ball implements Serializable {
         this.velocityX = 0;
         this.velocityY = 0;
         this.gravity = 0.4; //era 9.8, cuando usamos pixeles usamos algo mas pequeño
+        this.straightFlight = false;
     }
 
     /**
@@ -59,20 +61,31 @@ public class Ball implements Serializable {
         velocityY += force * Math.sin(angle);
     }
 
-        /**
-     * Avanza un frame: mueve el balón con su gravedad y le aplica
-     * fricción del aire a su velocidad.
+    /**
+     * Avanza un frame. En vuelo normal mueve el balón con su gravedad y
+     * le aplica la fricción del aire a su velocidad. En vuelo recto de un
+     * tiro de poder solo lo desplaza según su velocidad, sin que caiga ni
+     * se frene.
      */
     public void advance(){
-        move();
-        velocityX *= AIR_FRICTION;
-        velocityY *= AIR_FRICTION;
+        if (straightFlight) {
+            // tiro de poder recto: conserva su velocidad y su altura
+            positionX += velocityX;
+            positionY += velocityY;
+        } else {
+            // vuelo normal: gravedad y friccion del aire
+            move();
+            velocityX *= AIR_FRICTION;
+            velocityY *= AIR_FRICTION;
+        }
     }
 
     /**
      * Rebota el balón contra el piso, el techo y las paredes de la
      * cancha, perdiendo velocidad con cada rebote, y lo frena del todo
      * en horizontal si va demasiado lento.
+     * Si el balón venía en vuelo recto, al rebotar contra una pared vuelve 
+     * al vuelo normal.
      * @param width ancho de la cancha
      * @param diameter diámetro del balón
      * @param ground posición vertical del suelo de la cancha
@@ -97,11 +110,13 @@ public class Ball implements Serializable {
             positionX = 0;
             bounceX();
             velocityX *= WALL_BOUNCE;
+            straightFlight = false;         // paredes:si venia en vuelo recto, al rebotar vuelve al vuelo normal
         }
         if (positionX > width - diameter) {
             positionX = width - diameter;
             bounceX();
             velocityX *= WALL_BOUNCE;
+            straightFlight = false;         //paredes: si venia en vuelo recto, al rebotar vuelve al vuelo normal
         }
         // friccion horizontal: si va muy lento, se para
         if (Math.abs(velocityX) < MIN_SPEED) {
@@ -134,6 +149,25 @@ public class Ball implements Serializable {
         this.velocityY = 0;
         this.gravity = 0.4;
     }
+
+    /**
+     * Cambia el modo de vuelo del balón. En vuelo recto no lo afectan
+     * la gravedad ni la fricción del aire, para los tiros de poder que
+     * salen en línea recta.
+     * @param straightFlight verdadero para el vuelo recto, falso para el vuelo normal
+     */
+    public void setStraightFlight(boolean straightFlight) {
+        this.straightFlight = straightFlight;
+    }
+
+    /**
+     * Indica si el balón está en vuelo recto de un tiro de poder.
+     * @return verdadero si el balón está en vuelo recto, falso en caso contrario
+     */
+    public boolean isStraightFlight() {
+        return straightFlight;
+    }
+
 
     /**
      * Entrega la posición horizontal del balón.
@@ -176,28 +210,32 @@ public class Ball implements Serializable {
     }
 
     /**
-     * permite colocar la posición X del balón desde la presentación
+     * Fija la posición horizontal del balón.
+     * @param x nueva posición horizontal del balón
      */
     public void setPositionX(double x){
         this.positionX = x;
     }
 
     /**
-     * Permite colocar la posición Y del balón desde la presentación
+     * Fija la posición vertical del balón.
+     * @param y nueva posición vertical del balón
      */
     public void setPositionY(double  y){
         this.positionY = y;
     }
 
     /**
-     * Permite ajustar la velocidad en X, para friccion y rebote en paredes
+     * Fija la velocidad horizontal del balón.
+     * @param vx nueva velocidad horizontal del balón
      */
     public void setVelocityX(double  vx){
         this.velocityX = vx;
     }
 
     /**
-     * Permite ajustar la velocidad en Y, para fricción y rebote en las paredes
+     * Fija la velocidad vertical del balón.
+     * @param vy nueva velocidad vertical del balón
      */
     public void setVelocityY(double  vy){
         this.velocityY = vy;

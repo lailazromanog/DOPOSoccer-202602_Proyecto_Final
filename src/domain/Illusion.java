@@ -19,24 +19,15 @@ public class Illusion extends Power {
     }
 
     /**
-     * Aplica daño al rival del atacante, crea los balones señuelo
-     * idénticos al balón real y los entrega al partido en curso para
-     * que los actualice y los muestre durante la duración propia de
-     * este tiro de poder.
+     * Divide el balón en ocho balones idénticos, el real y siete
+     * señuelos que salen desde la misma posición en direcciones al azar,
+     * y entrega los señuelos al partido para que los mueva y los quite
+     * al terminar la duración propia de este tiro de poder.
      * @param match partido en el que se ejecuta el tiro de poder
      * @param attacker jugador que activa y ejecuta el tiro de poder
      */
     @Override
-    public void activate(Match match, Player attacker) {
-        Player opponent;
-        if(attacker == match.getLeftPlayer()){
-            opponent = match.getRightPlayer();
-        } else {
-            opponent = match.getLeftPlayer();
-        }
-
-        double damage = getDamageTiro() * attacker.getMultiplicadorKick();
-        opponent.takeDamage(damage);
+    public void shoot(Match match, Player attacker) {
 
         // efecto Illusion: el balon se divide en 8 (1 real + 7 senuelos identicos).
         // El poder CREA sus propios senuelos; Match solo los guarda y los actualiza.
@@ -53,5 +44,18 @@ public class Illusion extends Power {
             fakes.add(fake);
         }
         match.addFakeBalls(fakes, getEffectDuration());
+    }
+
+    /**
+     * No deja ningún efecto adicional sobre el rival por ahora, más allá
+     * del daño. El efecto propio de este tiro se define cuando se
+     * trabaje este poder.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que ejecutó el tiro de poder
+     * @param opponent jugador rival que fue golpeado por el tiro de poder
+     */
+    @Override
+    protected void applyHitEffect(Match match, Player attacker, Player opponent) {
+        // por ahora solo recibe el daño, el efecto se define al trabajar este poder
     }
 }

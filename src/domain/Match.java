@@ -8,8 +8,9 @@ import java.util.List;
  * Reúne a los jugadores, el balón, los dos arcos, el cronómetro y el
  * marcador, y aplica las reglas comunes a todo partido: repartir
  * puntos al terminar, controlar el inicio y la pausa, registrar los
- * goles y ejecutar los tiros de poder cuando el balón toca a un
- * jugador con el aura activa. Cada subclase concreta define su propia
+ * goles y controlar los tiros de poder, desde que salen al tocar el
+ * balón un jugador con el aura activa hasta que golpean al rival,
+ * entran al arco o se agota su tiempo de vuelo. Cada subclase concreta define su propia
  * condición de victoria según el tipo de partido.
  *
  * Punto de extensión: para agregar un tipo de partido nuevo basta con
@@ -27,6 +28,11 @@ public abstract class Match implements Serializable{
     protected Score score;
     protected List<Ball> fakeBalls = new ArrayList<>();   // balones senuelo del poder Illusion
     protected double fakeTimer = 0;                        // cuanto duran los senuelos en pantalla
+    protected Player powerShooter = null;                  // dueño del tiro de poder en vuelo, nulo si no hay
+    protected double powerShotTimer = 0;                   // tiempo que le queda al tiro de poder en vuelo
+
+    // tiempo maximo que un tiro de poder sigue en vuelo antes de volverse un balon normal
+    public static final double POWER_SHOT_MAX_TIME = 3.0;
 
     /**
      * Crea un partido con los dos jugadores, el balón, los dos arcos,
@@ -103,9 +109,9 @@ public abstract class Match implements Serializable{
 
     /**
      * Registra un gol del jugador dado: lo suma al marcador, carga un
-     * cuarto de la barra de poder del rival, devuelve a ambos
-     * jugadores a su posición inicial y reinicia el balón al centro de
-     * la cancha.
+     * cuarto de la barra de poder del rival, termina sin daño ni efecto
+     * el tiro de poder que estuviera en vuelo, devuelve a ambos
+     * jugadores a su posición inicial y reinicia el balón.
      * @param player jugador al que se le anota el gol
      */
     public void onGoal(Player player){
@@ -116,6 +122,9 @@ public abstract class Match implements Serializable{
         } else {
             leftPlayer.getPowerBar().chargeOnGoal();
         }
+        //si el gol fue de un tiro de poder, el gol cuenta pero el tiro termina sin daño ni efecto
+        endPowerShot();
+
         leftPlayer.resetPosition();
         rightPlayer.resetPosition();
         ball.reset();
@@ -213,14 +222,91 @@ public abstract class Match implements Serializable{
     }
 
     /**
-     * Ejecuta el tiro de poder del jugador dado cuando el balón lo
-     * toca mientras tiene el aura activa, y apaga el aura una vez ejecutado.
+     * Dispara el tiro de poder del jugador dado cuando el balón lo toca
+     * mientras tiene el aura activa. El poder define cómo sale el balón,
+     * el aura se apaga y el tiro queda en vuelo a la espera de golpear al
+     * rival. No hace nada si el jugador no tiene el aura activa.
      * @param player jugador que tocó el balón
      */
     public void checkBallContact(Player player) {
         if (player.isAuraActive()) {
-            player.getCharacter().getPower().activate(this, player);
+            // el poder define la trayectoria del balón, todavia sin daño
+            player.getCharacter().getPower().shoot(this, player);
             player.setAuraActive(false);
+
+            // el tiro queda en vuelo con su dueño y su tiempo maximo
+            powerShooter = player;
+            powerShotTimer = POWER_SHOT_MAX_TIME;
+        }
+    }
+
+    /**
+     * Aplica el impacto del tiro de poder en vuelo sobre el rival de su
+     * dueño, con el daño y el efecto propios del poder, y termina el
+     * tiro. No hace nada si no hay un tiro de poder en vuelo.
+     */
+    public void onPowerShotHit() {
+        if (powerShooter == null) {
+            return;
+        }
+        Player opponent = getOpponentOf(powerShooter);
+        Power power = powerShooter.getCharacter().getPower();
+        power.hit(this, powerShooter, opponent);
+        endPowerShot();
+    }
+
+    /**
+     * Descuenta el tiempo de vuelo del tiro de poder y lo termina sin
+     * daño ni efecto cuando se agota, para que el balón vuelva a ser un
+     * balón normal.
+     * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
+     */
+    public void updatePowerShot(double deltaTime) {
+        if (powerShooter == null) {
+            return;
+        }
+        powerShotTimer -= deltaTime;
+        if (powerShotTimer <= 0) {
+            endPowerShot();
+        }
+    }
+
+    /**
+     * Termina el tiro de poder en vuelo, si lo hay, y devuelve el balón
+     * al vuelo normal con gravedad y fricción.
+     */
+    public void endPowerShot() {
+        powerShooter = null;
+        powerShotTimer = 0;
+        ball.setStraightFlight(false);
+    }
+
+    /**
+     * Indica si hay un tiro de poder en vuelo en este momento.
+     * @return verdadero si hay un tiro de poder en vuelo, falso en caso contrario
+     */
+    public boolean isPowerShotActive() {
+        return powerShooter != null;
+    }
+
+    /**
+     * Entrega el jugador dueño del tiro de poder en vuelo.
+     * @return el jugador que disparó el tiro de poder, o nulo si no hay un tiro en vuelo
+     */
+    public Player getPowerShooter() {
+        return powerShooter;
+    }
+
+    /**
+     * Entrega el rival del jugador dado dentro de este partido.
+     * @param player jugador del que se quiere conocer el rival
+     * @return el jugador que defiende el lado contrario de la cancha
+     */
+    public Player getOpponentOf(Player player) {
+        if (player == leftPlayer) {
+            return rightPlayer;
+        } else {
+            return leftPlayer;
         }
     }
 

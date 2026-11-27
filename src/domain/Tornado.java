@@ -16,24 +16,15 @@ public class Tornado extends Power {
     }
 
     /**
-     * Aplica daño al rival del atacante, lo lanza hacia arriba y lo deja
-     * inconsciente durante la duración propia de este tiro de poder.
+     * Lanza hacia arriba al rival golpeado y lo deja inconsciente
+     * durante la duración propia de este tiro de poder.
      * @param match partido en el que se ejecuta el tiro de poder
-     * @param attacker jugador que activa y ejecuta el tiro de poder
+     * @param attacker jugador que ejecutó el tiro de poder
+     * @param opponent jugador rival que fue golpeado por el tiro de poder
      */
     @Override
-    public void activate(Match match, Player attacker) {
-        Player opponent;
-        if(attacker == match.getLeftPlayer()){
-            opponent = match.getRightPlayer();
-        } else {
-            opponent = match.getLeftPlayer();
-        }
-
-        double damage = getDamageTiro() * attacker.getMultiplicadorKick();
-        opponent.takeDamage(damage);
-
-        opponent.launchUp(15);   //el tornado lo levanta del piso
+    protected void applyHitEffect(Match match, Player attacker, Player opponent) {
+        opponent.launchUp(15);   // el tornado lo levanta del piso
         opponent.applyEffect("unconscious", getEffectDuration());
     }
 }

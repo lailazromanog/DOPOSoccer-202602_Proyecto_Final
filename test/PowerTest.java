@@ -44,7 +44,8 @@ public class PowerTest {
         BlueAura poder = new BlueAura();
         double saludAntes = rightPlayer.getHealth();
 
-        poder.activate(match, leftPlayer);  // leftPlayer ataca a rightPlayer
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);  // leftPlayer ataca a rightPlayer
 
         assertTrue(rightPlayer.getHealth() < saludAntes);
     }
@@ -54,7 +55,8 @@ public class PowerTest {
     public void testBlueAuraShotMovesRight() {
         BlueAura poder = new BlueAura();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         // leftPlayer dispara hacia el arco derecho: velocidad en X debe ser positiva
         assertTrue(ball.getVelocityX() > 0);
@@ -65,7 +67,8 @@ public class PowerTest {
     public void testBlueAuraShotMovesLeft() {
         BlueAura poder = new BlueAura();
 
-        poder.activate(match, rightPlayer); // rightPlayer ataca a leftPlayer
+        poder.shoot(match, rightPlayer);
+        poder.hit(match, rightPlayer, leftPlayer); // rightPlayer ataca a leftPlayer
 
         assertTrue(ball.getVelocityX() < 0);
     }
@@ -75,7 +78,8 @@ public class PowerTest {
     public void testBlueAuraShotIsHorizontal() {
         BlueAura poder = new BlueAura();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         assertEquals(0.0, ball.getVelocityY(), 0.01);
     }
@@ -89,7 +93,8 @@ public class PowerTest {
         rightPlayer.setInitialPosition(400, 400);
         double xAntes = rightPlayer.getPositionX();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         // El knockback es inmediato: la posicion ya cambio o la velocidad esta activa
         // Verificamos que el knockback se haya aplicado (la posicion cambia en el update)
@@ -108,7 +113,8 @@ public class PowerTest {
         Lightning poder = new Lightning();
         double saludAntes = rightPlayer.getHealth();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         assertTrue(rightPlayer.getHealth() < saludAntes);
     }
@@ -118,7 +124,8 @@ public class PowerTest {
     public void testLightningAppliesElectrocutedEffect() {
         Lightning poder = new Lightning();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         // El efecto electrocutado reduce la velocidad a la mitad
         // Comprobamos que el jugador se mueve mas despacio de lo normal
@@ -133,7 +140,8 @@ public class PowerTest {
         Lightning poder = new Lightning();
 
         rightPlayer.setInitialPosition(0, 300);
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
         rightPlayer.jump();
 
         // La velocidad vertical debe seguir en cero: el salto fue bloqueado
@@ -146,7 +154,8 @@ public class PowerTest {
         Lightning poder = new Lightning();
 
         leftPlayer.setInitialPosition(0, 0);
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
         leftPlayer.moveRight();
 
         // El atacante se mueve a velocidad normal (5 px)
@@ -163,7 +172,8 @@ public class PowerTest {
         Tornado poder = new Tornado();
         double saludAntes = rightPlayer.getHealth();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         assertTrue(rightPlayer.getHealth() < saludAntes);
     }
@@ -174,7 +184,8 @@ public class PowerTest {
         Tornado poder = new Tornado();
 
         rightPlayer.setInitialPosition(100, 0);
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
         rightPlayer.moveRight();  // intenta moverse, pero no puede
 
         // La posicion no debe haber cambiado
@@ -187,7 +198,8 @@ public class PowerTest {
         Tornado poder = new Tornado();
 
         rightPlayer.setInitialPosition(0, 300);
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         // Tornado usa launchUp() internamente, que ya aplica -15 de velocidad vertical.
         // Guardamos esa velocidad antes de intentar un salto extra.
@@ -209,7 +221,8 @@ public class PowerTest {
         Illusion poder = new Illusion();
         double saludAntes = rightPlayer.getHealth();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         assertTrue(rightPlayer.getHealth() < saludAntes);
     }
@@ -219,7 +232,8 @@ public class PowerTest {
     public void testIllusionCreatesFakeBalls() {
         Illusion poder = new Illusion();
 
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         // El poder genera 7 senuelos; el partido los almacena
         assertFalse(match.getFakeBalls().isEmpty());
@@ -234,7 +248,8 @@ public class PowerTest {
         // Colocamos el balon en una posicion conocida
         ball.setPositionX(200);
         ball.setPositionY(150);
-        poder.activate(match, leftPlayer);
+        poder.shoot(match, leftPlayer);
+        poder.hit(match, leftPlayer, rightPlayer);
 
         // Cada senuelo debe haber nacido en la misma posicion que el balon real
         for (int i = 0; i < match.getFakeBalls().size(); i++) {

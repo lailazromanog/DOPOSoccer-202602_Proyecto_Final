@@ -1,5 +1,7 @@
 package domain;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Match implements Serializable{
     protected Player leftPlayer;
@@ -9,6 +11,8 @@ public abstract class Match implements Serializable{
     protected Goal rightGoal;
     protected Timer timer;
     protected Score score;
+    protected List<Ball> fakeBalls = new ArrayList<>();   // balones senuelo del poder Illusion
+    protected double fakeTimer = 0;                        // cuanto duran los senuelos en pantalla
 
     public Match(Player leftPlayer, Player rightPlayer, Ball ball, Goal leftGoal, Goal rightGoal, Timer timer, Score score) {
         this.leftPlayer = leftPlayer;
@@ -64,6 +68,12 @@ public abstract class Match implements Serializable{
         leftPlayer.resetPosition();
         rightPlayer.resetPosition();
         ball.reset();
+    }
+
+    /** Recibe los balones senuelo ya creados (los crea el poder) y los mantiene por un tiempo. */
+    public void addFakeBalls(List<Ball> balls, double duration) {
+        this.fakeBalls = balls;
+        this.fakeTimer = duration;
     }
 
     public abstract boolean checkWinCondition();

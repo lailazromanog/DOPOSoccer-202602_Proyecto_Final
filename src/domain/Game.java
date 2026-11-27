@@ -1,6 +1,6 @@
 package domain;
-import java.io.Serializable;
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * Fachada del dominio (patron Facade).
@@ -222,7 +222,10 @@ public class Game implements Serializable{
 
         // el balon rebota contra los bordes y se frena si va muy lento
         ball.bounceInBounds(WIDTH, BALL_DIAMETER, BALL_GROUND);
-
+        
+        // balones falsos del poder Illusion (se mueven y desaparecen solos)
+        match.updateFakeBalls(deltaTime, WIDTH, BALL_DIAMETER, BALL_GROUND);
+        
         // limites de los jugadores (que no se salgan de la cancha)
         leftPlayer.clampToField(WIDTH, PLAYER_DIAMETER);
         rightPlayer.clampToField(WIDTH, PLAYER_DIAMETER);
@@ -312,7 +315,7 @@ public class Game implements Serializable{
 
     //DATOS PARA DIBUJAR (solo lectura)
 
-    public double getLeftPlayerX(){ 
+        public double getLeftPlayerX(){ 
         return leftPlayer.getPositionX(); 
     }
     public double getLeftPlayerY() { 
@@ -324,6 +327,16 @@ public class Game implements Serializable{
     public double getRightPlayerY(){ 
         return rightPlayer.getPositionY(); 
     }
+
+    /** Posiciones (x,y) de los balones falsos del poder Illusion, para que la vista los dibuje. */
+    public java.util.List<double[]> getFakeBalls(){
+        java.util.List<double[]> out = new java.util.ArrayList<>();
+        for (Ball fake : match.getFakeBalls()) {
+            out.add(new double[]{ fake.getPositionX(), fake.getPositionY() });
+        }
+        return out;
+    }
+
     public double getBallX(){ 
         return ball.getPositionX(); 
     }

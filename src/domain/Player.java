@@ -41,43 +41,31 @@ public class Player implements Serializable{
     }
 
     public void moveLeft() {
-        if(!stunned && !"unconscious".equals(currentEffect)){
-            if ("electrocuted".equals(currentEffect)) {
-                positionX -= getMoveSpeed() * 0.5;
-            } else {
-                positionX -= getMoveSpeed();
-            }
-        }
+        move(-1);
     }
 
     public void moveRight() {
-        if(!stunned && !"unconscious".equals(currentEffect)){
-            if ("electrocuted".equals(currentEffect)) {
-                positionX += getMoveSpeed() * 0.5;
-            } else {
-                positionX += getMoveSpeed();
-            }
-        }
+        move(1);
     }
+
     /**
      * Mueve al jugador en horizontal. dir = -1 izquierda, +1 derecha.
      * Electrocutado (poder Lightning): se mueve a la mitad de velocidad.
      * Confundido (poder Illusion): los controles se invierten.
      */
-    private void move(int dir) {
+        private void move(int dir) {
         if (stunned || "unconscious".equals(currentEffect)) {
             return;
         }
-        double step = speed;
+        double step = getMoveSpeed();
         if ("electrocuted".equals(currentEffect)) {
-            step = speed * 0.5;
+            step = getMoveSpeed() * 0.5;
         }
         if ("confused".equals(currentEffect)) {
-            dir = -dir;   // los controles quedan al reves
+            dir = -dir;   //los controles quedan al reves
         }
         positionX += dir * step;
     }
-
 
     /**
      * El jugador salta solo si esta en el suelo. Pone la velocidad en y

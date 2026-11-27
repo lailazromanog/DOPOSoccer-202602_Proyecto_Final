@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShopPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">ShopPanel.java</span></div><h1>ShopPanel.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.Profile;
+import domain.ProfileStore;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+
+/**
+ * Pantalla &quot;Mejorar estadisticas&quot; (la tienda de puntos).
+ * Lee y modifica el progreso (ProfileStore) que mantiene GameGUI.
+ */
+public class ShopPanel extends JPanel {
+    private GameGUI gui;
+    private ProfileStore store;
+
+    /**
+     * Crea la pantalla de mejoras de estadísticas, leyendo el progreso
+     * de ambos jugadores desde la ventana principal.
+     * @param gui ventana principal, de donde se toma el progreso de los jugadores
+     */
+<span class="nc" id="L36">    public ShopPanel(GameGUI gui) {</span>
+<span class="nc" id="L37">        this.gui = gui;</span>
+<span class="nc" id="L38">        this.store = gui.getProfileStore();</span>
+<span class="nc" id="L39">        setBackground(new Color(0x0e1a24));</span>
+<span class="nc" id="L40">        setLayout(new GridBagLayout());</span>
+<span class="nc" id="L41">        setPreferredSize(new Dimension(960, 560));</span>
+<span class="nc" id="L42">        buildUI();</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * Arma de nuevo toda la pantalla a partir del progreso actual de
+     * los dos jugadores. Se llama al crear la pantalla y de nuevo
+     * después de cada mejora, para que los precios y los niveles
+     * mostrados queden al día.
+     */
+    private void buildUI() {
+<span class="nc" id="L52">        removeAll();</span>
+<span class="nc" id="L53">        JPanel card = new JPanel();</span>
+<span class="nc" id="L54">        card.setBackground(new Color(0x14212a));</span>
+<span class="nc" id="L55">        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L56">        card.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L57">                BorderFactory.createLineBorder(new Color(0xF28C28), 3, true),</span>
+<span class="nc" id="L58">                BorderFactory.createEmptyBorder(20, 32, 20, 32)));</span>
+
+<span class="nc" id="L60">        card.add(label(&quot;Mejorar estadisticas&quot;, new Font(&quot;Arial&quot;, Font.BOLD, 26), Color.WHITE));</span>
+<span class="nc" id="L61">        card.add(Box.createVerticalStrut(4));</span>
+<span class="nc" id="L62">        card.add(label(&quot;Cada nivel suma 10% sobre la base. Precio: 500, 1000, 2000...  Ganas 100 pts por victoria y 25 por derrota.&quot;,</span>
+                new Font(&quot;Arial&quot;, Font.PLAIN, 12), new Color(0xbcd4df)));
+<span class="nc" id="L64">        card.add(Box.createVerticalStrut(16));</span>
+
+<span class="nc" id="L66">        JPanel players = new JPanel(new GridLayout(1, 2, 20, 0));</span>
+<span class="nc" id="L67">        players.setOpaque(false);</span>
+<span class="nc" id="L68">        players.add(playerColumn(&quot;JUGADOR 1&quot;, store.getLeft(), new Color(0x213a5c)));</span>
+<span class="nc" id="L69">        players.add(playerColumn(&quot;JUGADOR 2&quot;, store.getRight(), new Color(0x5c2130)));</span>
+<span class="nc" id="L70">        card.add(players);</span>
+
+<span class="nc" id="L72">        card.add(Box.createVerticalStrut(16));</span>
+<span class="nc" id="L73">        RoundedButton back = new RoundedButton(&quot;Listo&quot;, new Color(0xF28C28));</span>
+<span class="nc" id="L74">        back.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 18));</span>
+<span class="nc" id="L75">        back.setMaximumSize(new Dimension(200, 44));</span>
+<span class="nc" id="L76">        back.setPreferredSize(new Dimension(200, 44));</span>
+<span class="nc" id="L77">        back.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+<span class="nc" id="L78">        back.addActionListener(new ActionListener(){</span>
+            /**
+             * Vuelve a la pantalla de configuración del partido.
+             * @param e evento de clic del botón listo
+             */
+<span class="nc" id="L83">            @Override public void actionPerformed(ActionEvent e){ gui.showConfig(); }</span>
+        });
+<span class="nc" id="L85">        card.add(back);</span>
+
+<span class="nc" id="L87">        add(card);</span>
+<span class="nc" id="L88">        revalidate();</span>
+<span class="nc" id="L89">        repaint();</span>
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Arma la columna de un jugador con su nombre, sus puntos
+     * acumulados y una fila por cada estadística que puede mejorar.
+     * @param name nombre del jugador a mostrar
+     * @param profile perfil persistente del jugador
+     * @param color color de fondo de la columna del jugador
+     * @return el panel con la columna armada
+     */
+    private JPanel playerColumn(String name, Profile profile, Color color) {
+<span class="nc" id="L101">        JPanel col = new JPanel();</span>
+<span class="nc" id="L102">        col.setBackground(color);</span>
+<span class="nc" id="L103">        col.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));</span>
+<span class="nc" id="L104">        col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));</span>
+
+<span class="nc" id="L106">        col.add(label(name + &quot;     &quot; + profile.getPoints() + &quot; pts&quot;, new Font(&quot;Arial&quot;, Font.BOLD, 18), Color.WHITE));</span>
+<span class="nc" id="L107">        col.add(Box.createVerticalStrut(12));</span>
+<span class="nc" id="L108">        col.add(statRow(profile, &quot;speed&quot;, &quot;SPEED&quot;, &quot;Velocidad +&quot; + (10 * (profile.getSpeed() - 1)) + &quot;%&quot;));</span>
+<span class="nc" id="L109">        col.add(Box.createVerticalStrut(8));</span>
+<span class="nc" id="L110">        col.add(statRow(profile, &quot;kick&quot;, &quot;KICK&quot;, &quot;Dano x&quot; + mult(profile.getKick())));</span>
+<span class="nc" id="L111">        col.add(Box.createVerticalStrut(8));</span>
+<span class="nc" id="L112">        col.add(statRow(profile, &quot;jump&quot;, &quot;JUMP&quot;, &quot;Salto +&quot; + (10 * (profile.getJump() - 1)) + &quot;%&quot;));</span>
+<span class="nc" id="L113">        col.add(Box.createVerticalStrut(8));</span>
+<span class="nc" id="L114">        col.add(statRow(profile, &quot;survival&quot;, &quot;SURVIVAL&quot;, &quot;Vida max &quot; + (100 + 10 * (profile.getSurvival() - 1))));</span>
+<span class="nc" id="L115">        return col;</span>
+    }
+
+    /**
+     * Arma la fila de una estadística del jugador: su nombre, su nivel
+     * actual, su detalle, y el botón para mejorarla, mostrando el
+     * precio del próximo nivel o la razón por la que no se puede
+     * mejorar todavía.
+     * @param profile perfil persistente del jugador dueño de la estadística
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @param name nombre de la estadística a mostrar
+     * @param detail detalle del efecto actual de la estadística, para mostrar
+     * @return el panel con la fila armada
+     */
+    private JPanel statRow(final Profile profile, final String stat, String name, String detail) {
+<span class="nc" id="L130">        JPanel row = new JPanel();</span>
+<span class="nc" id="L131">        row.setOpaque(false);</span>
+<span class="nc" id="L132">        row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));</span>
+
+<span class="nc" id="L134">        JPanel info = new JPanel();</span>
+<span class="nc" id="L135">        info.setOpaque(false);</span>
+<span class="nc" id="L136">        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L137">        info.add(left(label(name + &quot;  (nivel &quot; + levelOf(profile, stat) + &quot;)&quot;, new Font(&quot;Arial&quot;, Font.BOLD, 14), Color.WHITE)));</span>
+<span class="nc" id="L138">        info.add(left(label(detail, new Font(&quot;Arial&quot;, Font.PLAIN, 11), new Color(0xbcd4df))));</span>
+
+<span class="nc" id="L140">        JButton btn = new JButton();</span>
+<span class="nc" id="L141">        btn.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 12));</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (profile.isMax(stat)) {</span>
+<span class="nc" id="L143">            btn.setText(&quot;MAXIMO&quot;);</span>
+<span class="nc" id="L144">            btn.setEnabled(false);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        } else if (profile.canUpgrade(stat)) {</span>
+<span class="nc" id="L146">            btn.setText(&quot;MEJORAR - &quot; + profile.upgradeCost(stat));</span>
+        } else {
+<span class="nc" id="L148">            btn.setText(&quot;FALTAN &quot; + (profile.upgradeCost(stat) - profile.getPoints()) + &quot; pts&quot;);</span>
+<span class="nc" id="L149">            btn.setEnabled(false);</span>
+        }
+
+<span class="nc" id="L152">        final String statName = name;</span>
+<span class="nc" id="L153">        btn.addActionListener(new ActionListener(){</span>
+            /**
+             * Pregunta al jugador si confirma gastar los puntos para
+             * mejorar la estadística y, si acepta, la sube de nivel y
+             * vuelve a armar la pantalla con el progreso al día.
+             * @param e evento de clic del botón mejorar
+             */
+            @Override public void actionPerformed(ActionEvent e){
+<span class="nc" id="L161">                int cost = profile.upgradeCost(stat);</span>
+<span class="nc" id="L162">                int option = JOptionPane.showConfirmDialog(ShopPanel.this,</span>
+<span class="nc" id="L163">                        &quot;Gastar &quot; + cost + &quot; pts para subir &quot; + statName + &quot; al nivel &quot; + (levelOf(profile, stat) + 1) + &quot;?&quot;,</span>
+                        &quot;Mejorar estadistica&quot;, JOptionPane.YES_NO_OPTION);
+<span class="nc bnc" id="L165" title="All 2 branches missed.">                if (option == JOptionPane.YES_OPTION) {</span>
+<span class="nc" id="L166">                    profile.upgrade(stat);</span>
+<span class="nc" id="L167">                    buildUI();        // refresca la pantalla</span>
+                }
+<span class="nc" id="L169">            }</span>
+        });
+
+<span class="nc" id="L172">        row.add(info);</span>
+<span class="nc" id="L173">        row.add(Box.createHorizontalGlue());</span>
+<span class="nc" id="L174">        row.add(btn);</span>
+<span class="nc" id="L175">        return row;</span>
+    }
+
+    /**
+     * Entrega el nivel actual de la estadística dada del perfil.
+     * @param p perfil del que se consulta la estadística
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return el nivel actual de esa estadística
+     */
+    private int levelOf(Profile p, String stat) {
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (stat.equals(&quot;speed&quot;)) {</span>
+<span class="nc" id="L186">            return p.getSpeed();</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        } else if (stat.equals(&quot;kick&quot;)) {</span>
+<span class="nc" id="L188">            return p.getKick();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        } else if (stat.equals(&quot;jump&quot;)) {</span>
+<span class="nc" id="L190">            return p.getJump();</span>
+        } else {
+<span class="nc" id="L192">            return p.getSurvival();</span>
+        }
+    }
+
+    /**
+     * Calcula el multiplicador de daño que corresponde al nivel de
+     * kick dado, para mostrarlo en el detalle de esa estadística.
+     * @param kick nivel de la estadística kick
+     * @return el multiplicador de daño con un decimal, listo para mostrar
+     */
+    private String mult(int kick) {
+<span class="nc" id="L203">        return String.format(&quot;%.1f&quot;, 1 + 0.10 * (kick - 1));</span>
+    }
+
+    /**
+     * Crea una etiqueta de texto con la fuente y el color dados, para
+     * no repetir la misma configuración en cada etiqueta de la pantalla.
+     * @param text texto de la etiqueta
+     * @param font fuente de la etiqueta
+     * @param color color del texto de la etiqueta
+     * @return la etiqueta creada
+     */
+    private JLabel label(String text, Font font, Color color) {
+<span class="nc" id="L215">        JLabel l = new JLabel(text);</span>
+<span class="nc" id="L216">        l.setFont(font);</span>
+<span class="nc" id="L217">        l.setForeground(color);</span>
+<span class="nc" id="L218">        l.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+<span class="nc" id="L219">        return l;</span>
+    }
+
+    /**
+     * Alinea la etiqueta dada hacia la izquierda, para las filas de
+     * información que no deben quedar centradas.
+     * @param l etiqueta a alinear
+     * @return la misma etiqueta, ya alineada a la izquierda
+     */
+    private JLabel left(JLabel l) {
+<span class="nc" id="L229">        l.setAlignmentX(Component.LEFT_ALIGNMENT);</span>
+<span class="nc" id="L230">        return l;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

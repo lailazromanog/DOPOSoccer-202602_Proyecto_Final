@@ -6,12 +6,17 @@ import java.io.Serializable;
  * Cada subclase concreta define el efecto propio que produce sobre el
  * rival cuando se activa, siguiendo el esquema de personaje y poder
  * descrito en los requisitos del juego.
+ * Todo tiro de poder ocurre en dos momentos. Primero el disparo,
+ * cuando el jugador con el aura activa toca el balón y el poder define
+ * cómo sale el balón. Después el impacto, solo si el balón en vuelo
+ * golpea al rival, y ahí se aplican el daño y el efecto. Si el balón
+ * entra al arco sin tocar al rival, no hay daño ni efecto.
  *
  * Punto de extensión: para agregar un tiro de poder nuevo basta con
  * crear una subclase propia que defina su daño base, la duración de
- * su efecto y la acción que ejecuta, y registrarla en la fábrica de
- * personajes. El resto del juego trabaja contra esta clase y no
- * necesita cambios.
+ * su efecto, la forma en que sale el balón y el efecto que deja en el
+ * rival, y registrarla en la fábrica de personajes. El cálculo del
+ * daño ya lo hace esta clase para todos los poderes.
  */
 public abstract class Power implements Serializable{
     private String name;
@@ -74,13 +79,53 @@ public abstract class Power implements Serializable{
     public void setActive(boolean active) {
         this.active = active;
     }
+    /**
+     * Calcula el daño real que este tiro de poder le hace al rival,
+     * multiplicando su daño base por el multiplicador de la estadística
+     * kick del jugador que lo ejecuta.
+     * @param attacker jugador que ejecutó el tiro de poder
+     * @return el daño real que recibe el rival
+     */
+    public double calculateDamage(Player attacker) {
+        double multiplier = attacker.getMultiplicadorKick();
+        double damage = damageTiro * multiplier;
+        return damage;
+    }
 
     /**
-     * Ejecuta el efecto propio de este tiro de poder sobre el rival del
-     * atacante dentro del partido en curso. Cada subclase concreta define
-     * el daño adicional, el empuje o el estado que aplica al oponente.
+     * Aplica el impacto de este tiro de poder cuando el balón golpea al
+     * rival: primero le resta el daño real del tiro y después le deja el
+     * efecto propio del poder, que reemplaza a cualquier efecto que el
+     * rival tuviera antes.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que ejecutó el tiro de poder
+     * @param opponent jugador rival que fue golpeado por el tiro de poder
+     */
+    public void hit(Match match, Player attacker, Player opponent) {
+        // el daño es el mismo calculo para todos los poderes
+        double damage = calculateDamage(attacker);
+        opponent.takeDamage(damage);
+
+        // el efecto lo define cada poder concreto
+        applyHitEffect(match, attacker, opponent);
+    }
+
+    /**
+     * Define la forma en que sale el balón cuando el jugador con el aura
+     * activa lo toca. Cada subclase concreta fija la trayectoria propia
+     * de su tiro, sin aplicar todavía ningún daño ni efecto al rival.
      * @param match partido en el que se ejecuta el tiro de poder
      * @param attacker jugador que activa y ejecuta el tiro de poder
      */
-    public abstract void activate(Match match, Player attacker);
+    public abstract void shoot(Match match, Player attacker);
+
+    /**
+     * Deja sobre el rival el efecto propio de este tiro de poder, una
+     * vez que el balón ya lo golpeó y ya recibió el daño. Cada subclase
+     * concreta define el estado, el empuje o el lanzamiento que aplica.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que ejecutó el tiro de poder
+     * @param opponent jugador rival que fue golpeado por el tiro de poder
+     */
+    protected abstract void applyHitEffect(Match match, Player attacker, Player opponent);
 }

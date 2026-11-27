@@ -29,6 +29,9 @@ public class Player implements Serializable{
     private double velocityY; //velocidad vertical, para la fisica del salto del jugador
     private boolean onGround = true; //para que salga solo si esta en el suelo
     private double knockbackVX = 0; //empuje horizontal (lo usa el poder Aura Azul)
+    
+    // cuanto conserva el empuje en cada frame, se va frenando poco a poco
+    private static final double KNOCKBACK_FRICTION = 0.96;
 
     /**
      * Crea un jugador con sus estadísticas en el valor mínimo, su vida
@@ -69,11 +72,13 @@ public class Player implements Serializable{
     }
 
     /**
-     * Mueve al jugador en horizontal. dir = -1 izquierda, +1 derecha.
-     * Electrocutado (poder Lightning): se mueve a la mitad de velocidad.
-     * Confundido (poder Illusion): los controles se invierten.
+     * Desplaza al jugador en horizontal hacia el lado indicado. Si está
+     * aturdido o inconsciente no se mueve, si está electrocutado avanza
+     * a la mitad de su velocidad y si está confundido avanza hacia el
+     * lado contrario al pedido.
+     * @param dir sentido del movimiento, menos uno para la izquierda y uno para la derecha
      */
-        private void move(int dir) {
+    private void move(int dir) {
         if (stunned || "unconscious".equals(currentEffect)) {
             return;
         }
@@ -117,8 +122,9 @@ public class Player implements Serializable{
     /**
      * Aplica un empuje horizontal al jugador, para el efecto del tiro
      * de poder Aura Azul. El empuje se desliza y se frena solo con el
-     * paso de los frames.
-     * @param vx velocidad horizontal del empuje aplicado al jugador
+     * paso de los frames, y se suma al movimiento propio del jugador,
+     * que puede seguir moviéndose mientras lo empujan.
+     * @param vx velocidad horizontal inicial del empuje aplicado al jugador
      */
     public void applyKnockback(double vx) {
         this.knockbackVX = vx;
@@ -135,7 +141,7 @@ public class Player implements Serializable{
         //empuje horizontal (knockback): se desliza y se va frenando
         if(knockbackVX != 0){
             positionX += knockbackVX;
-            knockbackVX *= 0.85;
+            knockbackVX *= KNOCKBACK_FRICTION;
             if(Math.abs(knockbackVX) < 0.5){
                 knockbackVX = 0;
             }
@@ -311,13 +317,16 @@ public class Player implements Serializable{
         return 100 * (1 + 0.10 * (survival - 1));
     }
 
-    /**
-     * Aplica al jugador el efecto dado durante la duración dada,
-     * reemplazando cualquier efecto que tuviera antes.
-     * @param effect nombre del efecto a aplicar, electrocutado, inconsciente o confundido
+    /*
+    * Aplica al jugador el efecto dado durante la duración dada,
+     * reemplazando cualquier efecto que tuviera antes junto con el
+     * empuje que ese efecto le estuviera dejando.
+     * @param effect nombre del efecto a aplicar, electrocutado, inconsciente, confundido o empujado
      * @param duration duración en segundos del efecto
      */
     public void applyEffect(String effect, double duration) {
+        // los efectos no se acumulan: el nuevo reemplaza al anterior y quita cualquier empuje viejo
+        this.knockbackVX = 0;
         this.currentEffect = effect;
         this.effectTimer = duration;
     }
@@ -339,11 +348,13 @@ public class Player implements Serializable{
     }
 
     /**
-     * Quita cualquier efecto activo del jugador.
+     * Quita cualquier efecto activo del jugador, junto con el empuje que
+     * ese efecto le estuviera dejando.
      */
     public void clearEffect() {
         this.currentEffect = null;
         this.effectTimer = 0;
+        this.knockbackVX = 0;
     }
 
     /**

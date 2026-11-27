@@ -17,23 +17,26 @@ public class Lightning extends Power {
     }
 
     /**
-     * Aplica daño al rival del atacante y lo deja electrocutado durante
-     * la duración propia de este tiro de poder.
+     * Deja el balón con la trayectoria que ya traía al ser tocado por el
+     * jugador con el aura activa. La trayectoria propia de este tiro se
+     * define cuando se trabaje este poder.
      * @param match partido en el que se ejecuta el tiro de poder
      * @param attacker jugador que activa y ejecuta el tiro de poder
      */
     @Override
-    public void activate(Match match, Player attacker) {
-        Player opponent;
-        if(attacker == match.getLeftPlayer()){
-            opponent = match.getRightPlayer();
-        } else {
-            opponent = match.getLeftPlayer();
-        }
+    public void shoot(Match match, Player attacker) {
+        // por ahora el balón sigue con la trayectoria que traía
+    }
 
-        double damage = getDamageTiro() * attacker.getMultiplicadorKick();
-        opponent.takeDamage(damage);
-
+    /**
+     * Deja al rival golpeado electrocutado durante la duración propia
+     * de este tiro de poder.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que ejecutó el tiro de poder
+     * @param opponent jugador rival que fue golpeado por el tiro de poder
+     */
+    @Override
+    protected void applyHitEffect(Match match, Player attacker, Player opponent) {
         opponent.applyEffect("electrocuted", getEffectDuration());
     }
 }

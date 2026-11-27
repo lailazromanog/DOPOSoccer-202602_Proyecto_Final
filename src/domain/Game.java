@@ -223,7 +223,8 @@ public class Game implements Serializable{
      * Avanza el juego un paso, aplicando toda la física y las reglas
      * del partido para ese frame: la decisión del bot si corresponde,
      * la gravedad y los efectos de los jugadores, el choque entre
-     * ellos, el avance del balón, los goles, los tiros de poder, los
+     * ellos, el avance del balón, los goles, el impacto y el disparo de
+     * los tiros de poder, el tiempo de vuelo del tiro de poder, los
      * límites de la cancha y la condición de victoria del partido. No
      * hace nada si el partido ya terminó.
      * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
@@ -251,17 +252,22 @@ public class Game implements Serializable{
         rightPlayer.getPowerBar().update(deltaTime);
         leftPlayer.updateEffect(deltaTime);
         rightPlayer.updateEffect(deltaTime);
-
+        
+        
         // choque entre jugadores
         playerCollision();
 
         //el balon avanza (se mueve con su gravedad y su friccion)
         ball.advance();
 
-        // gol
+        // gol, si entra un tiro de poder el gol cuenta pero sin daño ni efecto
         checkGoal();
 
-        // si un jugador con aura toca el balon, se ejecuta su poder
+        // impacto: si hay un tiro de poder en vuelo y el balon toca al rival, se aplican daño y efecto
+        checkPowerShotHit();
+
+        // disparo: si un jugador con aura toca el balon, sale su tiro de poder
+
         if (ballTouches(leftPlayer)) {
             match.checkBallContact(leftPlayer);
         }
@@ -271,7 +277,11 @@ public class Game implements Serializable{
 
         // el balon rebota contra los bordes y se frena si va muy lento
         ball.bounceInBounds(WIDTH, BALL_DIAMETER, BALL_GROUND);
-        
+
+        // el tiro de poder en vuelo se termina solo si se agota su tiempo
+        match.updatePowerShot(deltaTime);
+
+
         // balones falsos del poder Illusion (se mueven y desaparecen solos)
         match.updateFakeBalls(deltaTime, WIDTH, BALL_DIAMETER, BALL_GROUND);
         
@@ -320,6 +330,23 @@ public class Game implements Serializable{
         if (Math.abs(playerCenterX - oppCenterX) < PLAYER_DIAMETER
                 && Math.abs(playerCenterY - oppCenterY) < PLAYER_DIAMETER) {
             match.checkKickContact(player, opponent);
+        }
+    }
+
+
+    /**
+     * Revisa si hay un tiro de poder en vuelo y si el balón toca al rival
+     * de quien lo disparó. Si lo toca, el partido aplica el daño y el
+     * efecto del poder y termina el tiro.
+     */
+    private void checkPowerShotHit() {
+        if (!match.isPowerShotActive()) {
+            return;
+        }
+        Player shooter = match.getPowerShooter();
+        Player opponent = match.getOpponentOf(shooter);
+        if (ballTouches(opponent)) {
+            match.onPowerShotHit();
         }
     }
 
@@ -431,8 +458,13 @@ public class Game implements Serializable{
      */
     public java.util.List<double[]> getFakeBalls(){
         java.util.List<double[]> out = new java.util.ArrayList<>();
-        for (Ball fake : match.getFakeBalls()) {
-            out.add(new double[]{ fake.getPositionX(), fake.getPositionY() });
+        java.util.List<Ball> fakes = match.getFakeBalls();
+        for (int i = 0; i < fakes.size(); i++) {
+            Ball fake = fakes.get(i);
+            double[] position = new double[2];
+            position[0] = fake.getPositionX();
+            position[1] = fake.getPositionY();
+            out.add(position);
         }
         return out;
     }
@@ -452,6 +484,65 @@ public class Game implements Serializable{
     public double getBallY(){
         return ball.getPositionY();
     }
+
+
+    /**
+     * Entrega la velocidad horizontal del balón, para que la presentación
+     * dibuje la estela del tiro de poder en la dirección correcta.
+     * @return la velocidad horizontal del balón
+     */
+    public double getBallVelocityX(){
+        return ball.getVelocityX();
+    }
+
+    /**
+     * Entrega la velocidad vertical del balón, para que la presentación
+     * dibuje la estela del tiro de poder en la dirección correcta.
+     * @return la velocidad vertical del balón
+     */
+    public double getBallVelocityY(){
+        return ball.getVelocityY();
+    }
+
+    /**
+     * Indica si hay un tiro de poder en vuelo en este momento.
+     * @return verdadero si hay un tiro de poder en vuelo, falso en caso contrario
+     */
+    public boolean isPowerShotActive(){
+        return match.isPowerShotActive();
+    }
+
+    /**
+     * Entrega el nombre del tiro de poder que está en vuelo, para que la
+     * presentación elija cómo dibujar el balón.
+     * @return el nombre del tiro de poder en vuelo, o nulo si no hay ninguno
+     */
+    public String getPowerShotName(){
+        if (match.isPowerShotActive()) {
+            return match.getPowerShooter().getCharacter().getPower().getName();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Entrega el nombre del efecto activo del jugador izquierdo, para que
+     * la presentación lo muestre sobre el personaje.
+     * @return el nombre del efecto activo del jugador izquierdo, o nulo si no tiene ninguno
+     */
+    public String getLeftPlayerEffect(){
+        return leftPlayer.getCurrentEffect();
+    }
+
+    /**
+     * Entrega el nombre del efecto activo del jugador derecho, para que
+     * la presentación lo muestre sobre el personaje.
+     * @return el nombre del efecto activo del jugador derecho, o nulo si no tiene ninguno
+     */
+    public String getRightPlayerEffect(){
+        return rightPlayer.getCurrentEffect();
+    }
+
 
     /**
      * Indica si el jugador izquierdo tiene el aura de su poder activa.

@@ -238,16 +238,16 @@ public class FieldPanel extends JPanel {
         // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
         drawCharacter(g, p1Head, p1Shoe,
                 (int) game.getLeftPlayerX(), (int) game.getLeftPlayerY(),
-                game.isLeftPlayerAura(), 1);
+                game.isLeftPlayerAura(), 1, game.getLeftPlayerEffect());
         drawCharacter(g, p2Head, p2Shoe,
                 (int) game.getRightPlayerX(), (int) game.getRightPlayerY(),
-                game.isRightPlayerAura(), -1);
+                game.isRightPlayerAura(), -1, game.getRightPlayerEffect());
     }
 
     /**
      * Dibuja un personaje en la posición dada: primero su aura si la
-     * tiene activa, para que quede detrás, y luego su cabeza y su
-     * zapato por separado.
+     * tiene activa, para que quede detrás, luego su cabeza y su zapato
+     * por separado, y al final el brillo de su efecto activo encima.
      * @param g contexto gráfico sobre el que se dibuja
      * @param head imagen de la cabeza del personaje
      * @param shoe imagen del zapato del personaje
@@ -255,8 +255,9 @@ public class FieldPanel extends JPanel {
      * @param y posición vertical del personaje
      * @param aura verdadero si el personaje tiene el aura de su poder activa
      * @param frontDir dirección hacia la que mira el personaje, uno hacia la derecha o menos uno hacia la izquierda
+     * @param effect nombre del efecto activo del personaje, o nulo si no tiene ninguno
      */
-    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir){
+    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir, String effect){
         int d = PLAYER_DIAMETER;
         int bottom = y + d;          // el piso del jugador (abajo del hitbox)
         int cx = x + d / 2;          // centro horizontal
@@ -286,17 +287,100 @@ public class FieldPanel extends JPanel {
             int shoeY = bottom - shoeH;
             g.drawImage(shoe, shoeX, shoeY, shoeW, shoeH, this);
         }
+        
+        // brillo del efecto activo, encima del personaje para que se note
+        drawEffect(g, effect, x, y);
     }
 
     /**
-     * Dibuja el balón en su posición actual.
+     * Dibuja encima del personaje un brillo semitransparente con el color
+     * del efecto que tiene activo, para que ambos jugadores vean que está
+     * bajo un efecto. No dibuja nada si el personaje no tiene efecto o si
+     * el efecto todavía no tiene un color asignado.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param effect nombre del efecto activo del personaje, o nulo si no tiene ninguno
+     * @param x posición horizontal del personaje
+     * @param y posición vertical del personaje
+     */
+    private void drawEffect(Graphics g, String effect, int x, int y){
+        if(effect == null){
+            return;
+        }
+        Color color = effectColor(effect);
+        if(color == null){
+            return;
+        }
+        int d = PLAYER_DIAMETER;
+        int glowSize = (int)(d * 1.3);                 // un poco mas grande que el jugador
+        int glowX = x + d / 2 - glowSize / 2;          // centrado en horizontal
+        int glowY = y + d / 2 - glowSize / 2;          // centrado en el cuerpo
+        g.setColor(color);
+        g.fillOval(glowX, glowY, glowSize, glowSize);
+    }
+
+    /**
+     * Entrega el color semitransparente con el que se dibuja el efecto
+     * dado sobre el personaje. Para que un efecto nuevo se vea basta con
+     * agregarle aquí su color.
+     * @param effect nombre del efecto activo del personaje
+     * @return el color del efecto, o nulo si el efecto no tiene un color asignado
+     */
+    private Color effectColor(String effect){
+        if(effect.equals("pushed")){
+            return new Color(60, 140, 255, 110);      // azul del Aura Azul
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Entrega el color con el que se dibuja el balón mientras viaja el
+     * tiro de poder dado. Para que un tiro nuevo se vea basta con
+     * agregarle aquí su color.
+     * @param shotName nombre del tiro de poder en vuelo
+     * @return el color del tiro de poder, o nulo si el tiro no tiene un color asignado
+     */
+    private Color shotColor(String shotName){
+        if(shotName.equals("Blue Aura")){
+            return new Color(60, 140, 255);           // azul del Aura Azul
+        } else {
+            return null;
+        }
+    }
+    
+
+        /**
+     * Dibuja el balón en su posición actual. Si hay un tiro de poder en
+     * vuelo con color asignado, dibuja primero una estela detrás del
+     * balón y pinta el balón con el color de ese tiro.
      * @param g contexto gráfico sobre el que se dibuja
      */
     private void drawBall(Graphics g){
         int d = BALL_DIAMETER;
         int x = (int) game.getBallX();
         int y = (int) game.getBallY();
-        g.setColor(Color.WHITE);
+
+        // color del tiro de poder en vuelo, si lo hay
+        Color shot = null;
+        if(game.isPowerShotActive()){
+            shot = shotColor(game.getPowerShotName());
+        }
+
+        if(shot != null){
+            // estela: circulos cada vez mas transparentes hacia atras del balon
+            double vx = game.getBallVelocityX();
+            double vy = game.getBallVelocityY();
+            for(int i = 5; i >= 1; i--){
+                int trailX = (int)(x - vx * i * 0.8);
+                int trailY = (int)(y - vy * i * 0.8);
+                int alpha = 150 - i * 25;
+                g.setColor(new Color(shot.getRed(), shot.getGreen(), shot.getBlue(), alpha));
+                g.fillOval(trailX, trailY, d, d);
+            }
+            g.setColor(shot);
+        } else {
+            g.setColor(Color.WHITE);
+        }
         g.fillOval(x, y, d, d);
         g.setColor(Color.BLACK);
         g.drawOval(x, y, d, d);

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Illusion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Illusion.java</span></div><h1>Illusion.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Tiro de poder del personaje de Estados Unidos.
+ * El balón se divide en ocho balones idénticos, uno real y siete
+ * señuelos, y si golpea al rival lo deja confundido sin saber cuál es
+ * el balón real mientras dura el efecto.
+ */
+public class Illusion extends Power {
+    /**
+     * Crea el tiro de poder Ilusión con su daño base y la duración del
+     * efecto de confusión que deja sobre el rival.
+     */
+    public Illusion() {
+<span class="fc" id="L18">        super(&quot;Illusion&quot;, 30, 2.5);</span>
+<span class="fc" id="L19">    }</span>
+
+    /**
+     * Aplica daño al rival del atacante, crea los balones señuelo
+     * idénticos al balón real y los entrega al partido en curso para
+     * que los actualice y los muestre durante la duración propia de
+     * este tiro de poder.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que activa y ejecuta el tiro de poder
+     */
+    @Override
+    public void activate(Match match, Player attacker) {
+        Player opponent;
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if(attacker == match.getLeftPlayer()){</span>
+<span class="fc" id="L33">            opponent = match.getRightPlayer();</span>
+        } else {
+<span class="nc" id="L35">            opponent = match.getLeftPlayer();</span>
+        }
+
+<span class="fc" id="L38">        double damage = getDamageTiro() * attacker.getMultiplicadorKick();</span>
+<span class="fc" id="L39">        opponent.takeDamage(damage);</span>
+
+        // efecto Illusion: el balon se divide en 8 (1 real + 7 senuelos identicos).
+        // El poder CREA sus propios senuelos; Match solo los guarda y los actualiza.
+<span class="fc" id="L43">        Ball real = match.getBall();</span>
+<span class="fc" id="L44">        List&lt;Ball&gt; fakes = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        for (int i = 0; i &lt; 7; i++) {</span>
+<span class="fc" id="L46">            Ball fake = new Ball();</span>
+<span class="fc" id="L47">            fake.setPositionX(real.getPositionX());</span>
+<span class="fc" id="L48">            fake.setPositionY(real.getPositionY());</span>
+<span class="fc" id="L49">            double angle = Math.random() * 2 * Math.PI;</span>
+<span class="fc" id="L50">            double speed = 9 + Math.random() * 6;</span>
+<span class="fc" id="L51">            fake.setVelocityX(Math.cos(angle) * speed);</span>
+<span class="fc" id="L52">            fake.setVelocityY(Math.sin(angle) * speed);</span>
+<span class="fc" id="L53">            fakes.add(fake);</span>
+        }
+<span class="fc" id="L55">        match.addFakeBalls(fakes, getEffectDuration());</span>
+<span class="fc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

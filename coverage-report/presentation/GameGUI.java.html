@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameGUI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">GameGUI.java</span></div><h1>GameGUI.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.DOPOSoccerException;
+import domain.Game;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+/**
+ * Ventana principal de DOPOSoccer.
+ *
+ * Maneja el flujo de pantallas (configuracion -&gt; personajes -&gt; cancha) y la
+ * resolucion. Ya NO arma el partido ni crea personajes: eso ahora lo hace la
+ * fachada del dominio (Game). GameGUI solo le  pide un Game listo y se lo pasa
+ * al FieldPanel.
+ */
+public class GameGUI extends JFrame {
+    private static GameGUI instance;
+    private ConfigPanel configPanel;
+    private domain.ProfileStore profileStore;
+<span class="nc" id="L20">    private int resW = 769;   // resolucion elegida (por defecto mediana)</span>
+<span class="nc" id="L21">    private int resH = 450;</span>
+
+    /**
+     * Crea la ventana principal con un progreso nuevo para ambos
+     * jugadores y prepara sus elementos iniciales.
+     */
+<span class="nc" id="L27">    private GameGUI() {</span>
+<span class="nc" id="L28">        profileStore = new domain.ProfileStore(); //carga el progreso guardado</span>
+<span class="nc" id="L29">        prepareElements();</span>
+<span class="nc" id="L30">    }</span>
+
+    /**
+     * Entrega la única instancia de la ventana principal, creándola la
+     * primera vez que se pide.
+     * @return la instancia única de la ventana principal
+     */
+    public static GameGUI getInstance(){
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        if(instance == null){</span>
+<span class="nc" id="L39">            instance = new GameGUI();</span>
+        }
+<span class="nc" id="L41">        return instance;</span>
+    }
+
+    /**
+     * Prepara el título, el tamaño y el panel inicial de la ventana,
+     * mostrando primero la pantalla de configuración.
+     */
+    private void prepareElements() {
+<span class="nc" id="L49">        setTitle(&quot;DOPOSoccer&quot;);</span>
+<span class="nc" id="L50">        setDefaultCloseOperation(EXIT_ON_CLOSE);</span>
+<span class="nc" id="L51">        setResizable(false);</span>
+
+<span class="nc" id="L53">        configPanel = new ConfigPanel(this);</span>
+<span class="nc" id="L54">        add(configPanel);</span>
+
+<span class="nc" id="L56">        pack();</span>
+<span class="nc" id="L57">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L58">    }</span>
+
+    /**
+     * Guarda la resolución elegida y muestra la pantalla de selección
+     * de personajes con el tipo de partido y el rival ya definidos.
+     * @param matchType tipo de partido elegido, por tiempo o por goles
+     * @param value minutos de duración del partido o goles para ganar, según el tipo de partido
+     * @param opponent modalidad del jugador 2, humano o perfil de máquina
+     * @param resW ancho de la ventana según la resolución elegida
+     * @param resH alto de la ventana según la resolución elegida
+     */
+    public void showCharacterSelect(String matchType, int value,String opponent, int resW, int resH) {
+<span class="nc" id="L70">        this.resW = resW;</span>
+<span class="nc" id="L71">        this.resH = resH;</span>
+<span class="nc" id="L72">        CharacterSelectPanel characterPanel = new CharacterSelectPanel(this, matchType, value, opponent);</span>
+<span class="nc" id="L73">        setContentPane(characterPanel);</span>
+<span class="nc" id="L74">        revalidate();</span>
+<span class="nc" id="L75">        pack();</span>
+<span class="nc" id="L76">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L77">    }</span>
+
+    /**
+     * Lo llama CharacterSelectPanel al dar &quot;JUGAR&quot;: crea la fachada y
+     * entra a la cancha. Si alguno de los datos del partido no es
+     * reconocido por el dominio, muestra el error al usuario, lo
+     * registra en el log y se queda en la pantalla actual.
+     * @param matchType tipo de partido elegido, por tiempo o por goles
+     * @param value minutos de duración del partido o goles para ganar, según el tipo de partido
+     * @param country1 país del personaje del jugador 1
+     * @param country2 país del personaje del jugador 2
+     * @param opponent modalidad del jugador 2, humano o perfil de máquina
+     */
+    public void startGame(String matchType, int value, String country1, String country2, String opponent) {
+        try {
+<span class="nc" id="L92">            Game game = new Game(matchType, value, country1, country2, opponent, profileStore.getLeft(), profileStore.getRight());</span>
+<span class="nc" id="L93">            FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);</span>
+<span class="nc" id="L94">            setContentPane(fieldPanel);</span>
+<span class="nc" id="L95">            revalidate();</span>
+<span class="nc" id="L96">            pack();</span>
+<span class="nc" id="L97">            setLocationRelativeTo(null);</span>
+<span class="nc" id="L98">            fieldPanel.requestFocusInWindow();</span>
+<span class="nc" id="L99">        } catch (DOPOSoccerException ex) {</span>
+<span class="nc" id="L100">            GameLogger.error(&quot;No se pudo crear el partido&quot;, ex);</span>
+<span class="nc" id="L101">            JOptionPane.showMessageDialog(this, ex.getMessage(), &quot;Error&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L102">        }</span>
+<span class="nc" id="L103">    }</span>
+
+    /**
+     * Entra a la cancha con un partido ya cargado desde archivo, con
+     * la resolución dada.
+     * @param game partido ya cargado desde archivo
+     * @param resW ancho de la ventana según la resolución elegida
+     * @param resH alto de la ventana según la resolución elegida
+     */
+    public void openGame(Game game, int resW, int resH) {
+<span class="nc" id="L113">        this.resW = resW;</span>
+<span class="nc" id="L114">        this.resH = resH;</span>
+<span class="nc" id="L115">        FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);</span>
+<span class="nc" id="L116">        setContentPane(fieldPanel);</span>
+<span class="nc" id="L117">        revalidate();</span>
+<span class="nc" id="L118">        pack();</span>
+<span class="nc" id="L119">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L120">        fieldPanel.requestFocusInWindow();</span>
+<span class="nc" id="L121">    }</span>
+
+    /**
+     * Muestra la pantalla de fin de partido con el resultado del
+     * partido dado.
+     * @param game partido que acaba de terminar
+     */
+    public void showEndScreen(Game game) {
+<span class="nc" id="L129">        setContentPane(new EndPanel(this, game));</span>
+<span class="nc" id="L130">        revalidate();</span>
+<span class="nc" id="L131">        pack();</span>
+<span class="nc" id="L132">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L133">    }</span>
+
+    /**
+     * Muestra la tienda de mejoras de estadísticas.
+     */
+    public void showShop() {
+<span class="nc" id="L139">        setContentPane(new ShopPanel(this));</span>
+<span class="nc" id="L140">        revalidate();</span>
+<span class="nc" id="L141">        pack();</span>
+<span class="nc" id="L142">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L143">    }</span>
+
+    /**
+     * Vuelve a la pantalla de configuración del partido.
+     */
+    public void showConfig() {
+<span class="nc" id="L149">        setContentPane(new ConfigPanel(this));</span>
+<span class="nc" id="L150">        revalidate();</span>
+<span class="nc" id="L151">        pack();</span>
+<span class="nc" id="L152">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L153">    }</span>
+
+
+    /**
+     * Entrega el almacén de progreso de los dos jugadores, para que la
+     * pantalla de mejoras pueda consultarlo y modificarlo.
+     * @return el almacén de progreso de los dos jugadores
+     */
+    public domain.ProfileStore getProfileStore() {
+<span class="nc" id="L162">        return profileStore;</span>
+    }
+
+    /**
+     * Punto de entrada de la aplicación: crea la ventana principal y la muestra.
+     * @param args argumentos de línea de comandos, sin uso en este programa
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L170">        GameGUI ventana = GameGUI.getInstance();</span>
+<span class="nc" id="L171">        ventana.setVisible(true);</span>
+<span class="nc" id="L172">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

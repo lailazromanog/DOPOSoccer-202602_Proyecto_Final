@@ -1,14 +1,30 @@
 package domain;
 
+/**
+ * Tiro de poder del personaje de Corea del Sur.
+ * El balón sale recto y horizontal a alta velocidad, y si golpea al
+ * rival lo lanza hacia su propio arco mediante un empuje horizontal.
+ */
 public class BlueAura extends Power {
 
     private static final double POWER_SHOT_SPEED = 20; // tiro recto y horizontal, a alta velocidad
     private static final double KNOCKBACK = 20;        // empuje inicial del rival (se desliza y frena)
 
+    /**
+     * Crea el tiro de poder Aura Azul con su daño base y la duración
+     * del efecto de empuje que deja sobre el rival.
+     */
     public BlueAura() {
         super("Blue Aura", 40, 1.5);
     }
 
+    /**
+     * Lanza el balón en línea recta a alta velocidad hacia el arco
+     * contrario y, si golpea al rival, le aplica daño y lo empuja hacia
+     * su propio arco mediante un empuje horizontal que se frena con el tiempo.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que activa y ejecuta el tiro de poder
+     */
     @Override
     public void activate(Match match, Player attacker) {
         Player opponent;

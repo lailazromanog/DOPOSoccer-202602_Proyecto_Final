@@ -2,6 +2,7 @@ package presentation;
 
 import domain.DOPOSoccerException;
 import domain.Game;
+import domain.Progress;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -16,7 +17,7 @@ import javax.swing.JOptionPane;
 public class GameGUI extends JFrame {
     private static GameGUI instance;
     private ConfigPanel configPanel;
-    private domain.ProfileStore profileStore;
+    private Progress progress;
     private int resW = 769;   // resolucion elegida (por defecto mediana)
     private int resH = 450;
 
@@ -25,7 +26,7 @@ public class GameGUI extends JFrame {
      * jugadores y prepara sus elementos iniciales.
      */
     private GameGUI() {
-        profileStore = new domain.ProfileStore(); //carga el progreso guardado
+        progress = new Progress(); //progreso nuevo de ambos jugadores, vive mientras la aplicacion este abierta
         prepareElements();
     }
 
@@ -89,7 +90,7 @@ public class GameGUI extends JFrame {
      */
     public void startGame(String matchType, int value, String country1, String country2, String opponent) {
         try {
-            Game game = new Game(matchType, value, country1, country2, opponent, profileStore.getLeft(), profileStore.getRight());
+            Game game = progress.newGame(matchType, value, country1, country2, opponent);
             FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);
             setContentPane(fieldPanel);
             revalidate();
@@ -154,12 +155,12 @@ public class GameGUI extends JFrame {
 
 
     /**
-     * Entrega el almacén de progreso de los dos jugadores, para que la
-     * pantalla de mejoras pueda consultarlo y modificarlo.
-     * @return el almacén de progreso de los dos jugadores
+     * Entrega el progreso de los dos jugadores, para que las pantallas
+     * de la aplicación puedan consultarlo y mejorarlo.
+     * @return el progreso de los dos jugadores
      */
-    public domain.ProfileStore getProfileStore() {
-        return profileStore;
+    public Progress getProgress() {
+        return progress;
     }
 
     /**

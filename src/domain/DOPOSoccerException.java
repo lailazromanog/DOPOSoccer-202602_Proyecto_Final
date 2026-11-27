@@ -15,4 +15,15 @@ public class DOPOSoccerException extends Exception {
     public DOPOSoccerException(String mensaje){
         super(mensaje);
     }
+
+    
+    /**
+     * Crea la excepcion que avisa que una estadisitica ya llego a su nivel maximo y no se puede mejorar mas.
+     * @param stat nombre de la estadistica que ya no se puede mejorar
+     * @param maxLevel nivel maximo permitido para las estadisticas
+     * @return la excepcion con el mensaje que explica la razon
+     */
+    public static DOPOSoccerException maxLevelReached(String stat, int maxLevel) {
+        return new DOPOSoccerException("La estadistica '" + stat + "' ya esta en su maximo nivel: " + maxLevel + " y no se puede mejorar mas.");
+    }
 }

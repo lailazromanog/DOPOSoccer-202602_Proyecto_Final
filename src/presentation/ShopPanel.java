@@ -1,8 +1,7 @@
 package presentation;
 
 import domain.DOPOSoccerException;
-import domain.Profile;
-import domain.ProfileStore;
+import domain.Progress;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -22,21 +21,22 @@ import javax.swing.JPanel;
 
 
 /**
- * Pantalla "Mejorar estadisticas" (la tienda de puntos).
- * Lee y modifica el progreso (ProfileStore) que mantiene GameGUI.
+ * Pantalla de mejora de estadísticas, la tienda de puntos.
+ * Consulta y modifica el progreso de los jugadores a través de la
+ * fachada de progreso del dominio, sin conocer los perfiles ni su almacén.
  */
 public class ShopPanel extends JPanel {
     private GameGUI gui;
-    private ProfileStore store;
+    private Progress progress;
 
     /**
-     * Crea la pantalla de mejoras de estadísticas, leyendo el progreso
+     * Crea la pantalla de mejoras de estadísticas, tomando el progreso
      * de ambos jugadores desde la ventana principal.
      * @param gui ventana principal, de donde se toma el progreso de los jugadores
      */
     public ShopPanel(GameGUI gui) {
         this.gui = gui;
-        this.store = gui.getProfileStore();
+        this.progress = gui.getProgress();
         setBackground(new Color(0x0e1a24));
         setLayout(new GridBagLayout());
         setPreferredSize(new Dimension(960, 560));
@@ -66,8 +66,8 @@ public class ShopPanel extends JPanel {
 
         JPanel players = new JPanel(new GridLayout(1, 2, 20, 0));
         players.setOpaque(false);
-        players.add(playerColumn("JUGADOR 1", store.getLeft(), new Color(0x213a5c)));
-        players.add(playerColumn("JUGADOR 2", store.getRight(), new Color(0x5c2130)));
+        players.add(playerColumn("JUGADOR 1", Progress.LEFT, new Color(0x213a5c)));
+        players.add(playerColumn("JUGADOR 2", Progress.RIGHT, new Color(0x5c2130)));
         card.add(players);
 
         card.add(Box.createVerticalStrut(16));
@@ -92,27 +92,37 @@ public class ShopPanel extends JPanel {
 
     /**
      * Arma la columna de un jugador con su nombre, sus puntos
-     * acumulados y una fila por cada estadística que puede mejorar.
+     * acumulados y una fila por cada estadística que puede mejorar,
+     * mostrando los valores finales que da cada nivel. Si el progreso
+     * del jugador no se puede leer, deja un aviso en lugar de las filas
+     * y registra el error para los programadores.
      * @param name nombre del jugador a mostrar
-     * @param profile perfil persistente del jugador
+     * @param player identificador del jugador dentro del progreso
      * @param color color de fondo de la columna del jugador
      * @return el panel con la columna armada
      */
-    private JPanel playerColumn(String name, Profile profile, Color color) {
+    private JPanel playerColumn(String name, int player, Color color) {
         JPanel col = new JPanel();
         col.setBackground(color);
         col.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
         col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
 
-        col.add(label(name + "     " + profile.getPoints() + " pts", new Font("Arial", Font.BOLD, 18), Color.WHITE));
-        col.add(Box.createVerticalStrut(12));
-        col.add(statRow(profile, "speed", "SPEED", "Velocidad +" + (10 * (profile.getSpeed() - 1)) + "%"));
-        col.add(Box.createVerticalStrut(8));
-        col.add(statRow(profile, "kick", "KICK", "Dano x" + mult(profile.getKick())));
-        col.add(Box.createVerticalStrut(8));
-        col.add(statRow(profile, "jump", "JUMP", "Salto +" + (10 * (profile.getJump() - 1)) + "%"));
-        col.add(Box.createVerticalStrut(8));
-        col.add(statRow(profile, "survival", "SURVIVAL", "Vida max " + (100 + 10 * (profile.getSurvival() - 1))));
+        try {
+            col.add(label(name + "     " + progress.getPoints(player) + " pts", new Font("Arial", Font.BOLD, 18), Color.WHITE));
+            col.add(Box.createVerticalStrut(12));
+            col.add(statRow(player, "speed", "SPEED", "Velocidad +" + progress.getSpeedBonusPercent(player) + "%"));
+            col.add(Box.createVerticalStrut(8));
+            col.add(statRow(player, "kick", "KICK", "Dano de patada: " + Math.round(progress.getKickDamage(player))
+                    + "  (x" + String.format("%.1f", progress.getKickMultiplier(player)) + ")"));
+            col.add(Box.createVerticalStrut(8));
+            col.add(statRow(player, "jump", "JUMP", "Salto +" + progress.getJumpBonusPercent(player) + "%"));
+            col.add(Box.createVerticalStrut(8));
+            col.add(statRow(player, "survival", "SURVIVAL", "Vida maxima: " + Math.round(progress.getMaxHealth(player))));
+        } catch (DOPOSoccerException ex) {
+            // el jugador y las estadisticas son constantes validas, asi que esto no deberia ocurrir
+            GameLogger.error("No se pudo armar la columna de la tienda de " + name, ex);
+            col.add(label("No se pudo cargar el progreso", new Font("Arial", Font.BOLD, 14), Color.WHITE));
+        }
         return col;
     }
 
@@ -121,13 +131,14 @@ public class ShopPanel extends JPanel {
      * actual, su detalle, y el botón para mejorarla, mostrando el
      * precio del próximo nivel o la razón por la que no se puede
      * mejorar todavía.
-     * @param profile perfil persistente del jugador dueño de la estadística
+     * @param player identificador del jugador dueño de la estadística
      * @param stat nombre de la estadística, speed, kick, jump o survival
      * @param name nombre de la estadística a mostrar
      * @param detail detalle del efecto actual de la estadística, para mostrar
      * @return el panel con la fila armada
+     * @throws DOPOSoccerException si el identificador del jugador o el nombre de la estadística no son válidos
      */
-    private JPanel statRow(final Profile profile, final String stat, String name, String detail) {
+    private JPanel statRow(final int player, final String stat, String name, String detail) throws DOPOSoccerException {
         JPanel row = new JPanel();
         row.setOpaque(false);
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
@@ -135,21 +146,21 @@ public class ShopPanel extends JPanel {
         JPanel info = new JPanel();
         info.setOpaque(false);
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
-        info.add(left(label(name + "  (nivel " + levelOf(profile, stat) + ")", new Font("Arial", Font.BOLD, 14), Color.WHITE)));
+        info.add(left(label(name + "  (nivel " + progress.getLevel(player, stat) + ")", new Font("Arial", Font.BOLD, 14), Color.WHITE)));
         info.add(left(label(detail, new Font("Arial", Font.PLAIN, 11), new Color(0xbcd4df))));
 
         JButton btn = new JButton();
         btn.setFont(new Font("Arial", Font.BOLD, 12));
         // los stats que llegan aqui son siempre validos (speed, kick, jump, survival)
-        // pero Profile ahora declara checked exception, asi que hay que capturarla
+        // pero el progreso declara checked exception, asi que hay que capturarla
         try {
-            if (profile.isMax(stat)) {
+            if (progress.isMax(player, stat)) {
                 btn.setText("MAXIMO");
                 btn.setEnabled(false);
-            } else if (profile.canUpgrade(stat)) {
-                btn.setText("MEJORAR - " + profile.upgradeCost(stat));
+            } else if (progress.canUpgrade(player, stat)) {
+                btn.setText("MEJORAR - " + progress.getUpgradeCost(player, stat));
             } else {
-                btn.setText("FALTAN " + (profile.upgradeCost(stat) - profile.getPoints()) + " pts");
+                btn.setText("FALTAN " + (progress.getUpgradeCost(player, stat) - progress.getPoints(player)) + " pts");
                 btn.setEnabled(false);
             }
         } catch (DOPOSoccerException ex) {
@@ -169,12 +180,12 @@ public class ShopPanel extends JPanel {
              */
             @Override public void actionPerformed(ActionEvent e){
                 try {
-                    int cost = profile.upgradeCost(stat);
+                    int cost = progress.getUpgradeCost(player, stat);
                     int option = JOptionPane.showConfirmDialog(ShopPanel.this,
-                            "Gastar " + cost + " pts para subir " + statName + " al nivel " + (levelOf(profile, stat) + 1) + "?",
+                            "Gastar " + cost + " pts para subir " + statName + " al nivel " + (progress.getLevel(player, stat) + 1) + "?",
                             "Mejorar estadistica", JOptionPane.YES_NO_OPTION);
                     if (option == JOptionPane.YES_OPTION) {
-                        profile.upgrade(stat);
+                        progress.upgrade(player, stat);
                         buildUI();        // refresca la pantalla
                     }
                 } catch (DOPOSoccerException ex) {
@@ -189,34 +200,6 @@ public class ShopPanel extends JPanel {
         row.add(Box.createHorizontalGlue());
         row.add(btn);
         return row;
-    }
-
-    /**
-     * Entrega el nivel actual de la estadística dada del perfil.
-     * @param p perfil del que se consulta la estadística
-     * @param stat nombre de la estadística, speed, kick, jump o survival
-     * @return el nivel actual de esa estadística
-     */
-    private int levelOf(Profile p, String stat) {
-        if (stat.equals("speed")) {
-            return p.getSpeed();
-        } else if (stat.equals("kick")) {
-            return p.getKick();
-        } else if (stat.equals("jump")) {
-            return p.getJump();
-        } else {
-            return p.getSurvival();
-        }
-    }
-
-    /**
-     * Calcula el multiplicador de daño que corresponde al nivel de
-     * kick dado, para mostrarlo en el detalle de esa estadística.
-     * @param kick nivel de la estadística kick
-     * @return el multiplicador de daño con un decimal, listo para mostrar
-     */
-    private String mult(int kick) {
-        return String.format("%.1f", 1 + 0.10 * (kick - 1));
     }
 
     /**

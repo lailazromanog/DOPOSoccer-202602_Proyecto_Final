@@ -1,7 +1,8 @@
 package presentation;
 
+import domain.DOPOSoccerException;
 import domain.Game;
-
+import domain.Progress;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -52,9 +53,16 @@ public class EndPanel extends JPanel {
         card.add(label(game.getLeftScore() + " - " + game.getRightScore(),
                 new Font("Arial", Font.BOLD, 24), new Color(0xF28C28)));
         card.add(Box.createVerticalStrut(8));
-        card.add(label("Puntos  J1: " + gui.getProfileStore().getLeft().getPoints()
-                        + "     J2: " + gui.getProfileStore().getRight().getPoints(),
-                new Font("Arial", Font.PLAIN, 16), new Color(0xbcd4df)));
+        String pointsText;
+        try {
+            pointsText = "Puntos  J1: " + gui.getProgress().getPoints(Progress.LEFT)
+                    + "     J2: " + gui.getProgress().getPoints(Progress.RIGHT);
+        } catch (DOPOSoccerException ex) {
+            // los identificadores son constantes validas, asi que esto no deberia ocurrir
+            GameLogger.error("No se pudieron leer los puntos de los jugadores", ex);
+            pointsText = "Puntos no disponibles";
+        }
+        card.add(label(pointsText, new Font("Arial", Font.PLAIN, 16), new Color(0xbcd4df)));
         card.add(Box.createVerticalStrut(24));
 
         RoundedButton shop = new RoundedButton("Mejorar estadisticas", new Color(0xF28C28));

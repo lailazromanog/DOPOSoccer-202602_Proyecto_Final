@@ -116,14 +116,14 @@ public class DOPOSoccerTest {
 
     // Recibir 30 de daño reduce la vida a 70
     @Test
-    public void testPlayerTakeDamage() {
+    public void testPlayerTakeDamage() throws Exception {
         player.takeDamage(30);
         assertEquals(70.0, player.getHealth(), 0.01);
     }
 
     // Cuando la vida llega a 0 el jugador queda aturdido automaticamente
     @Test
-    public void testPlayerStunOnZeroHealth() {
+    public void testPlayerStunOnZeroHealth() throws Exception {
         player.takeDamage(150);
         assertEquals(0.0, player.getHealth(), 0.01);
         assertTrue(player.isStunned());
@@ -167,18 +167,193 @@ public class DOPOSoccerTest {
 
     // Mejorar speed una vez la sube de 1 a 2
     @Test
-    public void testPlayerUpgradeStat() throws domain.DOPOSoccerException {
+    public void testPlayerUpgradeStat() throws DOPOSoccerException {
         player.upgradeStat("speed");
         assertEquals(2, player.getSpeed());
     }
 
-    // La estadistica no puede superar el maximo de nivel 10
+    // La estadistica no puede superar el maximo de nivel 10 si lo supera lanza excepcion
     @Test
-    public void testPlayerUpgradeStatMax() throws domain.DOPOSoccerException {
-        for (int i = 0; i < 20; i++) {
+    public void testPlayerUpgradeStatMax() throws DOPOSoccerException {
+        //de nivel 1 a 10 hay 9 subidas
+        for (int i = 0; i < 9; i++) {
             player.upgradeStat("kick");
         }
         assertEquals(10, player.getKick());
+        try {
+            player.upgradeStat("kick");
+            fail("Debio lanzar DOPOSoccerException por nivel maximo");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+        // el nivel no cambio
+        assertEquals(10, player.getKick());
+    }
+
+
+    // Recibir dano negativo lanza excepcion y no cambia la vida
+    @Test
+    public void testPlayerTakeNegativeDamageThrows() {
+        try {
+            player.takeDamage(-10);
+            fail("Debio lanzar DOPOSoccerException por dano negativo");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertEquals(100.0, player.getHealth(), 0.01);
+    }
+
+    // Recibir dano cero es valido y no cambia la vida
+    @Test
+    public void testPlayerTakeZeroDamageIsAllowed() throws Exception {
+        player.takeDamage(0);
+        assertEquals(100.0, player.getHealth(), 0.01);
+    }
+
+    // Sumar puntos negativos al jugador lanza excepcion y no cambia sus puntos
+    @Test
+    public void testPlayerAddNegativePointsThrows() {
+        try {
+            player.addPoints(-1);
+            fail("Debio lanzar DOPOSoccerException por puntos negativos");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertEquals(0, player.getPoints());
+    }
+
+    // Los puntos del jugador se acumulan y sumar cero es valido
+    @Test
+    public void testPlayerAddPointsAccumulates() throws Exception {
+        player.addPoints(100);
+        player.addPoints(0);
+        player.addPoints(25);
+        assertEquals(125, player.getPoints());
+    }
+
+    // setStats acepta los dos extremos del rango, uno y diez
+    @Test
+    public void testPlayerSetStatsAcceptsLimits() throws Exception {
+        player.setStats(1, 1, 1, 1);
+        assertEquals(1, player.getSpeed());
+        player.setStats(10, 10, 10, 10);
+        assertEquals(10, player.getSpeed());
+        assertEquals(10, player.getKick());
+        assertEquals(10, player.getJump());
+        assertEquals(10, player.getSurvival());
+    }
+
+    // setStats con un nivel por debajo del minimo lanza excepcion y dice cual estadistica fallo
+    @Test
+    public void testPlayerSetStatsBelowMinThrows() {
+        try {
+            player.setStats(1, 0, 1, 1);
+            fail("Debio lanzar DOPOSoccerException por nivel menor que uno");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("kick"));
+        }
+    }
+
+    // setStats con un nivel por encima del maximo lanza excepcion y dice cual estadistica fallo
+    @Test
+    public void testPlayerSetStatsAboveMaxThrows() {
+        try {
+            player.setStats(1, 1, 1, 11);
+            fail("Debio lanzar DOPOSoccerException por nivel mayor que diez");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("survival"));
+        }
+    }
+
+    // Si una estadistica es invalida no se cambia ninguna, aunque las anteriores fueran validas
+    @Test
+    public void testPlayerSetStatsInvalidChangesNothing() throws Exception {
+        player.setStats(3, 3, 3, 3);
+        try {
+            player.setStats(8, 8, 8, 99);
+            fail("Debio lanzar DOPOSoccerException");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertEquals(3, player.getSpeed());
+        assertEquals(3, player.getKick());
+        assertEquals(3, player.getJump());
+        assertEquals(3, player.getSurvival());
+    }
+
+    // Subir una estadistica desconocida lanza excepcion
+    @Test
+    public void testPlayerUpgradeUnknownStatThrows() {
+        try {
+            player.upgradeStat("fly");
+            fail("Debio lanzar DOPOSoccerException");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("fly"));
+        }
+    }
+
+    // Cada estadistica lanza excepcion al intentar pasar del nivel diez
+    @Test
+    public void testPlayerUpgradeEveryStatAtMaxThrows() throws Exception {
+        String[] stats = {"speed", "kick", "jump", "survival"};
+        player.setStats(10, 10, 10, 10);
+        for (int i = 0; i < stats.length; i++) {
+            try {
+                player.upgradeStat(stats[i]);
+                fail("Debio lanzar DOPOSoccerException para " + stats[i]);
+            } catch (DOPOSoccerException e) {
+                assertTrue(e.getMessage().contains(stats[i]));
+            }
+        }
+    }
+
+    // Subir survival sube la vida maxima y deja la vida en el nuevo maximo
+    @Test
+    public void testPlayerUpgradeSurvivalRaisesHealth() throws Exception {
+        player.upgradeStat("survival");
+        assertEquals(110.0, player.getMaxHealth(), 0.01);
+        assertEquals(110.0, player.getHealth(), 0.01);
+    }
+
+    
+    // Integracion Profile con Player: formulas de las estadisticas
+    
+
+    // Un perfil con survival mejorado da la vida maxima de la tabla de vida
+    @Test
+    public void testProfileSurvivalAppliesToPlayerMaxHealth() throws Exception {
+        Profile profile = new Profile();
+        // survival de nivel 1 a nivel 3 cuesta 500 mas 1000
+        profile.addPoints(1500);
+        profile.upgrade("survival");
+        profile.upgrade("survival");
+        player.setStats(profile.getSpeed(), profile.getKick(), profile.getJump(), profile.getSurvival());
+        assertEquals(120.0, player.getMaxHealth(), 0.01);
+        assertEquals(120.0, player.getHealth(), 0.01);
+    }
+
+    // Kick cinco da el multiplicador de la tabla de dano
+    @Test
+    public void testPlayerKickFiveMultiplier() throws Exception {
+        player.setStats(1, 5, 1, 1);
+        assertEquals(1.4, player.getMultiplicadorKick(), 0.001);
+    }
+
+    // Speed cuatro aumenta la velocidad de desplazamiento un treinta por ciento
+    @Test
+    public void testPlayerSpeedFourMoveSpeed() throws Exception {
+        player.setStats(4, 1, 1, 1);
+        assertEquals(6.5, player.getMoveSpeed(), 0.001);
+    }
+
+    // Ejemplo del enunciado: kick cinco contra survival tres deja al rival en 106 de vida
+    @Test
+    public void testKickDamageExampleFromRequirements() throws Exception {
+        leftPlayer.setStats(1, 5, 1, 1);
+        rightPlayer.setStats(1, 1, 1, 3);
+        Time timeMatch = new Time(leftPlayer, rightPlayer, new Ball(), new Goal(0, 0), new Goal(100, 0), timer, score);
+        timeMatch.checkKickContact(leftPlayer, rightPlayer);
+        assertEquals(106.0, rightPlayer.getHealth(), 0.01);
     }
 
    
@@ -351,4 +526,6 @@ public class DOPOSoccerTest {
         timeMatch.checkKickContact(leftPlayer, rightPlayer);
         assertTrue(rightPlayer.getHealth() < 100.0);
     }
+
+
 }

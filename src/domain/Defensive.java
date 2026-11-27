@@ -1,11 +1,27 @@
 package domain;
 
+/**
+ * Perfil de máquina Defensiva.
+ * Su prioridad es defender su arco: solo sale a despejar el balón
+ * cuando lo tiene cerca, y el resto del tiempo vuelve a su puesto de
+ * guardia frente al arco propio.
+ */
 public class Defensive extends Bot {
 
+    /**
+     * Crea un bot con el perfil Defensiva.
+     */
     public Defensive() {
         super();
     }
 
+    /**
+     * Sale a despejar el balón cuando lo tiene cerca y, si está lejos,
+     * vuelve a su puesto de guardia frente al arco propio. Salta
+     * cuando el balón está cerca y por encima suyo, y al tenerlo al
+     * alcance del pie activa su poder si está disponible y pide patear.
+     * @param match partido en curso sobre el que el bot toma su decisión
+     */
     @Override
     public void decideAction(Match match) {
         Ball ball = match.getBall();

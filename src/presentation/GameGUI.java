@@ -1,7 +1,9 @@
 package presentation;
 
+import domain.DOPOSoccerException;
 import domain.Game;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * Ventana principal de DOPOSoccer.
@@ -55,15 +57,30 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    /** Lo llama CharacterSelectPanel al dar "JUGAR": crea la fachada y entra a la cancha. */
+    /**
+     * Lo llama CharacterSelectPanel al dar "JUGAR": crea la fachada y
+     * entra a la cancha. Si alguno de los datos del partido no es
+     * reconocido por el dominio, muestra el error al usuario, lo
+     * registra en el log y se queda en la pantalla actual.
+     * @param matchType tipo de partido elegido, por tiempo o por goles
+     * @param value minutos de duración del partido o goles para ganar, según el tipo de partido
+     * @param country1 país del personaje del jugador 1
+     * @param country2 país del personaje del jugador 2
+     * @param opponent modalidad del jugador 2, humano o perfil de máquina
+     */
     public void startGame(String matchType, int value, String country1, String country2, String opponent) {
-        Game game = new Game(matchType, value, country1, country2, opponent, profileStore.getLeft(), profileStore.getRight());
-        FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);
-        setContentPane(fieldPanel);
-        revalidate();
-        pack();
-        setLocationRelativeTo(null);
-        fieldPanel.requestFocusInWindow();
+        try {
+            Game game = new Game(matchType, value, country1, country2, opponent, profileStore.getLeft(), profileStore.getRight());
+            FieldPanel fieldPanel = new FieldPanel(this, game, resW, resH);
+            setContentPane(fieldPanel);
+            revalidate();
+            pack();
+            setLocationRelativeTo(null);
+            fieldPanel.requestFocusInWindow();
+        } catch (DOPOSoccerException ex) {
+            GameLogger.error("No se pudo crear el partido", ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /** Entra a la cancha con un partido ya cargado desde archivo. */

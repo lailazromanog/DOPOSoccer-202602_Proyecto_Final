@@ -54,13 +54,19 @@ public class Game implements Serializable{
     private boolean finished;
 
     /**
-     * Arma un partido Jugador vs Jugador.
-     * @param byTime   true = por tiempo, false = por goles
-     * @param value    minutos (si es por tiempo) o goles para ganar (si es por goles)
-     * @param country1 pais/personaje del jugador 1
-     * @param country2 pais/personaje del jugador 2
+     * Arma un partido nuevo con los jugadores, el balón, los arcos y
+     * el tipo de partido elegidos, aplicando a cada jugador las
+     * estadísticas y el progreso guardados en su perfil.
+     * @param matchType tipo de partido elegido, por tiempo o por goles
+     * @param value minutos de duración del partido si es por tiempo, o número de goles para ganar si es por goles
+     * @param country1 país del personaje del jugador 1
+     * @param country2 país del personaje del jugador 2
+     * @param opponent modalidad del jugador 2, humano o perfil de máquina
+     * @param leftProfile perfil persistente del jugador 1, con sus estadísticas y sus puntos
+     * @param rightProfile perfil persistente del jugador 2, con sus estadísticas y sus puntos
+     * @throws DOPOSoccerException si el país de alguno de los personajes, el perfil de la máquina o el tipo de partido no son reconocidos
      */
-    public Game(String matchType, int value, String country1, String country2, String opponent, Profile leftProfile, Profile rightProfile) {
+    public Game(String matchType, int value, String country1, String country2, String opponent, Profile leftProfile, Profile rightProfile) throws DOPOSoccerException {
         characterFactory = new CharacterFactory();
         matchFactory = new MatchFactory();
         botFactory = new BotFactory();
@@ -104,47 +110,82 @@ public class Game implements Serializable{
 
     //ordenes, lo que la interfaz manda
 
-    public void moveLeftPlayerLeft(){ 
-        if (!leftPlayer.isStunned()) leftPlayer.moveLeft();  
+    /**
+     * Mueve al jugador izquierdo hacia la izquierda, si no está aturdido.
+     */
+    public void moveLeftPlayerLeft(){
+        if (!leftPlayer.isStunned()) leftPlayer.moveLeft();
     }
 
-    public void moveLeftPlayerRight(){ 
-        if (!leftPlayer.isStunned()) leftPlayer.moveRight(); 
+    /**
+     * Mueve al jugador izquierdo hacia la derecha, si no está aturdido.
+     */
+    public void moveLeftPlayerRight(){
+        if (!leftPlayer.isStunned()) leftPlayer.moveRight();
     }
 
-    public void jumpLeftPlayer(){ 
-        if (!leftPlayer.isStunned()) leftPlayer.jump();      
+    /**
+     * Hace saltar al jugador izquierdo, si no está aturdido.
+     */
+    public void jumpLeftPlayer(){
+        if (!leftPlayer.isStunned()) leftPlayer.jump();
     }
 
-    public void kickLeftPlayer(){ 
-        if (!leftPlayer.isStunned()) tryKick(leftPlayer, rightPlayer, 1); 
+    /**
+     * Patea con el jugador izquierdo, si no está aturdido.
+     */
+    public void kickLeftPlayer(){
+        if (!leftPlayer.isStunned()) tryKick(leftPlayer, rightPlayer, 1);
     }
 
-    public void usePowerLeftPlayer(){ 
-        leftPlayer.usePower(); 
+    /**
+     * Activa el poder del jugador izquierdo.
+     */
+    public void usePowerLeftPlayer(){
+        leftPlayer.usePower();
     }
 
-    public void moveRightPlayerLeft(){ 
-        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveLeft();  
+    /**
+     * Mueve al jugador derecho hacia la izquierda, si es humano y no está aturdido.
+     */
+    public void moveRightPlayerLeft(){
+        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveLeft();
     }
 
-    public void moveRightPlayerRight(){ 
-        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveRight(); 
+    /**
+     * Mueve al jugador derecho hacia la derecha, si es humano y no está aturdido.
+     */
+    public void moveRightPlayerRight(){
+        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.moveRight();
     }
 
-    public void jumpRightPlayer(){ 
-        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.jump();      
+    /**
+     * Hace saltar al jugador derecho, si es humano y no está aturdido.
+     */
+    public void jumpRightPlayer(){
+        if (!vsMachine && !rightPlayer.isStunned()) rightPlayer.jump();
     }
 
-    public void kickRightPlayer(){ 
-        if (!vsMachine && !rightPlayer.isStunned()) tryKick(rightPlayer, leftPlayer, -1); 
+    /**
+     * Patea con el jugador derecho, si es humano y no está aturdido.
+     */
+    public void kickRightPlayer(){
+        if (!vsMachine && !rightPlayer.isStunned()) tryKick(rightPlayer, leftPlayer, -1);
     }
 
-    public void usePowerRightPlayer(){ 
-        if (!vsMachine) rightPlayer.usePower(); 
+    /**
+     * Activa el poder del jugador derecho, si es humano.
+     */
+    public void usePowerRightPlayer(){
+        if (!vsMachine) rightPlayer.usePower();
     }
 
-    /** Termina el partido ya (por ejemplo con ESC): reparte puntos y detiene. */
+    /**
+     * Termina el partido antes de que se decida solo, por ejemplo si
+     * un jugador lo cierra a mitad de partido: reparte los puntos del
+     * partido a ambos jugadores y a sus perfiles persistentes, y
+     * detiene el partido. No hace nada si el partido ya había terminado.
+     */
     public void finishMatch() {
         if (finished) {
             return;
@@ -155,8 +196,11 @@ public class Game implements Serializable{
         match.finish();
     }
 
-    /** 
-     * Reparte los puntos del partido a los perfiles persistentes (si los hay). 
+    /**
+     * Reparte los puntos del partido a los perfiles persistentes de
+     * ambos jugadores, si el partido se armó con perfiles vivos. No
+     * hace nada si el partido se abrió desde un archivo guardado, sin
+     * perfiles asociados.
      * */
     private void awardToProfiles() {
         if (leftProfile == null || rightProfile == null) {
@@ -176,8 +220,13 @@ public class Game implements Serializable{
     }
 
     /**
-     * Avanza el juego un paso (lo llama el reloj de la interfaz cada 16 ms).
-     * Aqui vive toda la fisica y las reglas por frame.
+     * Avanza el juego un paso, aplicando toda la física y las reglas
+     * del partido para ese frame: la decisión del bot si corresponde,
+     * la gravedad y los efectos de los jugadores, el choque entre
+     * ellos, el avance del balón, los goles, los tiros de poder, los
+     * límites de la cancha y la condición de victoria del partido. No
+     * hace nada si el partido ya terminó.
+     * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
      */
     public void update(double deltaTime) {
         if (finished) {
@@ -239,6 +288,14 @@ public class Game implements Serializable{
 
     // reglas internas de la fachada
 
+    /**
+     * Intenta ejecutar la patada de un jugador: si el balón está cerca
+     * de su pie lo impulsa en la dirección dada, y si el rival está
+     * dentro del alcance del pie le aplica el daño de la patada.
+     * @param player jugador que ejecuta la patada
+     * @param opponent rival del jugador que patea
+     * @param direction dirección de la patada, uno hacia la derecha o menos uno hacia la izquierda
+     */
     private void tryKick(Player player, Player opponent, int direction) {
         double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
         double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
@@ -266,6 +323,11 @@ public class Game implements Serializable{
         }
     }
 
+    /**
+     * Separa a los dos jugadores cuando sus figuras se superponen,
+     * empujando a cada uno hacia su propio lado por la mitad de lo
+     * que se superponen.
+     */
     private void playerCollision() {
         double center1X = leftPlayer.getPositionX() + PLAYER_DIAMETER / 2.0;
         double center1Y = leftPlayer.getPositionY() + PLAYER_DIAMETER / 2.0;
@@ -286,6 +348,11 @@ public class Game implements Serializable{
         }
     }
 
+    /**
+     * Revisa si el balón entró en alguno de los dos arcos y, de ser
+     * así, registra el gol a favor del jugador contrario y centra el
+     * balón para reanudar el juego.
+     */
     private void checkGoal() {
         if (leftGoal.isGoal(ball)) {
             match.onGoal(rightPlayer);   //gol en el arco izquierdo,  punto para el J2
@@ -296,6 +363,10 @@ public class Game implements Serializable{
         }
     }
 
+    /**
+     * Detiene el balón y lo deja en el centro de la cancha, para
+     * reanudar el juego después de cada gol.
+     */
     private void centerBall() {
         ball.setPositionX(WIDTH / 2.0 - BALL_DIAMETER / 2.0);
         ball.setPositionY(BALL_GROUND);
@@ -303,6 +374,12 @@ public class Game implements Serializable{
         ball.setVelocityY(0);
     }
 
+    /**
+     * Indica si el balón está lo bastante cerca del jugador dado como
+     * para considerarse en contacto con él.
+     * @param player jugador del que se revisa el contacto con el balón
+     * @return verdadero si el balón toca al jugador, falso en caso contrario
+     */
     private boolean ballTouches(Player player) {
         double pCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
         double pCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
@@ -315,20 +392,43 @@ public class Game implements Serializable{
 
     //DATOS PARA DIBUJAR (solo lectura)
 
-        public double getLeftPlayerX(){ 
-        return leftPlayer.getPositionX(); 
-    }
-    public double getLeftPlayerY() { 
-        return leftPlayer.getPositionY(); 
-    }
-    public double getRightPlayerX(){ 
-        return rightPlayer.getPositionX(); 
-    }
-    public double getRightPlayerY(){ 
-        return rightPlayer.getPositionY(); 
+    /**
+     * Entrega la posición horizontal del jugador izquierdo.
+     * @return la posición horizontal del jugador izquierdo
+     */
+        public double getLeftPlayerX(){
+        return leftPlayer.getPositionX();
     }
 
-    /** Posiciones (x,y) de los balones falsos del poder Illusion, para que la vista los dibuje. */
+    /**
+     * Entrega la posición vertical del jugador izquierdo.
+     * @return la posición vertical del jugador izquierdo
+     */
+    public double getLeftPlayerY() {
+        return leftPlayer.getPositionY();
+    }
+
+    /**
+     * Entrega la posición horizontal del jugador derecho.
+     * @return la posición horizontal del jugador derecho
+     */
+    public double getRightPlayerX(){
+        return rightPlayer.getPositionX();
+    }
+
+    /**
+     * Entrega la posición vertical del jugador derecho.
+     * @return la posición vertical del jugador derecho
+     */
+    public double getRightPlayerY(){
+        return rightPlayer.getPositionY();
+    }
+
+    /**
+     * Entrega las posiciones horizontal y vertical de los balones
+     * falsos del efecto Ilusión, para que la presentación los dibuje.
+     * @return la lista de posiciones de los balones falsos activos
+     */
     public java.util.List<double[]> getFakeBalls(){
         java.util.List<double[]> out = new java.util.ArrayList<>();
         for (Ball fake : match.getFakeBalls()) {
@@ -337,67 +437,146 @@ public class Game implements Serializable{
         return out;
     }
 
-    public double getBallX(){ 
-        return ball.getPositionX(); 
-    }
-    public double getBallY(){ 
-        return ball.getPositionY(); 
-    }
-
-    public boolean isLeftPlayerAura(){ 
-        return leftPlayer.isAuraActive(); 
-    }
-    public boolean isRightPlayerAura(){ 
-        return rightPlayer.isAuraActive(); 
+    /**
+     * Entrega la posición horizontal del balón.
+     * @return la posición horizontal del balón
+     */
+    public double getBallX(){
+        return ball.getPositionX();
     }
 
-    public double getLeftPlayerPower(){ 
-        return leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge(); 
+    /**
+     * Entrega la posición vertical del balón.
+     * @return la posición vertical del balón
+     */
+    public double getBallY(){
+        return ball.getPositionY();
     }
-    public double getRightPlayerPower(){ 
-        return rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge(); 
+
+    /**
+     * Indica si el jugador izquierdo tiene el aura de su poder activa.
+     * @return verdadero si el aura del jugador izquierdo está activa, falso en caso contrario
+     */
+    public boolean isLeftPlayerAura(){
+        return leftPlayer.isAuraActive();
     }
-    public double getLeftPlayerLife(){ 
-        return leftPlayer.getHealth() / leftPlayer.getMaxHealth(); 
+
+    /**
+     * Indica si el jugador derecho tiene el aura de su poder activa.
+     * @return verdadero si el aura del jugador derecho está activa, falso en caso contrario
+     */
+    public boolean isRightPlayerAura(){
+        return rightPlayer.isAuraActive();
     }
-    public double getRightPlayerLife(){ 
-        return rightPlayer.getHealth() / rightPlayer.getMaxHealth(); 
+
+    /**
+     * Entrega el progreso de la barra de poder del jugador izquierdo
+     * como una proporción entre cero y uno.
+     * @return el progreso de la barra de poder del jugador izquierdo
+     */
+    public double getLeftPlayerPower(){
+        return leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge();
+    }
+
+    /**
+     * Entrega el progreso de la barra de poder del jugador derecho
+     * como una proporción entre cero y uno.
+     * @return el progreso de la barra de poder del jugador derecho
+     */
+    public double getRightPlayerPower(){
+        return rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge();
+    }
+
+    /**
+     * Entrega la vida del jugador izquierdo como una proporción entre
+     * cero y uno de su vida máxima.
+     * @return la proporción de vida del jugador izquierdo
+     */
+    public double getLeftPlayerLife(){
+        return leftPlayer.getHealth() / leftPlayer.getMaxHealth();
+    }
+
+    /**
+     * Entrega la vida del jugador derecho como una proporción entre
+     * cero y uno de su vida máxima.
+     * @return la proporción de vida del jugador derecho
+     */
+    public double getRightPlayerLife(){
+        return rightPlayer.getHealth() / rightPlayer.getMaxHealth();
     }
 
     //clave del sprite de cada jugador (la usa la presentacion para elegir la imagen)
+    /**
+     * Entrega la clave de la imagen del jugador izquierdo, usada por
+     * la presentación para elegir su sprite.
+     * @return la clave de la imagen del jugador izquierdo
+     */
     public String getLeftPlayerSprite() {
         return leftPlayer.getCharacter().getAppereance().getHead().getType();
     }
 
+    /**
+     * Entrega la clave de la imagen del jugador derecho, usada por la
+     * presentación para elegir su sprite.
+     * @return la clave de la imagen del jugador derecho
+     */
     public String getRightPlayerSprite() {
         return rightPlayer.getCharacter().getAppereance().getHead().getType();
     }
 
-    public int getLeftScore(){ 
-        return match.getScore().getGoalsLeftPlayer(); 
+    /**
+     * Entrega los goles anotados por el jugador izquierdo.
+     * @return los goles del jugador izquierdo
+     */
+    public int getLeftScore(){
+        return match.getScore().getGoalsLeftPlayer();
     }
 
-    public int getRightScore(){ 
-        return match.getScore().getGoalsRightPlayer(); 
+    /**
+     * Entrega los goles anotados por el jugador derecho.
+     * @return los goles del jugador derecho
+     */
+    public int getRightScore(){
+        return match.getScore().getGoalsRightPlayer();
     }
 
-    public int getLeftPlayerPoints(){ 
-        return leftPlayer.getPoints(); 
+    /**
+     * Entrega los puntos acumulados por el jugador izquierdo.
+     * @return los puntos del jugador izquierdo
+     */
+    public int getLeftPlayerPoints(){
+        return leftPlayer.getPoints();
     }
 
-    public int getRightPlayerPoints(){ 
-        return rightPlayer.getPoints(); 
+    /**
+     * Entrega los puntos acumulados por el jugador derecho.
+     * @return los puntos del jugador derecho
+     */
+    public int getRightPlayerPoints(){
+        return rightPlayer.getPoints();
     }
 
-    public int getTimeLeft(){ 
-        return match.getTimer().getCurrentTime(); 
+    /**
+     * Entrega el tiempo restante del partido, en segundos.
+     * @return el tiempo restante del partido
+     */
+    public int getTimeLeft(){
+        return match.getTimer().getCurrentTime();
     }
 
-    public boolean isFinished(){ 
-        return finished; 
+    /**
+     * Indica si el partido ya terminó.
+     * @return verdadero si el partido ya terminó, falso en caso contrario
+     */
+    public boolean isFinished(){
+        return finished;
     }
 
-    /** Ganador: 1 (J1), 2 (J2) o 0 (empate). Asi la interfaz no necesita Player. */
+    /**
+     * Entrega el ganador del partido, para que la presentación no
+     * necesite conocer la clase Player.
+     * @return uno si ganó el jugador izquierdo, dos si ganó el jugador derecho, o cero si el partido quedó empatado
+     */
     public int getWinner() {
         Player w = match.getScore().getWinner();
         if (w == leftPlayer) {
@@ -409,15 +588,24 @@ public class Game implements Serializable{
         }
     }
 
-    // persistencia 
+    // persistencia
 
-    /** Guarda este partido en un archivo. */
+    /**
+     * Guarda este partido en el archivo dado.
+     * @param file archivo donde se va a guardar el partido
+     * @throws DOPOSoccerException si ocurre un error al guardar el partido
+     */
     public void saveTo(File file) throws DOPOSoccerException {
         GamePersistence persistence = new GamePersistence();
         persistence.save(this, file);
     }
 
-    /** Abre un partido guardado en un archivo. */
+    /**
+     * Abre el partido guardado en el archivo dado.
+     * @param file archivo del que se quiere abrir el partido
+     * @return el partido reconstruido a partir del archivo
+     * @throws DOPOSoccerException si ocurre un error al abrir el partido
+     */
     public static Game openFrom(File file) throws DOPOSoccerException {
         GamePersistence persistence = new GamePersistence();
         return persistence.open(file);

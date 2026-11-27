@@ -1,11 +1,26 @@
 package domain;
 
+/**
+ * Perfil de máquina Ofensiva.
+ * Su prioridad es anotar: persigue el balón en todo momento, salta
+ * para cabecearlo cuando lo tiene cerca y por encima, y patea y usa
+ * su poder apenas el balón queda al alcance de su pie.
+ */
 public class Offensive extends Bot {
 
+    /**
+     * Crea un bot con el perfil Ofensiva.
+     */
     public Offensive() {
         super();
     }
 
+    /**
+     * Persigue el balón en horizontal, salta cuando el balón está
+     * cerca y por encima suyo, y al tenerlo al alcance del pie activa
+     * su poder si está disponible y pide patear.
+     * @param match partido en curso sobre el que el bot toma su decisión
+     */
     @Override
     public void decideAction(Match match) {
         Ball ball = match.getBall();

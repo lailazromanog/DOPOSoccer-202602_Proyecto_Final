@@ -1,6 +1,13 @@
 package domain;
 import java.io.Serializable;
 
+/**
+ * Representa a un jugador dentro de un partido.
+ * Mantiene su posición en la cancha, su vida, su barra de poder, su
+ * personaje, sus estadísticas, sus puntos acumulados y el efecto que
+ * tenga en un momento dado, y ofrece las acciones que puede ejecutar:
+ * moverse, saltar, patear y usar su poder.
+ */
 public class Player implements Serializable{
     private double positionX;
     private double positionY;
@@ -23,6 +30,11 @@ public class Player implements Serializable{
     private boolean onGround = true; //para que salga solo si esta en el suelo
     private double knockbackVX = 0; //empuje horizontal (lo usa el poder Aura Azul)
 
+    /**
+     * Crea un jugador con sus estadísticas en el valor mínimo, su vida
+     * en el máximo correspondiente, sus puntos en cero, sin efecto
+     * activo y con su barra de poder vacía.
+     */
     public Player() {
         
         this.stunned = false;
@@ -40,10 +52,18 @@ public class Player implements Serializable{
         this.velocityY = 0; //empiezaa en el suelo, sin velocidad vertical
     }
 
+    /**
+     * Mueve al jugador hacia la izquierda, según las reglas de
+     * movimiento propias de su estado actual.
+     */
     public void moveLeft() {
         move(-1);
     }
 
+    /**
+     * Mueve al jugador hacia la derecha, según las reglas de
+     * movimiento propias de su estado actual.
+     */
     public void moveRight() {
         move(1);
     }
@@ -83,9 +103,10 @@ public class Player implements Serializable{
 
 
         /**
-     * Lanza al jugador hacia arriba (lo usa el poder Tornado).
-     * Pone la velocidad vertical en negativo (Y=0 es arriba) y lo despega
-     * del suelo; la gravedad de update() se encarga de bajarlo despues.
+     * Lanza al jugador hacia arriba, despegándolo del suelo, para el
+     * efecto del tiro de poder Tornado. La gravedad que se aplica en
+     * la actualización de cada frame se encarga de bajarlo después.
+     * @param strength fuerza con la que se lanza al jugador hacia arriba
      */
     public void launchUp(double strength) {
         this.velocityY = -strength;
@@ -93,15 +114,21 @@ public class Player implements Serializable{
     }
 
 
-    /** Aplica un empuje horizontal (lo usa el poder Aura Azul). Se desliza y se frena en update(). */
+    /**
+     * Aplica un empuje horizontal al jugador, para el efecto del tiro
+     * de poder Aura Azul. El empuje se desliza y se frena solo con el
+     * paso de los frames.
+     * @param vx velocidad horizontal del empuje aplicado al jugador
+     */
     public void applyKnockback(double vx) {
         this.knockbackVX = vx;
     }
 
     /**
-     * Actualiza la posicion vertical del jugador en cada frame.
-     * Aplica gravedad y lo detiene en el suelo.
-     * @para, groundY la coordenada Y del suelo, donde se apoyan los jugadores
+     * Actualiza la posición del jugador en cada frame: desliza y frena
+     * el empuje horizontal que tenga, aplica la gravedad a su
+     * velocidad vertical, y lo detiene al llegar al suelo de la cancha.
+     * @param groundY posición vertical del suelo, donde se apoyan los jugadores
      */
     public void update(double  groundY){
 
@@ -129,7 +156,10 @@ public class Player implements Serializable{
     }
 
     /**
-     * descuenta el aturdimiento con el tiempo, al llegar a 0 se reinicia la viida
+     * Descuenta el tiempo de aturdimiento transcurrido y, al agotarse,
+     * reinicia la vida del jugador a su máximo y lo deja listo para
+     * volver a jugar normalmente.
+     * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
      */
     public void updateStun(double deltaTime){
         if(stunned){
@@ -139,10 +169,12 @@ public class Player implements Serializable{
             }
         }
     }
-    
+
     /**
-     *baja el efecto (electrocutado, insciente, confundido) 
-     * y lo quita al terminar
+     * Descuenta el tiempo del efecto activo del jugador, ya sea
+     * electrocutado, inconsciente o confundido, y lo retira al
+     * agotarse su duración.
+     * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
      */
     public void updateEffect(double deltaTime){
         if(currentEffect != null){
@@ -153,12 +185,22 @@ public class Player implements Serializable{
         }
     }
 
+    /**
+     * Patea el balón dado, impulsándolo según la estadística kick del
+     * jugador, siempre que el jugador no esté aturdido ni inconsciente.
+     * @param ball balón que el jugador patea
+     */
     public void kick(Ball ball) {
         if (!stunned && !"unconscious".equals(currentEffect)) {
             ball.applyForce(kick, 0);
         }
     }
 
+    /**
+     * Activa el aura del poder del jugador y vacía su barra de poder,
+     * siempre que la barra esté llena, el jugador no esté aturdido y
+     * no tenga ya el aura activa.
+     */
     public void usePower(){
         if(!stunned && powerBar.isFull() && !auraActive){
             auraActive = true;
@@ -166,15 +208,29 @@ public class Player implements Serializable{
         }
     }
 
+    /**
+     * Deja al jugador aturdido durante la duración dada, sin poder
+     * moverse, saltar ni patear mientras dure el aturdimiento.
+     * @param duration duración del aturdimiento en segundos
+     */
     public void stun(double duration) {
         this.stunned = true;
         this.stunTimer = duration;
     }
 
+    /**
+     * Indica si el jugador se encuentra aturdido en este momento.
+     * @return verdadero si el jugador está aturdido, falso en caso contrario
+     */
     public boolean isStunned() {
         return stunned;
     }
 
+    /**
+     * Resta el daño dado a la vida del jugador y, si su vida llega a
+     * cero, lo deja aturdido durante tres segundos.
+     * @param damage cantidad de daño que recibe el jugador
+     */
     public void takeDamage(double damage){
         health -= damage;
         if (health <= 0) {
@@ -183,12 +239,22 @@ public class Player implements Serializable{
         }
     }
 
+    /**
+     * Reinicia la vida del jugador a su máximo y le quita el
+     * aturdimiento, dejándolo listo para volver a jugar normalmente.
+     */
     public void resetHealth() {
         this.health = getMaxHealth();
         this.stunned = false;
         this.stunTimer = 0;
     }
 
+    /**
+     * Fija la posición inicial del jugador dentro de la cancha, a la
+     * que vuelve después de cada gol.
+     * @param x posición horizontal inicial del jugador
+     * @param y posición vertical inicial del jugador
+     */
     public void setInitialPosition(double x, double y) {
         this.initialX = x;
         this.initialY = y;
@@ -196,12 +262,20 @@ public class Player implements Serializable{
         this.positionY = y;
     }
 
+    /**
+     * Devuelve al jugador a su posición inicial dentro de la cancha,
+     * según las reglas del juego después de cada gol.
+     */
     public void resetPosition() {
         this.positionX = initialX;
         this.positionY = initialY;
     }
 
-    /** Mantiene al jugador dentro de la cancha en X (antes lo hacia Game). */
+    /**
+     * Mantiene al jugador dentro de los bordes horizontales de la cancha.
+     * @param width ancho de la cancha
+     * @param diameter diámetro del jugador
+     */
     public void clampToField(int width, int diameter) {
         if (positionX < 0) {
             positionX = 0;
@@ -211,39 +285,74 @@ public class Player implements Serializable{
         }
     }
 
+    /**
+     * Calcula el multiplicador de daño que corresponde a la
+     * estadística kick actual del jugador.
+     * @return el multiplicador de daño según la estadística kick
+     */
     public double getMultiplicadorKick() {
         return 1 + 0.10 * (kick - 1);
     }
 
-    /** Velocidad real en pixeles/frame: base 5 escalada por el nivel (igual que las otras stats). */
+    /**
+     * Calcula la velocidad real de desplazamiento del jugador en
+     * píxeles por frame, según su estadística speed actual.
+     * @return la velocidad de desplazamiento del jugador
+     */
     public double getMoveSpeed() {
         return 5 * (1 + 0.10 * (speed - 1));
     }
 
+    /**
+     * Calcula la vida máxima del jugador según su estadística survival actual.
+     * @return la vida máxima del jugador
+     */
     public double getMaxHealth() {
         return 100 * (1 + 0.10 * (survival - 1));
     }
 
+    /**
+     * Aplica al jugador el efecto dado durante la duración dada,
+     * reemplazando cualquier efecto que tuviera antes.
+     * @param effect nombre del efecto a aplicar, electrocutado, inconsciente o confundido
+     * @param duration duración en segundos del efecto
+     */
     public void applyEffect(String effect, double duration) {
         this.currentEffect = effect;
         this.effectTimer = duration;
     }
 
+    /**
+     * Entrega el nombre del efecto que tiene activo el jugador en este momento.
+     * @return el nombre del efecto activo, o nulo si el jugador no tiene ningún efecto
+     */
     public String getCurrentEffect() {
         return currentEffect;
     }
 
+    /**
+     * Entrega el tiempo restante del efecto activo del jugador, en segundos.
+     * @return el tiempo restante del efecto activo
+     */
     public double getEffectTimer() {
         return effectTimer;
     }
 
+    /**
+     * Quita cualquier efecto activo del jugador.
+     */
     public void clearEffect() {
         this.currentEffect = null;
         this.effectTimer = 0;
     }
 
-    /** 
-     * Fija las estadisticas del jugador desde su perfil, al empezar el partido.
+    /**
+     * Fija las estadísticas del jugador desde su perfil, al empezar el
+     * partido, y ajusta su vida al máximo que les corresponde.
+     * @param speed estadística de velocidad de desplazamiento del jugador
+     * @param kick estadística de daño de patada del jugador
+     * @param jump estadística de altura de salto del jugador
+     * @param survival estadística de vida máxima del jugador
      */
     public void setStats(int speed, int kick, int jump, int survival) {
         this.speed = speed;
@@ -253,6 +362,12 @@ public class Player implements Serializable{
         this.health = getMaxHealth();   //la vida maxima depende de survival
     }
 
+    /**
+     * Sube en un punto la estadística dada del jugador, hasta un
+     * máximo de diez puntos, y si la estadística subida es survival
+     * también ajusta la vida al nuevo máximo.
+     * @param stat nombre de la estadística a subir, speed, jump, kick o survival
+     */
     public void upgradeStat(String stat){
         if(stat.equals("speed")){
             if (speed < 10) speed++;
@@ -268,69 +383,139 @@ public class Player implements Serializable{
         }
     }
 
+    /**
+     * Suma la cantidad dada a los puntos acumulados del jugador.
+     * @param amount cantidad de puntos a sumar
+     */
     public void addPoints(int amount){
         this.points += amount;
     }
 
+    /**
+     * Entrega los puntos acumulados por el jugador.
+     * @return los puntos acumulados del jugador
+     */
     public int getPoints(){
         return points;
     }
 
+    /**
+     * Entrega la posición horizontal del jugador.
+     * @return la posición horizontal del jugador
+     */
     public double getPositionX() {
         return positionX;
     }
 
+    /**
+     * Entrega la posición vertical del jugador.
+     * @return la posición vertical del jugador
+     */
     public double getPositionY() {
         return positionY;
     }
 
+    /**
+     * Entrega la vida actual del jugador.
+     * @return la vida actual del jugador
+     */
     public double getHealth() {
         return health;
     }
 
+    /**
+     * Entrega el personaje del jugador.
+     * @return el personaje del jugador
+     */
     public Character getCharacter() {
         return character;
     }
 
+    /**
+     * Fija el personaje del jugador.
+     * @param character personaje a asignar al jugador
+     */
     public void setCharacter(Character character) {
         this.character = character;
     }
 
+    /**
+     * Entrega la barra de poder del jugador.
+     * @return la barra de poder del jugador
+     */
     public PowerBar getPowerBar() {
         return powerBar;
     }
 
+    /**
+     * Indica si el jugador tiene el aura de su poder activa en este momento.
+     * @return verdadero si el aura del poder está activa, falso en caso contrario
+     */
     public boolean isAuraActive() {
         return auraActive;
     }
 
+    /**
+     * Cambia el estado del aura del poder del jugador.
+     * @param auraActive verdadero para activar el aura del poder, falso para apagarla
+     */
     public void setAuraActive(boolean auraActive){
         this.auraActive = auraActive;
     }
 
+    /**
+     * Entrega la estadística de velocidad de desplazamiento del jugador.
+     * @return la estadística speed del jugador
+     */
     public int getSpeed() {
         return speed;
     }
 
+    /**
+     * Entrega la estadística de altura de salto del jugador.
+     * @return la estadística jump del jugador
+     */
     public int getJump() {
         return jump;
     }
 
+    /**
+     * Entrega la estadística de daño de patada del jugador.
+     * @return la estadística kick del jugador
+     */
     public int getKick() {
         return kick;
     }
 
+    /**
+     * Entrega la estadística de vida máxima del jugador.
+     * @return la estadística survival del jugador
+     */
     public int getSurvival() {
         return survival;
     }
     //para el salto
+    /**
+     * Entrega la velocidad vertical actual del jugador, usada por la
+     * física de su salto.
+     * @return la velocidad vertical del jugador
+     */
     public double getVelocity(){
         return velocityY;
     }
+
+    /**
+     * Fija la posición horizontal del jugador.
+     * @param positionX nueva posición horizontal del jugador
+     */
     public void setPositionX(double positionX) {
         this.positionX = positionX;
     }
 
+    /**
+     * Fija la posición vertical del jugador.
+     * @param positionY nueva posición vertical del jugador
+     */
     public void setPositionY(double positionY) {
         this.positionY = positionY;
     }

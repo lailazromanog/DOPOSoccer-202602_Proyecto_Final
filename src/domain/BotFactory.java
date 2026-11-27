@@ -9,15 +9,23 @@ package domain;
  */
 public class BotFactory {
 
-    public Bot create(String profile) {
+    /**
+     * Crea el bot correspondiente al perfil de máquina elegido.
+     * @param profile perfil de máquina del bot a crear
+     * @return el bot creado con ese perfil
+     * @throws DOPOSoccerException si el perfil dado no corresponde a ningún perfil de máquina disponible
+     */
+    public Bot create(String profile) throws DOPOSoccerException {
         if (profile.equals("stupid")) {
             return new Stupid();
         } else if (profile.equals("defensive")) {
             return new Defensive();
         } else if (profile.equals("expert")) {
             return new Expert();
+        } else if (profile.equals("offensive")) {
+            return new Offensive();
         } else {
-            return new Offensive();   // offensive
+            throw new DOPOSoccerException("Perfil de maquina no reconocido: " + profile);
         }
     }
 }

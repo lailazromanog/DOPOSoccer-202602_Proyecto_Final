@@ -1,11 +1,27 @@
 package domain;
 
+/**
+ * Perfil de máquina Experta.
+ * Decide su acción según el estado del partido: si va perdiendo o
+ * empatando ataca y persigue el balón, y si va ganando defiende su
+ * arco, saliendo solo cuando el balón queda cerca.
+ */
 public class Expert extends Bot {
 
+    /**
+     * Crea un bot con el perfil Experta.
+     */
     public Expert() {
         super();
     }
 
+    /**
+     * Compara el marcador propio contra el del rival para elegir entre
+     * atacar persiguiendo el balón o defender su arco, salta cuando el
+     * balón está cerca y por encima suyo, y al tenerlo al alcance del
+     * pie activa su poder si está disponible y pide patear.
+     * @param match partido en curso sobre el que el bot toma su decisión
+     */
     @Override
     public void decideAction(Match match) {
         Ball ball = match.getBall();

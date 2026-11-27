@@ -6,6 +6,12 @@ import java.io.Serializable;
  * Cada subclase concreta define el efecto propio que produce sobre el
  * rival cuando se activa, siguiendo el esquema de personaje y poder
  * descrito en los requisitos del juego.
+ *
+ * Punto de extensión: para agregar un tiro de poder nuevo basta con
+ * crear una subclase propia que defina su daño base, la duración de
+ * su efecto y la acción que ejecuta, y registrarla en la fábrica de
+ * personajes. El resto del juego trabaja contra esta clase y no
+ * necesita cambios.
  */
 public abstract class Power implements Serializable{
     private String name;
@@ -65,7 +71,7 @@ public abstract class Power implements Serializable{
      * Cambia el estado de actividad del tiro de poder.
      * @param active verdadero para marcar el tiro de poder como activo, falso para marcarlo como inactivo
      */
-    public void setActive(boolean active){
+    public void setActive(boolean active) {
         this.active = active;
     }
 

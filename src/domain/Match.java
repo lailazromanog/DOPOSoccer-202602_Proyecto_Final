@@ -76,6 +76,28 @@ public abstract class Match implements Serializable{
         this.fakeTimer = duration;
     }
 
+        /** Mueve los senuelos cada frame y los elimina cuando se acaba el efecto. */
+    public void updateFakeBalls(double deltaTime, int width, int ballDiameter, int ground) {
+        if (fakeTimer <= 0) {
+            return;
+        }
+        fakeTimer -= deltaTime;
+        if (fakeTimer <= 0) {
+            fakeBalls.clear();
+            return;
+        }
+        for (int i = 0; i < fakeBalls.size(); i++) {
+            Ball fake = fakeBalls.get(i);
+            fake.advance();
+            fake.bounceInBounds(width, ballDiameter, ground);
+        }
+    }
+
+    public List<Ball> getFakeBalls() {
+        return fakeBalls;
+    }
+
+    
     public abstract boolean checkWinCondition();
 
     public Player getLeftPlayer() {

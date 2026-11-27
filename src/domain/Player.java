@@ -93,6 +93,11 @@ public class Player implements Serializable{
     }
 
 
+    /** Aplica un empuje horizontal (lo usa el poder Aura Azul). Se desliza y se frena en update(). */
+    public void applyKnockback(double vx) {
+        this.knockbackVX = vx;
+    }
+
     /**
      * Actualiza la posicion vertical del jugador en cada frame.
      * Aplica gravedad y lo detiene en el suelo.

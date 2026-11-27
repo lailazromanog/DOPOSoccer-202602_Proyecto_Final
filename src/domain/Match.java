@@ -63,17 +63,23 @@ public abstract class Match implements Serializable{
      */
     public void awardPoints(){
         Player winner = score.getWinner();
-        if (winner == leftPlayer) {
-            leftPlayer.addPoints(100);
-            rightPlayer.addPoints(25);
-        }else if (winner == rightPlayer) {
-            rightPlayer.addPoints(100);
-            leftPlayer.addPoints(25);
-        }else {
-            //empate 
-            leftPlayer.addPoints(25);
-            rightPlayer.addPoints(25);
+        try {
+            if (winner == leftPlayer) {
+                leftPlayer.addPoints(100);
+                rightPlayer.addPoints(25);
+            }else if (winner == rightPlayer) {
+                rightPlayer.addPoints(100);
+                leftPlayer.addPoints(25);
+            }else {
+                //empate .
+                leftPlayer.addPoints(25);
+                rightPlayer.addPoints(25);
+            }
+        } catch (DOPOSoccerException e) {
+            // los puntos repartidos son constantes positivas, asi que esto no deberia ocurrir
+            throw new IllegalStateException("Error interno al repartir puntos del partido: " + e.getMessage(), e);
         }
+        
     }
 
 
@@ -318,7 +324,14 @@ public abstract class Match implements Serializable{
      */
     public void checkKickContact(Player attacker, Player opponent){
         double damage = 10 * attacker.getMultiplicadorKick();
-        opponent.takeDamage(damage);
+        try {
+            opponent.takeDamage(damage);
+        } catch (DOPOSoccerException e) {
+            // el daño se sale del multiplicador, que siempre es mayor o igual a 1, asi que no deberia ocurrir
+            throw new IllegalStateException("Error interno al aplicar el dano de la patada: " + e.getMessage(), e);
+
+        }
+        
     }
 
     /**

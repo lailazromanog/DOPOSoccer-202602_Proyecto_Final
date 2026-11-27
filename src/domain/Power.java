@@ -104,7 +104,13 @@ public abstract class Power implements Serializable{
     public void hit(Match match, Player attacker, Player opponent) {
         // el daño es el mismo calculo para todos los poderes
         double damage = calculateDamage(attacker);
-        opponent.takeDamage(damage);
+        try {
+            opponent.takeDamage(damage);
+        } catch (DOPOSoccerException e) {
+            // el daño sale del dano base y del multiplicador, ambos positivos, asi que no deberia ocurrir el error
+            throw new IllegalStateException("Error interno al aplicar el dano del tiro de poder: " + e.getMessage(), e);
+        }
+        
 
         // el efecto lo define cada poder concreto
         applyHitEffect(match, attacker, opponent);

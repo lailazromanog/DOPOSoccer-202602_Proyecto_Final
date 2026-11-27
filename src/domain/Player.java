@@ -236,8 +236,12 @@ public class Player implements Serializable{
      * Resta el daño dado a la vida del jugador y, si su vida llega a
      * cero, lo deja aturdido durante tres segundos.
      * @param damage cantidad de daño que recibe el jugador
+     * @throws DOPOSoccerException si el daño es negativo
      */
-    public void takeDamage(double damage){
+    public void takeDamage(double damage) throws DOPOSoccerException{
+        if (damage < 0){
+            throw new DOPOSoccerException("El dano recibido no puede ser negativo. Valor recibido: " + damage + ".");
+        }
         health -= damage;
         if (health <= 0) {
             health = 0;
@@ -358,14 +362,33 @@ public class Player implements Serializable{
     }
 
     /**
+     * Verifica que el nivel dado de una estadistica este dentro del rango permitido para las estadisticas del jugador.
+     * @param stat nombre de la estadistica que se verifica, para armar el mensaje de error 
+     * @param level nivel que se quier everificar
+     * @throws DOPOSoccerException si el nivel es menor que el mínimo o mayor que el máximo permitidos
+     */
+    private void checkLevel(String stat, int level) throws DOPOSoccerException{
+        if (level < Profile.MIN_LEVEL || level > Profile.MAX_LEVEL) {
+            throw new DOPOSoccerException("Nivel invalido para la estadistica '" + stat + "': " + level + ". Debe estar entre " + Profile.MIN_LEVEL + " y " + Profile.MAX_LEVEL + ".");
+        }
+    }
+
+    /**
      * Fija las estadísticas del jugador desde su perfil, al empezar el
      * partido, y ajusta su vida al máximo que les corresponde.
      * @param speed estadística de velocidad de desplazamiento del jugador
      * @param kick estadística de daño de patada del jugador
      * @param jump estadística de altura de salto del jugador
      * @param survival estadística de vida máxima del jugador
+     * @throws DOPOSoccerException si alguna estadística está fuera del rango permitido
      */
-    public void setStats(int speed, int kick, int jump, int survival) {
+    public void setStats(int speed, int kick, int jump, int survival) throws DOPOSoccerException{
+        //primero se validan las 4 estadisticas 
+        checkLevel("speed", speed);
+        checkLevel("kick", kick);
+        checkLevel("jump", jump);
+        checkLevel("survival", survival);
+
         this.speed = speed;
         this.kick = kick;
         this.jump = jump;
@@ -381,16 +404,26 @@ public class Player implements Serializable{
      */
     public void upgradeStat(String stat) throws DOPOSoccerException {
         if(stat.equals("speed")){
-            if (speed < 10) speed++;
+            if (speed >= Profile.MAX_LEVEL){
+                throw DOPOSoccerException.maxLevelReached(stat, Profile.MAX_LEVEL);
+            } 
+            speed++;
         } else if(stat.equals("jump")){
-            if (jump < 10) jump++;
-        } else if(stat.equals("kick")){
-            if (kick < 10) kick++;
-        } else if(stat.equals("survival")){
-            if (survival < 10) {
-                survival++;
-                health = getMaxHealth();
+            if (jump >= Profile.MAX_LEVEL){
+                throw DOPOSoccerException.maxLevelReached(stat, Profile.MAX_LEVEL);
             }
+            jump++;
+        } else if(stat.equals("kick")){
+            if (kick >= Profile.MAX_LEVEL){
+                throw DOPOSoccerException.maxLevelReached(stat, Profile.MAX_LEVEL);
+            } 
+            kick++;
+        } else if(stat.equals("survival")){
+            if (survival >= Profile.MAX_LEVEL){
+                throw DOPOSoccerException.maxLevelReached(stat, Profile.MAX_LEVEL);
+            }
+            survival++;
+            health = getMaxHealth();
         } else {
             throw new DOPOSoccerException("Estadistica desconocida para el jugador: '" + stat + "'. Las validas son speed, kick, jump y survival.");
         }
@@ -400,7 +433,11 @@ public class Player implements Serializable{
      * Suma la cantidad dada a los puntos acumulados del jugador.
      * @param amount cantidad de puntos a sumar
      */
-    public void addPoints(int amount){
+    public void addPoints(int amount) throws DOPOSoccerException{
+        if (amount < 0) {
+            throw new DOPOSoccerException("No se pueden sumar puntos negativos al jugador. Cantidad recibida: " + amount + ".");
+
+        }
         this.points += amount;
     }
 

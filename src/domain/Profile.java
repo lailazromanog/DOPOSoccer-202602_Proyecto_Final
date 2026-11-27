@@ -161,7 +161,7 @@ public class Profile implements Serializable {
      */
     public void upgrade(String stat) throws DOPOSoccerException {
         if (isMax(stat)){
-            throw new DOPOSoccerException("La estadistica " + stat + " ya esta en su maximo nivel de " + MAX_LEVEL + " ,y no se puede mejorar mas");
+              throw DOPOSoccerException.maxLevelReached(stat, MAX_LEVEL);
         }
         int cost = upgradeCost(stat);
         if (points < cost){

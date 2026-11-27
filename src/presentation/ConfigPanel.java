@@ -45,6 +45,11 @@ public class ConfigPanel extends JPanel {
     private JComboBox<String> opponentBox;
 
 
+    /**
+     * Crea la pantalla de configuración del partido, con su fondo, sus
+     * componentes y las acciones de sus botones ya listas.
+     * @param gui ventana principal que recibe la orden de cambiar de pantalla
+     */
     public ConfigPanel(GameGUI gui){
         loadBackground();
         prepareElements();
@@ -52,7 +57,8 @@ public class ConfigPanel extends JPanel {
     }
 
     /**
-     * Carga la imagen de fondo de la configuracion
+     * Carga la imagen de fondo de la pantalla de configuración desde
+     * el archivo de recursos del juego.
      */
     private void loadBackground(){
         try{
@@ -62,7 +68,8 @@ public class ConfigPanel extends JPanel {
         }
     }
     /**
-     * Dibuja la foto de fondo 
+     * Dibuja la imagen de fondo de la pantalla, si se pudo cargar.
+     * @param g contexto gráfico sobre el que se dibuja el panel
      */
     @Override
     protected void paintComponent(Graphics g){
@@ -73,7 +80,10 @@ public class ConfigPanel extends JPanel {
     }
 
     /**
-     * Crea y ubica los componentes de la pantalla
+     * Crea y ubica todos los componentes de la pantalla de
+     * configuración dentro de la tarjeta central: tipo de partido,
+     * valor del partido, resolución, rival y los botones de jugar,
+     * abrir partida y mejorar estadísticas.
      */
     private void prepareElements(){
         setPreferredSize(new Dimension(769, 600));
@@ -162,8 +172,18 @@ public class ConfigPanel extends JPanel {
     /**
      * crea cada boton en la pantalla
      */
+    /**
+     * Asigna a cada botón y cada opción de la pantalla la acción que
+     * debe ejecutar cuando el jugador la selecciona.
+     * @param gui ventana principal que recibe la orden de cambiar de pantalla
+     */
     private void prepareActions(final GameGUI gui){
         byTimeOption.addActionListener(new ActionListener(){
+            /**
+             * Cambia la etiqueta del valor a mostrar minutos, para la
+             * opción de partido por tiempo.
+             * @param e evento de selección de la opción por tiempo
+             */
             @Override
             public void actionPerformed(ActionEvent e){
                 valueLabel.setText("Minutos: ");
@@ -171,6 +191,11 @@ public class ConfigPanel extends JPanel {
         });
 
         byGoalsOption.addActionListener(new ActionListener(){
+            /**
+             * Cambia la etiqueta del valor a mostrar goles para ganar,
+             * para la opción de partido por goles.
+             * @param e evento de selección de la opción por goles
+             */
             @Override
             public void actionPerformed(ActionEvent e){
                 valueLabel.setText("Goles para ganar: ");
@@ -179,6 +204,14 @@ public class ConfigPanel extends JPanel {
 
 
         openButton.addActionListener(new ActionListener(){
+            /**
+             * Abre el selector de archivos y, si el jugador elige uno,
+             * intenta cargar la partida guardada en él y entrar a la
+             * cancha con esa partida y la resolución elegida. Si el
+             * archivo no contiene una partida válida, muestra el error
+             * al jugador y lo registra en el log.
+             * @param e evento de clic del botón abrir partida
+             */
             @Override
             public void actionPerformed(ActionEvent e){
                 JFileChooser chooser = new JFileChooser();
@@ -197,6 +230,10 @@ public class ConfigPanel extends JPanel {
         });
 
         shopButton.addActionListener(new ActionListener(){
+            /**
+             * Muestra la tienda de mejoras de estadísticas.
+             * @param e evento de clic del botón mejorar estadísticas
+             */
             @Override
             public void actionPerformed(ActionEvent e){
                 gui.showShop();
@@ -205,6 +242,14 @@ public class ConfigPanel extends JPanel {
 
 
         playButton.addActionListener(new ActionListener(){
+            /**
+             * Reúne el tipo de partido, el valor escrito, la
+             * resolución y el rival elegidos, y pasa a la pantalla de
+             * selección de personajes con esos datos. Si el valor
+             * escrito no es válido, muestra el error al jugador y lo
+             * registra en el log sin cambiar de pantalla.
+             * @param e evento de clic del botón jugar
+             */
             @Override
             public void actionPerformed(ActionEvent e){
                 try {
@@ -239,7 +284,10 @@ public class ConfigPanel extends JPanel {
     }
 
     /**
-     * lee el numero escrito, si no es valido usa un valor por defecto 
+     * Lee el número escrito en el campo de texto del valor del
+     * partido y lo valida.
+     * @return el valor escrito, ya validado
+     * @throws DOPOSoccerException si el texto no es un número entero válido, o si no es mayor que cero
      */
     private int readValue() throws DOPOSoccerException{
         String text = valueField.getText().trim();
@@ -254,7 +302,15 @@ public class ConfigPanel extends JPanel {
         }
     }
 
-    //pa no repetir codigo 
+    //pa no repetir codigo
+    /**
+     * Crea una etiqueta de texto con la fuente y el color dados, para
+     * no repetir la misma configuración en cada etiqueta de la pantalla.
+     * @param text texto de la etiqueta
+     * @param font fuente de la etiqueta
+     * @param color color del texto de la etiqueta
+     * @return la etiqueta creada
+     */
     private JLabel label(String text, Font font, Color color){
         JLabel l = new JLabel(text);
         l.setFont(font);
@@ -263,12 +319,19 @@ public class ConfigPanel extends JPanel {
         return l;
     }
 
+    /**
+     * Crea un botón de selección única con el texto dado, para no
+     * repetir la misma configuración en cada opción de la pantalla.
+     * @param text texto de la opción
+     * @param selected verdadero para que la opción empiece seleccionada
+     * @return el botón de selección creado
+     */
     private JRadioButton radio(String text, boolean selected){
         JRadioButton r = new JRadioButton(text, selected);
         r.setFont(new Font("Arial", Font.PLAIN, 16));
         r.setForeground(Color.WHITE);
         r.setOpaque(false);
         r.setAlignmentX(Component.CENTER_ALIGNMENT);
-        return r; 
+        return r;
     }
 }

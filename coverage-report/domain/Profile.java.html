@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Profile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Profile.java</span></div><h1>Profile.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Progreso persistente de un jugador (J1 o J2): puntos acumulados y niveles de
+ * estadisticas. Se conserva entre partidos; las estadisticas aplican a cualquier
+ * personaje que el jugador elija.
+ *
+ * Reglas:
+ *  - cada estadistica va de 1 a 10.
+ *  - el precio del proximo nivel arranca en 500 y se duplica: 500, 1000, 2000
+ *  - se ganan 100 puntos por victoria y 25 por derrota.
+ */
+public class Profile implements Serializable {
+    private int points;
+    private int speed;
+    private int kick;
+    private int jump;
+    private int survival;
+
+    /**
+     * Crea un perfil nuevo con sus puntos en cero y todas sus
+     * estadísticas en el nivel mínimo.
+     */
+<span class="fc" id="L26">    public Profile() {</span>
+<span class="fc" id="L27">        this.points = 0;</span>
+<span class="fc" id="L28">        this.speed = 1;</span>
+<span class="fc" id="L29">        this.kick = 1;</span>
+<span class="fc" id="L30">        this.jump = 1;</span>
+<span class="fc" id="L31">        this.survival = 1;</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Entrega los puntos acumulados del perfil.
+     * @return los puntos acumulados del perfil
+     */
+    public int getPoints(){
+<span class="fc" id="L39">        return points;</span>
+    }
+
+    /**
+     * Entrega el nivel de la estadística de velocidad del perfil.
+     * @return el nivel de la estadística speed
+     */
+    public int getSpeed(){
+<span class="fc" id="L47">        return speed;</span>
+    }
+
+    /**
+     * Entrega el nivel de la estadística de daño de patada del perfil.
+     * @return el nivel de la estadística kick
+     */
+    public int getKick(){
+<span class="fc" id="L55">        return kick;</span>
+    }
+
+    /**
+     * Entrega el nivel de la estadística de altura de salto del perfil.
+     * @return el nivel de la estadística jump
+     */
+    public int getJump(){
+<span class="fc" id="L63">        return jump;</span>
+    }
+
+    /**
+     * Entrega el nivel de la estadística de vida máxima del perfil.
+     * @return el nivel de la estadística survival
+     */
+    public int getSurvival(){
+<span class="fc" id="L71">        return survival;</span>
+    }
+
+    /**
+     * Suma la cantidad dada a los puntos acumulados del perfil.
+     * @param amount cantidad de puntos a sumar
+     */
+    public void addPoints(int amount) {
+<span class="fc" id="L79">        points += amount;</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Entrega el nivel actual de la estadística dada.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return el nivel actual de esa estadística
+     */
+    private int levelOf(String stat) {
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (stat.equals(&quot;speed&quot;)) {</span>
+<span class="fc" id="L89">            return speed;</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        } else if (stat.equals(&quot;kick&quot;)) {</span>
+<span class="fc" id="L91">            return kick;</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        } else if (stat.equals(&quot;jump&quot;)) {</span>
+<span class="fc" id="L93">            return jump;</span>
+        } else {
+<span class="fc" id="L95">            return survival;</span>
+        }
+    }
+
+    /**
+     * Calcula el precio en puntos del próximo nivel de la estadística
+     * dada, que arranca en quinientos puntos y se duplica con cada nivel.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return el precio del próximo nivel de esa estadística
+     */
+    public int upgradeCost(String stat) {
+<span class="fc" id="L106">        return 500 * (int) Math.pow(2, levelOf(stat) - 1);</span>
+    }
+
+    /**
+     * Indica si la estadística dada se puede mejorar: si no está en su
+     * nivel máximo y el perfil tiene puntos suficientes para pagar el
+     * próximo nivel.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return verdadero si la estadística se puede mejorar, falso en caso contrario
+     */
+    public boolean canUpgrade(String stat) {
+<span class="fc bfc" id="L117" title="All 4 branches covered.">        return levelOf(stat) &lt; 10 &amp;&amp; points &gt;= upgradeCost(stat);</span>
+    }
+
+    /**
+     * Indica si la estadística dada ya llegó a su nivel máximo.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return verdadero si la estadística está en su nivel máximo, falso en caso contrario
+     */
+    public boolean isMax(String stat) {
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        return levelOf(stat) &gt;= 10;</span>
+    }
+
+    /**
+     * Sube un nivel la estadística dada y descuenta del perfil el
+     * precio de ese nivel, siempre que la estadística se pueda mejorar.
+     * @param stat nombre de la estadística a subir, speed, kick, jump o survival
+     */
+    public void upgrade(String stat) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (!canUpgrade(stat)) {</span>
+<span class="fc" id="L136">            return;</span>
+        }
+<span class="fc" id="L138">        points -= upgradeCost(stat);</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (stat.equals(&quot;speed&quot;)) {</span>
+<span class="fc" id="L140">            speed++;</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        } else if (stat.equals(&quot;kick&quot;)) {</span>
+<span class="fc" id="L142">            kick++;</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        } else if (stat.equals(&quot;jump&quot;)) {</span>
+<span class="fc" id="L144">            jump++;</span>
+        } else {
+<span class="fc" id="L146">            survival++;</span>
+        }
+<span class="fc" id="L148">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

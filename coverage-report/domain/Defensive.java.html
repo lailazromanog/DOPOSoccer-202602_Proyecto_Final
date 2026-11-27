@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Defensive.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Defensive.java</span></div><h1>Defensive.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Perfil de máquina Defensiva.
+ * Su prioridad es defender su arco: solo sale a despejar el balón
+ * cuando lo tiene cerca, y el resto del tiempo vuelve a su puesto de
+ * guardia frente al arco propio.
+ */
+public class Defensive extends Bot {
+
+    /**
+     * Crea un bot con el perfil Defensiva.
+     */
+    public Defensive() {
+<span class="fc" id="L15">        super();</span>
+<span class="fc" id="L16">    }</span>
+
+    /**
+     * Sale a despejar el balón cuando lo tiene cerca y, si está lejos,
+     * vuelve a su puesto de guardia frente al arco propio. Salta
+     * cuando el balón está cerca y por encima suyo, y al tenerlo al
+     * alcance del pie activa su poder si está disponible y pide patear.
+     * @param match partido en curso sobre el que el bot toma su decisión
+     */
+    @Override
+    public void decideAction(Match match) {
+<span class="nc" id="L27">        Ball ball = match.getBall();</span>
+<span class="nc" id="L28">        Goal myGoal = match.getRightGoal();</span>
+<span class="nc" id="L29">        double dx = ball.getPositionX() - getPositionX();</span>
+<span class="nc" id="L30">        double dist = Math.abs(dx);</span>
+<span class="nc" id="L31">        double guardX = myGoal.getPositionX() - 90;   // puesto de guardia frente al arco</span>
+
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (dist &lt; 130) {</span>
+            // el balon esta cerca: sale a despejarlo
+<span class="nc bnc" id="L35" title="All 2 branches missed.">            if (dx &gt; 10) {</span>
+<span class="nc" id="L36">                moveRight();</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">            } else if (dx &lt; -10) {</span>
+<span class="nc" id="L38">                moveLeft();</span>
+            }
+        } else {
+            // el balon esta lejos: vuelve a cuidar el arco
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (getPositionX() &lt; guardX - 10) {</span>
+<span class="nc" id="L43">                moveRight();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            } else if (getPositionX() &gt; guardX + 10) {</span>
+<span class="nc" id="L45">                moveLeft();</span>
+            }
+        }
+
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        if (ball.getPositionY() &lt; getPositionY() - 20 &amp;&amp; dist &lt; 60) {</span>
+<span class="nc" id="L50">            jump();</span>
+        }
+
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (dist &lt; 55) {</span>
+<span class="nc bnc" id="L54" title="All 4 branches missed.">            if (getPowerBar().isFull() &amp;&amp; !isAuraActive()) {</span>
+<span class="nc" id="L55">                usePower();</span>
+            }
+<span class="nc" id="L57">            wantsToKick = true;</span>
+        }
+<span class="nc" id="L59">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

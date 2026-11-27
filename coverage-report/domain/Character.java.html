@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Character.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Character.java</span></div><h1>Character.java</h1><pre class="source lang-java linenums">package domain;
+import java.io.Serializable;
+
+/**
+ * Representa al personaje que controla un jugador.
+ * Reúne el país que representa, su tiro de poder propio y su
+ * apariencia, y es creado por la fábrica de personajes a partir del
+ * país elegido.
+ *
+ * Punto de extensión: para agregar un personaje nuevo basta con
+ * entregarle su propio tiro de poder y su propia apariencia al crearlo,
+ * sin necesidad de una subclase ni de cambios en el resto del juego.
+ */
+public class Character implements Serializable{
+    private String name;
+    private String country;
+    private Power power;
+    private Appereance appereance;
+
+    /**
+     * Crea un personaje con su nombre, el país que representa, su tiro
+     * de poder propio y su apariencia.
+     * @param name nombre del personaje
+     * @param country país que representa el personaje
+     * @param power tiro de poder propio del personaje
+     * @param appereance apariencia del personaje, usada por la presentación para dibujarlo
+     */
+<span class="fc" id="L28">    public Character(String name, String country, Power power, Appereance appereance) {</span>
+<span class="fc" id="L29">        this.name = name;</span>
+<span class="fc" id="L30">        this.country = country;</span>
+<span class="fc" id="L31">        this.power = power;</span>
+<span class="fc" id="L32">        this.appereance = appereance;</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * Entrega el nombre del personaje.
+     * @return el nombre del personaje
+     */
+    public String getName() {
+<span class="nc" id="L40">        return name;</span>
+    }
+
+    /**
+     * Entrega el país que representa el personaje.
+     * @return el país del personaje
+     */
+    public String getCountry() {
+<span class="nc" id="L48">        return country;</span>
+    }
+
+    /**
+     * Entrega el tiro de poder propio del personaje.
+     * @return el tiro de poder del personaje
+     */
+    public Power getPower() {
+<span class="fc" id="L56">        return power;</span>
+    }
+
+    /**
+     * Entrega la apariencia del personaje, usada por la presentación
+     * para elegir la imagen con la que se dibuja.
+     * @return la apariencia del personaje
+     */
+    public Appereance getAppereance() {
+<span class="nc" id="L65">        return appereance;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

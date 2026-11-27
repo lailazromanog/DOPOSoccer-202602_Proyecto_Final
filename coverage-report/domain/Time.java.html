@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Time.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Time.java</span></div><h1>Time.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Partido jugado por tiempo.
+ * Dura un número de minutos predefinido y gana el jugador que tenga
+ * más goles al finalizar el tiempo reglamentario. En caso de empate,
+ * el partido entra en muerte súbita y gana el primer jugador que
+ * marque un gol.
+ */
+public class Time extends Match {
+    private boolean goldenGoal;
+
+    /**
+     * Crea un partido por tiempo, con el cronómetro que define los
+     * minutos de duración del partido.
+     * @param leftPlayer jugador que defiende el lado izquierdo de la cancha
+     * @param rightPlayer jugador que defiende el lado derecho de la cancha
+     * @param ball balón del partido
+     * @param leftGoal arco izquierdo de la cancha
+     * @param rightGoal arco derecho de la cancha
+     * @param timer cronómetro con la duración del partido
+     * @param score marcador del partido
+     */
+    public Time(Player leftPlayer, Player rightPlayer, Ball ball, Goal leftGoal, Goal rightGoal, Timer timer, Score score) {
+<span class="fc" id="L25">        super(leftPlayer, rightPlayer, ball, leftGoal, rightGoal, timer, score);</span>
+<span class="fc" id="L26">        this.goldenGoal = false;</span>
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * Indica si el partido ya se decidió: al agotarse el tiempo
+     * reglamentario con un marcador distinto, o durante la muerte
+     * súbita apenas un jugador se pone por encima del otro en goles.
+     * Si el tiempo se agota con el marcador empatado, el partido entra
+     * en muerte súbita en lugar de terminar.
+     * @return verdadero si el partido ya tiene un resultado definitivo, falso en caso contrario
+     */
+    @Override
+    public boolean checkWinCondition(){
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (timer.isTimeUp()){</span>
+<span class="fc" id="L40">            int goalsOne = score.getGoalsLeftPlayer();</span>
+<span class="fc" id="L41">            int goalsTwo = score.getGoalsRightPlayer();</span>
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">            if (goalsOne != goalsTwo){</span>
+<span class="fc" id="L44">                return true;</span>
+            } else {
+<span class="fc" id="L46">                goldenGoal = true;</span>
+<span class="fc" id="L47">                return false;</span>
+            }
+        }
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if(goldenGoal){</span>
+<span class="nc" id="L52">            int goalsOne = score.getGoalsLeftPlayer();</span>
+<span class="nc" id="L53">            int goalsTwo = score.getGoalsRightPlayer();</span>
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            return goalsOne != goalsTwo;</span>
+            
+        }
+
+<span class="nc" id="L59">        return false;</span>
+    }
+
+    /**
+     * Indica si el partido se encuentra en muerte súbita por haber
+     * terminado el tiempo reglamentario con el marcador empatado.
+     * @return verdadero si el partido está en muerte súbita, falso en caso contrario
+     */
+    public boolean isGoldenGoal(){
+<span class="fc" id="L68">        return goldenGoal;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

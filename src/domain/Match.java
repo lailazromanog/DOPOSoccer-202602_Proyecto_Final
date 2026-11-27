@@ -67,11 +67,11 @@ public abstract class Match implements Serializable{
             if (winner == leftPlayer) {
                 leftPlayer.addPoints(100);
                 rightPlayer.addPoints(25);
-            }else if (winner == rightPlayer) {
+            } else if (winner == rightPlayer) {
                 rightPlayer.addPoints(100);
                 leftPlayer.addPoints(25);
-            }else {
-                //empate .
+            } else {
+                //empate
                 leftPlayer.addPoints(25);
                 rightPlayer.addPoints(25);
             }
@@ -79,7 +79,6 @@ public abstract class Match implements Serializable{
             // los puntos repartidos son constantes positivas, asi que esto no deberia ocurrir
             throw new IllegalStateException("Error interno al repartir puntos del partido: " + e.getMessage(), e);
         }
-        
     }
 
 
@@ -327,11 +326,9 @@ public abstract class Match implements Serializable{
         try {
             opponent.takeDamage(damage);
         } catch (DOPOSoccerException e) {
-            // el daño se sale del multiplicador, que siempre es mayor o igual a 1, asi que no deberia ocurrir
+            // el daño sale del multiplicador, que siempre es mayor o igual a 1, asi que no deberia ocurrir
             throw new IllegalStateException("Error interno al aplicar el dano de la patada: " + e.getMessage(), e);
-
         }
-        
     }
 
     /**

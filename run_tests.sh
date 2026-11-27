@@ -17,9 +17,6 @@ esac
 
 echo ""
 echo "=== DOPOSoccer: compilacion + pruebas + cobertura ==="
-
-echo ""
-echo "=== DOPOSoccer: compilacion + pruebas + cobertura ==="
 echo ""
 
 # --- 1. Limpiar y preparar la carpeta de compilados ---

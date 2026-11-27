@@ -361,10 +361,11 @@ public class Player implements Serializable{
         this.knockbackVX = 0;
     }
 
+
     /**
      * Verifica que el nivel dado de una estadistica este dentro del rango permitido para las estadisticas del jugador.
-     * @param stat nombre de la estadistica que se verifica, para armar el mensaje de error 
-     * @param level nivel que se quier everificar
+     * @param stat nombre de la estadistica que se verifica, para armar el mensaje de error
+     * @param level nivel que se quiere verificar
      * @throws DOPOSoccerException si el nivel es menor que el mínimo o mayor que el máximo permitidos
      */
     private void checkLevel(String stat, int level) throws DOPOSoccerException{
@@ -372,6 +373,7 @@ public class Player implements Serializable{
             throw new DOPOSoccerException("Nivel invalido para la estadistica '" + stat + "': " + level + ". Debe estar entre " + Profile.MIN_LEVEL + " y " + Profile.MAX_LEVEL + ".");
         }
     }
+
 
     /**
      * Fija las estadísticas del jugador desde su perfil, al empezar el
@@ -383,7 +385,7 @@ public class Player implements Serializable{
      * @throws DOPOSoccerException si alguna estadística está fuera del rango permitido
      */
     public void setStats(int speed, int kick, int jump, int survival) throws DOPOSoccerException{
-        //primero se validan las 4 estadisticas 
+        //primero se validan las 4 estadisticas
         checkLevel("speed", speed);
         checkLevel("kick", kick);
         checkLevel("jump", jump);
@@ -406,7 +408,7 @@ public class Player implements Serializable{
         if(stat.equals("speed")){
             if (speed >= Profile.MAX_LEVEL){
                 throw DOPOSoccerException.maxLevelReached(stat, Profile.MAX_LEVEL);
-            } 
+            }
             speed++;
         } else if(stat.equals("jump")){
             if (jump >= Profile.MAX_LEVEL){
@@ -416,7 +418,7 @@ public class Player implements Serializable{
         } else if(stat.equals("kick")){
             if (kick >= Profile.MAX_LEVEL){
                 throw DOPOSoccerException.maxLevelReached(stat, Profile.MAX_LEVEL);
-            } 
+            }
             kick++;
         } else if(stat.equals("survival")){
             if (survival >= Profile.MAX_LEVEL){
@@ -432,11 +434,11 @@ public class Player implements Serializable{
     /**
      * Suma la cantidad dada a los puntos acumulados del jugador.
      * @param amount cantidad de puntos a sumar
+     * @throws DOPOSoccerException si la cantidad es negativa
      */
     public void addPoints(int amount) throws DOPOSoccerException{
         if (amount < 0) {
             throw new DOPOSoccerException("No se pueden sumar puntos negativos al jugador. Cantidad recibida: " + amount + ".");
-
         }
         this.points += amount;
     }

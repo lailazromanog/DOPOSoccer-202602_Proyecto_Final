@@ -20,6 +20,12 @@ public class Profile implements Serializable {
     public static final int MAX_LEVEL = 10;
     // Precio en puntos del primer nivel de mejora
     public static final int BASE_COST = 500;
+    // Vida base de un jugador con la estadistica survival en su nivel minimo
+    public static final int BASE_HEALTH = 100;
+    // Dano base de una patada normal con la estadistica kick en su nivel minimo
+    public static final int BASE_KICK_DAMAGE = 10;
+    // Fraccion que suma cada nivel de una estadistica por encima del primero
+    public static final double BONUS_PER_LEVEL = 0.10;
 
     private int points;
     private int speed;
@@ -77,6 +83,63 @@ public class Profile implements Serializable {
      */
     public int getSurvival(){
         return survival;
+    }
+
+    /**
+     * Calcula la vida máxima que da el nivel actual de la estadística
+     * survival, partiendo de la vida base y sumando un diez por ciento
+     * por cada nivel por encima del primero.
+     * @return la vida máxima del jugador con su nivel actual de survival
+     */
+    public double getMaxHealth(){
+        return BASE_HEALTH * (1 + BONUS_PER_LEVEL *(survival - MIN_LEVEL));
+    }
+
+    /**
+     * Calcula el multiplicador de daño que da el nivel actual de la
+     * estadística kick, que suma un diez por ciento por cada nivel por
+     * encima del primero.
+     * @return el multiplicador de daño según el nivel actual de kick
+     */
+    public double getKickMultiplier(){
+        return 1 + BONUS_PER_LEVEL * (kick - MIN_LEVEL);
+    }
+
+    /**
+     * Calcula el daño de una patada normal con el nivel actual de la
+     * estadística kick, multiplicando el daño base de la patada por el
+     * multiplicador de daño.
+     * @return el daño de una patada normal
+     */
+    public double getKickDamage(){
+        return BASE_KICK_DAMAGE * getKickMultiplier();
+    }
+
+    /**
+     * Calcula el porcentaje de mejora que da el nivel actual de la
+     * estadística speed sobre la velocidad base.
+     * @return el porcentaje de mejora de la velocidad, cero en el nivel mínimo
+     */
+    public int getSpeedBonusPercent(){
+        return (int) Math.round(100 * BONUS_PER_LEVEL * (speed - MIN_LEVEL));
+    }
+
+    /**
+     * Calcula el porcentaje de mejora que da el nivel actual de la
+     * estadística jump sobre la altura de salto base.
+     * @return el porcentaje de mejora del salto, cero en el nivel mínimo
+     */
+    public int getJumpBonusPercent(){
+        return (int) Math.round(100 * BONUS_PER_LEVEL * (jump - MIN_LEVEL));
+    }
+
+    /**
+     * Entrega el nivel actual de la estadistica dada
+     * @param stat nombre de la estadistica, speed, kick, jump o survival
+     * @throws DOPOSoccerException si el nombre es nulo o no corresponde a ninguna estadistica
+     */
+    public int getLevel(String stat) throws DOPOSoccerException{
+        return levelOf(stat);
     }
 
     /**

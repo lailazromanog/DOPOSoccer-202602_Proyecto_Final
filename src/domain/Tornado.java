@@ -15,6 +15,19 @@ public class Tornado extends Power {
         super("Tornado", 40, 3);
     }
 
+
+    /**
+     * Deja el balón con la trayectoria que ya traía al ser tocado por el
+     * jugador con el aura activa. La trayectoria propia de este tiro se
+     * define cuando se trabaje este poder.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que activa y ejecuta el tiro de poder
+     */
+    @Override
+    public void shoot(Match match, Player attacker) {
+        // por ahora el balón sigue con la trayectoria que traía
+    }
+
     /**
      * Lanza hacia arriba al rival golpeado y lo deja inconsciente
      * durante la duración propia de este tiro de poder.

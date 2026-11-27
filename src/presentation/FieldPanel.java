@@ -238,11 +238,9 @@ public class FieldPanel extends JPanel {
         // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
         drawCharacter(g, p1Head, p1Shoe,
                 (int) game.getLeftPlayerX(), (int) game.getLeftPlayerY(),
-                game.isLeftPlayerAura(), 1);
                 game.isLeftPlayerAura(), 1, game.getLeftPlayerEffect());
         drawCharacter(g, p2Head, p2Shoe,
                 (int) game.getRightPlayerX(), (int) game.getRightPlayerY(),
-                game.isRightPlayerAura(), -1);
                 game.isRightPlayerAura(), -1, game.getRightPlayerEffect());
     }
 

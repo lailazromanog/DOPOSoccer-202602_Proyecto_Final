@@ -457,6 +457,7 @@ public class Game implements Serializable{
      * @return la lista de posiciones de los balones falsos activos
      */
     public java.util.List<double[]> getFakeBalls(){
+        java.util.List<double[]> out = new java.util.ArrayList<>();
         java.util.List<Ball> fakes = match.getFakeBalls();
         for (int i = 0; i < fakes.size(); i++) {
             Ball fake = fakes.get(i);

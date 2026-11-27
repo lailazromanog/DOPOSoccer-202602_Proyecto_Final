@@ -368,7 +368,7 @@ public class Player implements Serializable{
      * también ajusta la vida al nuevo máximo.
      * @param stat nombre de la estadística a subir, speed, jump, kick o survival
      */
-    public void upgradeStat(String stat){
+    public void upgradeStat(String stat) throws DOPOSoccerException {
         if(stat.equals("speed")){
             if (speed < 10) speed++;
         } else if(stat.equals("jump")){
@@ -380,6 +380,8 @@ public class Player implements Serializable{
                 survival++;
                 health = getMaxHealth();
             }
+        } else {
+            throw new DOPOSoccerException("Estadistica desconocida para el jugador: '" + stat + "'. Las validas son speed, kick, jump y survival.");
         }
     }
 

@@ -25,7 +25,19 @@ public class Character implements Serializable{
      * @param power tiro de poder propio del personaje
      * @param appereance apariencia del personaje, usada por la presentación para dibujarlo
      */
-    public Character(String name, String country, Power power, Appereance appereance) {
+    public Character(String name, String country, Power power, Appereance appereance) throws DOPOSoccerException {
+        if (name == null || name.trim().isEmpty()) {
+            throw new DOPOSoccerException("El nombre del personaje no puede estar vacio.");
+        }
+        if (country == null || country.trim().isEmpty()) {
+            throw new DOPOSoccerException("El pais del personaje no puede estar vacio.");
+        }
+        if (power == null) {
+            throw new DOPOSoccerException("El personaje '" + name + "' debe tener un poder asignado.");
+        }
+        if (appereance == null) {
+            throw new DOPOSoccerException("El personaje '" + name + "' debe tener una apariencia asignada.");
+        }
         this.name = name;
         this.country = country;
         this.power = power;

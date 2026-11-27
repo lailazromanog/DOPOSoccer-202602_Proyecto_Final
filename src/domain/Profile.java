@@ -84,15 +84,17 @@ public class Profile implements Serializable {
      * @param stat nombre de la estadística, speed, kick, jump o survival
      * @return el nivel actual de esa estadística
      */
-    private int levelOf(String stat) {
+    private int levelOf(String stat) throws DOPOSoccerException {
         if (stat.equals("speed")) {
             return speed;
         } else if (stat.equals("kick")) {
             return kick;
         } else if (stat.equals("jump")) {
             return jump;
-        } else {
+        } else if (stat.equals("survival")) {
             return survival;
+        } else {
+            throw new DOPOSoccerException("Estadistica desconocida: '" + stat + "'. Las validas son speed, kick, jump y survival.");
         }
     }
 
@@ -102,7 +104,7 @@ public class Profile implements Serializable {
      * @param stat nombre de la estadística, speed, kick, jump o survival
      * @return el precio del próximo nivel de esa estadística
      */
-    public int upgradeCost(String stat) {
+    public int upgradeCost(String stat) throws DOPOSoccerException {
         return 500 * (int) Math.pow(2, levelOf(stat) - 1);
     }
 
@@ -113,7 +115,7 @@ public class Profile implements Serializable {
      * @param stat nombre de la estadística, speed, kick, jump o survival
      * @return verdadero si la estadística se puede mejorar, falso en caso contrario
      */
-    public boolean canUpgrade(String stat) {
+    public boolean canUpgrade(String stat) throws DOPOSoccerException {
         return levelOf(stat) < 10 && points >= upgradeCost(stat);
     }
 
@@ -122,7 +124,7 @@ public class Profile implements Serializable {
      * @param stat nombre de la estadística, speed, kick, jump o survival
      * @return verdadero si la estadística está en su nivel máximo, falso en caso contrario
      */
-    public boolean isMax(String stat) {
+    public boolean isMax(String stat) throws DOPOSoccerException {
         return levelOf(stat) >= 10;
     }
 
@@ -131,7 +133,7 @@ public class Profile implements Serializable {
      * precio de ese nivel, siempre que la estadística se pueda mejorar.
      * @param stat nombre de la estadística a subir, speed, kick, jump o survival
      */
-    public void upgrade(String stat) {
+    public void upgrade(String stat) throws DOPOSoccerException {
         if (!canUpgrade(stat)) {
             return;
         }
@@ -142,8 +144,10 @@ public class Profile implements Serializable {
             kick++;
         } else if (stat.equals("jump")) {
             jump++;
-        } else {
+        } else if (stat.equals("survival")) {
             survival++;
+        } else {
+            throw new DOPOSoccerException("Estadistica desconocida: '" + stat + "'. Las validas son speed, kick, jump y survival.");
         }
     }
 }

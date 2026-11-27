@@ -1,5 +1,6 @@
 package presentation;
 
+import domain.DOPOSoccerException;
 import domain.Profile;
 import domain.ProfileStore;
 
@@ -139,13 +140,22 @@ public class ShopPanel extends JPanel {
 
         JButton btn = new JButton();
         btn.setFont(new Font("Arial", Font.BOLD, 12));
-        if (profile.isMax(stat)) {
-            btn.setText("MAXIMO");
-            btn.setEnabled(false);
-        } else if (profile.canUpgrade(stat)) {
-            btn.setText("MEJORAR - " + profile.upgradeCost(stat));
-        } else {
-            btn.setText("FALTAN " + (profile.upgradeCost(stat) - profile.getPoints()) + " pts");
+        // los stats que llegan aqui son siempre validos (speed, kick, jump, survival)
+        // pero Profile ahora declara checked exception, asi que hay que capturarla
+        try {
+            if (profile.isMax(stat)) {
+                btn.setText("MAXIMO");
+                btn.setEnabled(false);
+            } else if (profile.canUpgrade(stat)) {
+                btn.setText("MEJORAR - " + profile.upgradeCost(stat));
+            } else {
+                btn.setText("FALTAN " + (profile.upgradeCost(stat) - profile.getPoints()) + " pts");
+                btn.setEnabled(false);
+            }
+        } catch (DOPOSoccerException ex) {
+            // no deberia ocurrir con stats hardcodeados validos
+            GameLogger.error("Stat invalido al armar fila de tienda: " + stat, ex);
+            btn.setText("ERROR");
             btn.setEnabled(false);
         }
 
@@ -158,13 +168,19 @@ public class ShopPanel extends JPanel {
              * @param e evento de clic del botón mejorar
              */
             @Override public void actionPerformed(ActionEvent e){
-                int cost = profile.upgradeCost(stat);
-                int option = JOptionPane.showConfirmDialog(ShopPanel.this,
-                        "Gastar " + cost + " pts para subir " + statName + " al nivel " + (levelOf(profile, stat) + 1) + "?",
-                        "Mejorar estadistica", JOptionPane.YES_NO_OPTION);
-                if (option == JOptionPane.YES_OPTION) {
-                    profile.upgrade(stat);
-                    buildUI();        // refresca la pantalla
+                try {
+                    int cost = profile.upgradeCost(stat);
+                    int option = JOptionPane.showConfirmDialog(ShopPanel.this,
+                            "Gastar " + cost + " pts para subir " + statName + " al nivel " + (levelOf(profile, stat) + 1) + "?",
+                            "Mejorar estadistica", JOptionPane.YES_NO_OPTION);
+                    if (option == JOptionPane.YES_OPTION) {
+                        profile.upgrade(stat);
+                        buildUI();        // refresca la pantalla
+                    }
+                } catch (DOPOSoccerException ex) {
+                    GameLogger.error("Error al mejorar estadistica " + stat, ex);
+                    JOptionPane.showMessageDialog(ShopPanel.this,
+                            ex.getMessage(), "Error en la tienda", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

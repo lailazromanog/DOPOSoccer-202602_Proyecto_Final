@@ -27,9 +27,9 @@ public class DOPOSoccerTest {
         score       = new Score(leftPlayer, rightPlayer);
     }
 
-    
-    // Player: estaPdo inicial
-    
+   
+    // Player: estado inicial
+   
 
     // La vida inicial debe ser 100
     @Test
@@ -51,9 +51,9 @@ public class DOPOSoccerTest {
         assertEquals(5.0, player.getPositionX(), 0.01);
     }
 
-    
+   
     // Player: efectos y estados especiales
-    
+   
 
     // Un jugador aturdido no puede moverse
     @Test
@@ -110,9 +110,9 @@ public class DOPOSoccerTest {
         assertTrue(player.getPositionY() <= 500);
     }
 
-    
+   
     // Player: vida y daño
-    
+   
 
     // Recibir 30 de daño reduce la vida a 70
     @Test
@@ -129,9 +129,9 @@ public class DOPOSoccerTest {
         assertTrue(player.isStunned());
     }
 
-    
+   
     // Player: uso de poder
-    
+   
 
     // Con la barra llena el jugador puede activar su aura
     @Test
@@ -161,29 +161,29 @@ public class DOPOSoccerTest {
         assertFalse(player.isAuraActive());
     }
 
-    
+   
     // Player: estadisticas y mejoras
-    
+   
 
     // Mejorar speed una vez la sube de 1 a 2
     @Test
-    public void testPlayerUpgradeStat() {
+    public void testPlayerUpgradeStat() throws domain.DOPOSoccerException {
         player.upgradeStat("speed");
         assertEquals(2, player.getSpeed());
     }
 
     // La estadistica no puede superar el maximo de nivel 10
     @Test
-    public void testPlayerUpgradeStatMax() {
+    public void testPlayerUpgradeStatMax() throws domain.DOPOSoccerException {
         for (int i = 0; i < 20; i++) {
             player.upgradeStat("kick");
         }
         assertEquals(10, player.getKick());
     }
 
-    
+   
     // Score
-    
+   
 
     // Registrar un gol del jugador izquierdo incrementa solo su contador
     @Test
@@ -210,9 +210,9 @@ public class DOPOSoccerTest {
         assertNull(score.getWinner());
     }
 
-    
+   
     // PowerBar
-    
+   
 
     // Un tick de actualizacion carga 10 puntos la barra
     @Test
@@ -246,9 +246,9 @@ public class DOPOSoccerTest {
         assertEquals(100.0, powerBar.getCurrentCharge(), 0.01);
     }
 
-    
+   
     // Timer
-    
+   
 
     // Al avanzar 10 segundos el tiempo baja de 60 a 50
     @Test
@@ -273,9 +273,9 @@ public class DOPOSoccerTest {
         assertEquals(0, timer.getCurrentTime());
     }
 
-    
+   
     // Modo de partido: Time
-    
+   
 
     // Cuando el tiempo se agota y hay un ganador la condicion de victoria es true
     @Test
@@ -308,9 +308,9 @@ public class DOPOSoccerTest {
         assertTrue(timeMatch.checkWinCondition());
     }
 
-    
+   
     // Modo de partido: Goals
-    
+   
 
     // Con 2 de 3 goles el partido no termina
     @Test
@@ -331,9 +331,9 @@ public class DOPOSoccerTest {
         assertTrue(goalsMatch.checkWinCondition());
     }
 
-    
+   
     // Match: eventos de juego
-    
+   
 
     // Al anotar un gol el marcador sube y la barra del rival se carga
     @Test

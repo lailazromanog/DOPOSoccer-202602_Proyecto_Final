@@ -294,7 +294,7 @@ public class ConfigPanel extends JPanel {
         try{
             int v = Integer.parseInt(text);
             if(v <= 0){
-                throw new DOPOSoccerException("El valor debe ser un numero mayor que 0. Escribiste: ");
+                throw new DOPOSoccerException("El valor debe ser un numero mayor que 0. Escribiste: " + text);
             }
             return v;
         }catch(NumberFormatException ex){

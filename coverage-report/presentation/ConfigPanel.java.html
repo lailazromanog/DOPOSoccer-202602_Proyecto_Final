@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfigPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">ConfigPanel.java</span></div><h1>ConfigPanel.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.DOPOSoccerException;
+import domain.Game;
+import javax.swing.JFileChooser;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+
+/**
+ * Pantalla de configuracion del partido
+ * Deja elegir el tipo de partido, por tiempo o por goles y el valor.
+ */
+
+public class ConfigPanel extends JPanel {
+
+    private BufferedImage background;
+    private JRadioButton byTimeOption;
+    private JRadioButton byGoalsOption;
+    private JLabel valueLabel;
+    private JTextField valueField;
+    private RoundedButton playButton;
+    private RoundedButton openButton;
+    private RoundedButton shopButton;
+    private JComboBox&lt;Resolution&gt; resolutionBox;
+    private JComboBox&lt;String&gt; opponentBox;
+
+
+    /**
+     * Crea la pantalla de configuración del partido, con su fondo, sus
+     * componentes y las acciones de sus botones ya listas.
+     * @param gui ventana principal que recibe la orden de cambiar de pantalla
+     */
+<span class="nc" id="L53">    public ConfigPanel(GameGUI gui){</span>
+<span class="nc" id="L54">        loadBackground();</span>
+<span class="nc" id="L55">        prepareElements();</span>
+<span class="nc" id="L56">        prepareActions(gui);</span>
+<span class="nc" id="L57">    }</span>
+
+    /**
+     * Carga la imagen de fondo de la pantalla de configuración desde
+     * el archivo de recursos del juego.
+     */
+    private void loadBackground(){
+        try{
+<span class="nc" id="L65">            background = ImageIO.read(new File(&quot;resources/menu.png&quot;));</span>
+<span class="nc" id="L66">        }catch(IOException e){</span>
+<span class="nc" id="L67">            System.out.println(&quot;No se pudo cargar el fondo: &quot; + e.getMessage());</span>
+<span class="nc" id="L68">        }</span>
+<span class="nc" id="L69">    }</span>
+    /**
+     * Dibuja la imagen de fondo de la pantalla, si se pudo cargar.
+     * @param g contexto gráfico sobre el que se dibuja el panel
+     */
+    @Override
+    protected void paintComponent(Graphics g){
+<span class="nc" id="L76">        super.paintComponent(g);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if(background != null){</span>
+<span class="nc" id="L78">            g.drawImage(background, 0, 0, getWidth(), getHeight(), this);</span>
+        }
+<span class="nc" id="L80">    }</span>
+
+    /**
+     * Crea y ubica todos los componentes de la pantalla de
+     * configuración dentro de la tarjeta central: tipo de partido,
+     * valor del partido, resolución, rival y los botones de jugar,
+     * abrir partida y mejorar estadísticas.
+     */
+    private void prepareElements(){
+<span class="nc" id="L89">        setPreferredSize(new Dimension(769, 600));</span>
+<span class="nc" id="L90">        setLayout(new GridBagLayout()); // centra la tarjeta en la pantalla</span>
+
+        // tarjeta oscura para que todo se lea sobre la foto
+<span class="nc" id="L93">        JPanel card = new JPanel();</span>
+<span class="nc" id="L94">        card.setBackground(new Color(0x14212a));</span>
+<span class="nc" id="L95">        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L96">        card.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L97">                BorderFactory.createLineBorder(new Color(0xF28C28), 3, true),</span>
+<span class="nc" id="L98">                BorderFactory.createEmptyBorder(26, 48, 26, 48)));</span>
+
+<span class="nc" id="L100">        JLabel subtitle = label(&quot;Configuracion del partido&quot;, new Font(&quot;Arial&quot;, Font.BOLD, 26), Color.WHITE);</span>
+
+        //tipo de partido
+<span class="nc" id="L103">        byTimeOption = radio(&quot;Por tiempo&quot;, true);</span>
+<span class="nc" id="L104">        byGoalsOption = radio(&quot;Por goles&quot;, false);</span>
+<span class="nc" id="L105">        ButtonGroup group = new ButtonGroup();</span>
+<span class="nc" id="L106">        group.add(byTimeOption);</span>
+<span class="nc" id="L107">        group.add(byGoalsOption);</span>
+
+        //tiempo de la partida o numero de goles que elija el usuario
+<span class="nc" id="L110">        valueLabel = label(&quot;Minutos: &quot;, new Font(&quot;Arial&quot;, Font.PLAIN, 16), new Color(0xbcd4df));</span>
+<span class="nc" id="L111">        valueField = new JTextField(&quot;3&quot;, 5);</span>
+<span class="nc" id="L112">        valueField.setMaximumSize(new Dimension(90, 34));</span>
+<span class="nc" id="L113">        valueField.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 16));</span>
+<span class="nc" id="L114">        valueField.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+        
+<span class="nc" id="L116">        resolutionBox = new JComboBox&lt;&gt;(Resolution.values());</span>
+<span class="nc" id="L117">        resolutionBox.setSelectedItem(Resolution.MEDIUM); // mediana por defecto</span>
+<span class="nc" id="L118">        resolutionBox.setMaximumSize(new Dimension(220, 32));</span>
+<span class="nc" id="L119">        resolutionBox.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+        
+<span class="nc" id="L121">        String[] opponents = {&quot;Humano&quot;, &quot;Torpe (facil)&quot;, &quot;Ofensiva (media)&quot;, &quot;Defensiva (media)&quot;, &quot;Experta (dificil)&quot;};</span>
+<span class="nc" id="L122">        opponentBox = new JComboBox&lt;&gt;(opponents);</span>
+<span class="nc" id="L123">        opponentBox.setSelectedIndex(0); // humano por defecto</span>
+<span class="nc" id="L124">        opponentBox.setMaximumSize(new Dimension(220, 32));</span>
+<span class="nc" id="L125">        opponentBox.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L127">        playButton = new RoundedButton(&quot;JUGAR&quot;, new Color(0xF28C28));</span>
+<span class="nc" id="L128">        playButton.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 22));</span>
+<span class="nc" id="L129">        playButton.setMaximumSize(new Dimension(220, 52));</span>
+<span class="nc" id="L130">        playButton.setPreferredSize(new Dimension(220, 52));</span>
+<span class="nc" id="L131">        playButton.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+
+
+<span class="nc" id="L134">        openButton = new RoundedButton(&quot;Abrir partida&quot;, new Color(0x3a4a57));</span>
+<span class="nc" id="L135">        openButton.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 16));</span>
+<span class="nc" id="L136">        openButton.setMaximumSize(new Dimension(220, 40));</span>
+<span class="nc" id="L137">        openButton.setPreferredSize(new Dimension(220, 40));</span>
+<span class="nc" id="L138">        openButton.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L140">        shopButton = new RoundedButton(&quot;Mejorar estadisticas&quot;, new Color(0x3a4a57));</span>
+<span class="nc" id="L141">        shopButton.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 16));</span>
+<span class="nc" id="L142">        shopButton.setMaximumSize(new Dimension(220, 40));</span>
+<span class="nc" id="L143">        shopButton.setPreferredSize(new Dimension(220, 40));</span>
+<span class="nc" id="L144">        shopButton.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+
+        // todo va en la card
+<span class="nc" id="L147">        card.add(subtitle);</span>
+<span class="nc" id="L148">        card.add(Box.createVerticalStrut(22));</span>
+<span class="nc" id="L149">        card.add(byTimeOption);</span>
+<span class="nc" id="L150">        card.add(Box.createVerticalStrut(4));</span>
+<span class="nc" id="L151">        card.add(byGoalsOption);</span>
+<span class="nc" id="L152">        card.add(Box.createVerticalStrut(20));</span>
+<span class="nc" id="L153">        card.add(valueLabel);</span>
+<span class="nc" id="L154">        card.add(Box.createVerticalStrut(6));</span>
+<span class="nc" id="L155">        card.add(valueField);</span>
+<span class="nc" id="L156">        card.add(Box.createVerticalStrut(16));</span>
+<span class="nc" id="L157">        card.add(label(&quot;Resolucion:&quot;, new Font(&quot;Arial&quot;, Font.PLAIN, 14), new Color(0xbcd4df)));</span>
+<span class="nc" id="L158">        card.add(resolutionBox);</span>
+<span class="nc" id="L159">        card.add(Box.createVerticalStrut(12));</span>
+<span class="nc" id="L160">        card.add(label(&quot;Rival:&quot;, new Font(&quot;Arial&quot;, Font.PLAIN, 14), new Color(0xbcd4df)));</span>
+<span class="nc" id="L161">        card.add(opponentBox);</span>
+<span class="nc" id="L162">        card.add(Box.createVerticalStrut(22));</span>
+<span class="nc" id="L163">        card.add(playButton);</span>
+<span class="nc" id="L164">        card.add(Box.createVerticalStrut(10));</span>
+<span class="nc" id="L165">        card.add(openButton);</span>
+<span class="nc" id="L166">        card.add(Box.createVerticalStrut(8));</span>
+<span class="nc" id="L167">        card.add(shopButton);</span>
+
+<span class="nc" id="L169">        add(card);</span>
+<span class="nc" id="L170">    }</span>
+
+    /**
+     * crea cada boton en la pantalla
+     */
+    /**
+     * Asigna a cada botón y cada opción de la pantalla la acción que
+     * debe ejecutar cuando el jugador la selecciona.
+     * @param gui ventana principal que recibe la orden de cambiar de pantalla
+     */
+    private void prepareActions(final GameGUI gui){
+<span class="nc" id="L181">        byTimeOption.addActionListener(new ActionListener(){</span>
+            /**
+             * Cambia la etiqueta del valor a mostrar minutos, para la
+             * opción de partido por tiempo.
+             * @param e evento de selección de la opción por tiempo
+             */
+            @Override
+            public void actionPerformed(ActionEvent e){
+<span class="nc" id="L189">                valueLabel.setText(&quot;Minutos: &quot;);</span>
+<span class="nc" id="L190">            }</span>
+        });
+
+<span class="nc" id="L193">        byGoalsOption.addActionListener(new ActionListener(){</span>
+            /**
+             * Cambia la etiqueta del valor a mostrar goles para ganar,
+             * para la opción de partido por goles.
+             * @param e evento de selección de la opción por goles
+             */
+            @Override
+            public void actionPerformed(ActionEvent e){
+<span class="nc" id="L201">                valueLabel.setText(&quot;Goles para ganar: &quot;);</span>
+<span class="nc" id="L202">            }</span>
+        });
+
+
+<span class="nc" id="L206">        openButton.addActionListener(new ActionListener(){</span>
+            /**
+             * Abre el selector de archivos y, si el jugador elige uno,
+             * intenta cargar la partida guardada en él y entrar a la
+             * cancha con esa partida y la resolución elegida. Si el
+             * archivo no contiene una partida válida, muestra el error
+             * al jugador y lo registra en el log.
+             * @param e evento de clic del botón abrir partida
+             */
+            @Override
+            public void actionPerformed(ActionEvent e){
+<span class="nc" id="L217">                JFileChooser chooser = new JFileChooser();</span>
+<span class="nc" id="L218">                int result = chooser.showOpenDialog(ConfigPanel.this);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                if(result == JFileChooser.APPROVE_OPTION){</span>
+                    try {
+<span class="nc" id="L221">                        Game game = Game.openFrom(chooser.getSelectedFile());</span>
+<span class="nc" id="L222">                        Resolution res = (Resolution) resolutionBox.getSelectedItem();</span>
+<span class="nc" id="L223">                        gui.openGame(game, res.getWidth(), res.getHeight());</span>
+<span class="nc" id="L224">                    } catch (DOPOSoccerException ex) {</span>
+<span class="nc" id="L225">                        GameLogger.error(&quot;No se pudo abrir la partida&quot;, ex);</span>
+<span class="nc" id="L226">                        JOptionPane.showMessageDialog(ConfigPanel.this, ex.getMessage(), &quot;Error&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L227">                    }</span>
+                }
+<span class="nc" id="L229">            }</span>
+        });
+
+<span class="nc" id="L232">        shopButton.addActionListener(new ActionListener(){</span>
+            /**
+             * Muestra la tienda de mejoras de estadísticas.
+             * @param e evento de clic del botón mejorar estadísticas
+             */
+            @Override
+            public void actionPerformed(ActionEvent e){
+<span class="nc" id="L239">                gui.showShop();</span>
+<span class="nc" id="L240">            }</span>
+        });
+
+
+<span class="nc" id="L244">        playButton.addActionListener(new ActionListener(){</span>
+            /**
+             * Reúne el tipo de partido, el valor escrito, la
+             * resolución y el rival elegidos, y pasa a la pantalla de
+             * selección de personajes con esos datos. Si el valor
+             * escrito no es válido, muestra el error al jugador y lo
+             * registra en el log sin cambiar de pantalla.
+             * @param e evento de clic del botón jugar
+             */
+            @Override
+            public void actionPerformed(ActionEvent e){
+                try {
+                    String matchType;
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                    if (byTimeOption.isSelected()) {</span>
+<span class="nc" id="L258">                        matchType = &quot;time&quot;;</span>
+                    } else {
+<span class="nc" id="L260">                        matchType = &quot;goals&quot;;</span>
+                    }
+<span class="nc" id="L262">                    int value = readValue();          // puede lanzar DOPOSoccerException</span>
+<span class="nc" id="L263">                    Resolution res = (Resolution) resolutionBox.getSelectedItem();</span>
+                    String opponent;
+<span class="nc" id="L265">                    int oi = opponentBox.getSelectedIndex();</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">                    if (oi == 0) {</span>
+<span class="nc" id="L267">                        opponent = &quot;human&quot;;</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">                    }else if (oi == 1) {</span>
+<span class="nc" id="L269">                        opponent = &quot;stupid&quot;;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                    }else if (oi == 2) {</span>
+<span class="nc" id="L271">                        opponent = &quot;offensive&quot;;</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">                    }else if(oi == 3){</span>
+<span class="nc" id="L273">                        opponent = &quot;defensive&quot;;</span>
+                    }else{
+<span class="nc" id="L275">                        opponent = &quot;expert&quot;;</span>
+                    }
+<span class="nc" id="L277">                    gui.showCharacterSelect(matchType, value, opponent, res.getWidth(), res.getHeight());</span>
+<span class="nc" id="L278">                }catch (DOPOSoccerException ex) {</span>
+<span class="nc" id="L279">                    GameLogger.error(&quot;Configuracion invalida del partido&quot;, ex);  // para los programadores</span>
+<span class="nc" id="L280">                    JOptionPane.showMessageDialog(ConfigPanel.this,ex.getMessage(), &quot;Error&quot;, JOptionPane.ERROR_MESSAGE); // para el usuario</span>
+<span class="nc" id="L281">                }</span>
+<span class="nc" id="L282">            }</span>
+        });
+<span class="nc" id="L284">    }</span>
+
+    /**
+     * Lee el número escrito en el campo de texto del valor del
+     * partido y lo valida.
+     * @return el valor escrito, ya validado
+     * @throws DOPOSoccerException si el texto no es un número entero válido, o si no es mayor que cero
+     */
+    private int readValue() throws DOPOSoccerException{
+<span class="nc" id="L293">        String text = valueField.getText().trim();</span>
+        try{
+<span class="nc" id="L295">            int v = Integer.parseInt(text);</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">            if(v &lt;= 0){</span>
+<span class="nc" id="L297">                throw new DOPOSoccerException(&quot;El valor debe ser un numero mayor que 0. Escribiste: &quot;);</span>
+            }
+<span class="nc" id="L299">            return v;</span>
+<span class="nc" id="L300">        }catch(NumberFormatException ex){</span>
+<span class="nc" id="L301">            throw new DOPOSoccerException(&quot;El valor debe ser un numero entero valido.&quot;);</span>
+        }
+    }
+
+    //pa no repetir codigo
+    /**
+     * Crea una etiqueta de texto con la fuente y el color dados, para
+     * no repetir la misma configuración en cada etiqueta de la pantalla.
+     * @param text texto de la etiqueta
+     * @param font fuente de la etiqueta
+     * @param color color del texto de la etiqueta
+     * @return la etiqueta creada
+     */
+    private JLabel label(String text, Font font, Color color){
+<span class="nc" id="L315">        JLabel l = new JLabel(text);</span>
+<span class="nc" id="L316">        l.setFont(font);</span>
+<span class="nc" id="L317">        l.setForeground(color);</span>
+<span class="nc" id="L318">        l.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+<span class="nc" id="L319">        return l;</span>
+    }
+
+    /**
+     * Crea un botón de selección única con el texto dado, para no
+     * repetir la misma configuración en cada opción de la pantalla.
+     * @param text texto de la opción
+     * @param selected verdadero para que la opción empiece seleccionada
+     * @return el botón de selección creado
+     */
+    private JRadioButton radio(String text, boolean selected){
+<span class="nc" id="L330">        JRadioButton r = new JRadioButton(text, selected);</span>
+<span class="nc" id="L331">        r.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 16));</span>
+<span class="nc" id="L332">        r.setForeground(Color.WHITE);</span>
+<span class="nc" id="L333">        r.setOpaque(false);</span>
+<span class="nc" id="L334">        r.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+<span class="nc" id="L335">        return r;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

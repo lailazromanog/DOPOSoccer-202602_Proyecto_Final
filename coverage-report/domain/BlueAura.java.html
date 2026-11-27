@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BlueAura.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">BlueAura.java</span></div><h1>BlueAura.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Tiro de poder del personaje de Corea del Sur.
+ * El balón sale recto y horizontal a alta velocidad, y si golpea al
+ * rival lo lanza hacia su propio arco mediante un empuje horizontal.
+ */
+public class BlueAura extends Power {
+
+    private static final double POWER_SHOT_SPEED = 20; // tiro recto y horizontal, a alta velocidad
+    private static final double KNOCKBACK = 20;        // empuje inicial del rival (se desliza y frena)
+
+    /**
+     * Crea el tiro de poder Aura Azul con su daño base y la duración
+     * del efecto de empuje que deja sobre el rival.
+     */
+    public BlueAura() {
+<span class="fc" id="L18">        super(&quot;Blue Aura&quot;, 40, 1.5);</span>
+<span class="fc" id="L19">    }</span>
+
+    /**
+     * Lanza el balón en línea recta a alta velocidad hacia el arco
+     * contrario y, si golpea al rival, le aplica daño y lo empuja hacia
+     * su propio arco mediante un empuje horizontal que se frena con el tiempo.
+     * @param match partido en el que se ejecuta el tiro de poder
+     * @param attacker jugador que activa y ejecuta el tiro de poder
+     */
+    @Override
+    public void activate(Match match, Player attacker) {
+        Player opponent;
+        int shotDir;   // +1 dispara a la derecha, -1 a la izquierda
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if(attacker == match.getLeftPlayer()){</span>
+<span class="fc" id="L33">            opponent = match.getRightPlayer();</span>
+<span class="fc" id="L34">            shotDir = 1;   // J1 dispara hacia el arco derecho</span>
+        } else {
+<span class="fc" id="L36">            opponent = match.getLeftPlayer();</span>
+<span class="fc" id="L37">            shotDir = -1;  // J2 dispara hacia el arco izquierdo</span>
+        }
+
+        // tiro de poder: el balon sale recto y horizontal a alta velocidad
+<span class="fc" id="L41">        Ball ball = match.getBall();</span>
+<span class="fc" id="L42">        ball.setVelocityX(shotDir * POWER_SHOT_SPEED);</span>
+<span class="fc" id="L43">        ball.setVelocityY(0);</span>
+
+        // daño al rival
+<span class="fc" id="L46">        double damage = getDamageTiro() * attacker.getMultiplicadorKick();</span>
+<span class="fc" id="L47">        opponent.takeDamage(damage);</span>
+
+        // empuje fuerte: el rival es lanzado hacia su propio arco
+<span class="fc" id="L50">        opponent.applyKnockback(shotDir * KNOCKBACK);</span>
+<span class="fc" id="L51">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

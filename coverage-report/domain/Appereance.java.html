@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Appereance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Appereance.java</span></div><h1>Appereance.java</h1><pre class="source lang-java linenums">package domain;
+import java.io.Serializable;
+
+/**
+ * Representa la apariencia visual de un personaje.
+ * Reúne la cabeza y los zapatos del personaje, ambos con el mismo
+ * nombre base de imagen, para que la presentación pueda dibujarlo de
+ * forma única y fácilmente distinguible de los demás.
+ */
+public class Appereance implements Serializable{
+    private Head head;
+    private Shoes shoes;
+
+    /**
+     * Crea la apariencia de un personaje a partir del nombre base de su
+     * imagen, armando su cabeza y sus zapatos con ese mismo nombre.
+     * @param type nombre base de la imagen del personaje
+     */
+<span class="fc" id="L19">    public Appereance(String type) {</span>
+<span class="fc" id="L20">        this.head = new Head(type);</span>
+<span class="fc" id="L21">        this.shoes = new Shoes(type);</span>
+<span class="fc" id="L22">    }</span>
+
+    /**
+     * Entrega la cabeza del personaje.
+     * @return la cabeza del personaje
+     */
+    public Head getHead() {
+<span class="nc" id="L29">        return head;</span>
+    }
+
+    /**
+     * Entrega los zapatos del personaje.
+     * @return los zapatos del personaje
+     */
+    public Shoes getShoes() {
+<span class="nc" id="L37">        return shoes;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

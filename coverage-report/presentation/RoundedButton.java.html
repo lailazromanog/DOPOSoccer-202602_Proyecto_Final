@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoundedButton.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">RoundedButton.java</span></div><h1>RoundedButton.java</h1><pre class="source lang-java linenums">package presentation;
+
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import javax.swing.JButton;
+
+/**
+ * Botón con las esquinas redondeadas y su propio color de relleno,
+ * usado en toda la interfaz en lugar del botón estándar de Swing.
+ */
+public class RoundedButton extends JButton {
+    private Color fillColor;
+
+    /**
+     * Crea un botón redondeado con su texto y su color de relleno.
+     * @param text texto que muestra el botón
+     * @param fillColor color de relleno del botón
+     */
+    public RoundedButton(String text, Color fillColor){
+<span class="nc" id="L23">        super(text);</span>
+<span class="nc" id="L24">        this.fillColor = fillColor;</span>
+<span class="nc" id="L25">        setForeground(new Color(0x14212a));</span>
+<span class="nc" id="L26">        setFocusPainted(false);</span>
+<span class="nc" id="L27">        setContentAreaFilled(false);</span>
+<span class="nc" id="L28">        setBorderPainted(false);</span>
+<span class="nc" id="L29">        setOpaque(false);</span>
+<span class="nc" id="L30">    }</span>
+
+    /**
+     * Dibuja el fondo redondeado del botón con su color de relleno, y
+     * luego el texto encima.
+     * @param g contexto gráfico sobre el que se dibuja el botón
+     */
+    @Override
+    protected void paintComponent(Graphics g){
+<span class="nc" id="L39">        Graphics2D g2 = (Graphics2D) g.create();</span>
+<span class="nc" id="L40">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
+<span class="nc" id="L41">        g2.setColor(fillColor);</span>
+<span class="nc" id="L42">        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 26, 26);</span>
+<span class="nc" id="L43">        g2.dispose();</span>
+<span class="nc" id="L44">        super.paintComponent(g); //dibuja el texto encima</span>
+<span class="nc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

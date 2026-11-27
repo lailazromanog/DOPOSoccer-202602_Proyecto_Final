@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BotFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">BotFactory.java</span></div><h1>BotFactory.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Creador de bots (patron Creador / Fabricacion Pura).
+ *
+ * Unico lugar que sabe que perfiles de maquina existen y que bot usa cada uno.
+ * Game le pide un bot segun el perfil y no conoce las subclases concretas.
+ *
+ */
+<span class="fc" id="L10">public class BotFactory {</span>
+
+    /**
+     * Crea el bot correspondiente al perfil de máquina elegido.
+     * @param profile perfil de máquina del bot a crear
+     * @return el bot creado con ese perfil
+     * @throws DOPOSoccerException si el perfil dado no corresponde a ningún perfil de máquina disponible
+     */
+    public Bot create(String profile) throws DOPOSoccerException {
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        if (profile.equals(&quot;stupid&quot;)) {</span>
+<span class="fc" id="L20">            return new Stupid();</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        } else if (profile.equals(&quot;defensive&quot;)) {</span>
+<span class="fc" id="L22">            return new Defensive();</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        } else if (profile.equals(&quot;expert&quot;)) {</span>
+<span class="fc" id="L24">            return new Expert();</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        } else if (profile.equals(&quot;offensive&quot;)) {</span>
+<span class="fc" id="L26">            return new Offensive();</span>
+        } else {
+<span class="fc" id="L28">            throw new DOPOSoccerException(&quot;Perfil de maquina no reconocido: &quot; + profile);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

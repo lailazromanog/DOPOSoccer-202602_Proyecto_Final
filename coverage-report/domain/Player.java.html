@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Player.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Player.java</span></div><h1>Player.java</h1><pre class="source lang-java linenums">package domain;
+import java.io.Serializable;
+
+/**
+ * Representa a un jugador dentro de un partido.
+ * Mantiene su posición en la cancha, su vida, su barra de poder, su
+ * personaje, sus estadísticas, sus puntos acumulados y el efecto que
+ * tenga en un momento dado, y ofrece las acciones que puede ejecutar:
+ * moverse, saltar, patear y usar su poder.
+ */
+public class Player implements Serializable{
+    private double positionX;
+    private double positionY;
+    private double initialX;
+    private double initialY;
+    private double health;
+    private boolean stunned;
+    private double stunTimer;
+    private boolean auraActive;
+    private String currentEffect;
+    private double effectTimer;
+    private int speed;
+    private int jump;
+    private int kick;
+    private int survival;
+    private int points;
+    private Character character;
+    private PowerBar powerBar;
+    private double velocityY; //velocidad vertical, para la fisica del salto del jugador
+<span class="fc" id="L30">    private boolean onGround = true; //para que salga solo si esta en el suelo</span>
+<span class="fc" id="L31">    private double knockbackVX = 0; //empuje horizontal (lo usa el poder Aura Azul)</span>
+
+    /**
+     * Crea un jugador con sus estadísticas en el valor mínimo, su vida
+     * en el máximo correspondiente, sus puntos en cero, sin efecto
+     * activo y con su barra de poder vacía.
+     */
+<span class="fc" id="L38">    public Player() {</span>
+        
+<span class="fc" id="L40">        this.stunned = false;</span>
+<span class="fc" id="L41">        this.stunTimer = 0;</span>
+<span class="fc" id="L42">        this.auraActive = false;</span>
+<span class="fc" id="L43">        this.speed = 1; </span>
+<span class="fc" id="L44">        this.jump = 1;</span>
+<span class="fc" id="L45">        this.kick = 1;</span>
+<span class="fc" id="L46">        this.survival = 1;</span>
+<span class="fc" id="L47">        this.health = getMaxHealth();</span>
+<span class="fc" id="L48">        this.points = 0;</span>
+<span class="fc" id="L49">        this.currentEffect = null;</span>
+<span class="fc" id="L50">        this.effectTimer = 0;</span>
+<span class="fc" id="L51">        this.powerBar = new PowerBar();</span>
+<span class="fc" id="L52">        this.velocityY = 0; //empiezaa en el suelo, sin velocidad vertical</span>
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * Mueve al jugador hacia la izquierda, según las reglas de
+     * movimiento propias de su estado actual.
+     */
+    public void moveLeft() {
+<span class="nc" id="L60">        move(-1);</span>
+<span class="nc" id="L61">    }</span>
+
+    /**
+     * Mueve al jugador hacia la derecha, según las reglas de
+     * movimiento propias de su estado actual.
+     */
+    public void moveRight() {
+<span class="fc" id="L68">        move(1);</span>
+<span class="fc" id="L69">    }</span>
+
+    /**
+     * Mueve al jugador en horizontal. dir = -1 izquierda, +1 derecha.
+     * Electrocutado (poder Lightning): se mueve a la mitad de velocidad.
+     * Confundido (poder Illusion): los controles se invierten.
+     */
+        private void move(int dir) {
+<span class="fc bfc" id="L77" title="All 4 branches covered.">        if (stunned || &quot;unconscious&quot;.equals(currentEffect)) {</span>
+<span class="fc" id="L78">            return;</span>
+        }
+<span class="fc" id="L80">        double step = getMoveSpeed();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (&quot;electrocuted&quot;.equals(currentEffect)) {</span>
+<span class="fc" id="L82">            step = getMoveSpeed() * 0.5;</span>
+        }
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (&quot;confused&quot;.equals(currentEffect)) {</span>
+<span class="nc" id="L85">            dir = -dir;   //los controles quedan al reves</span>
+        }
+<span class="fc" id="L87">        positionX += dir * step;</span>
+<span class="fc" id="L88">    }</span>
+
+    /**
+     * El jugador salta solo si esta en el suelo. Pone la velocidad en y
+     * en negativo porque en la pantalla y= 0 es arriba, entonces 
+     * subir es igual a tener la velocidad en negativo. 
+     */
+    public void jump() {
+<span class="pc bpc" id="L96" title="1 of 6 branches missed.">        if(!stunned &amp;&amp; !&quot;unconscious&quot;.equals(currentEffect) &amp;&amp; !&quot;electrocuted&quot;.equals(currentEffect)){</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            if(onGround){ //solo salta si esta en el suelo</span>
+<span class="fc" id="L98">                velocityY = -10 * (1+ 0.10 *(jump -1)); //mas nivel de salto</span>
+<span class="fc" id="L99">                onGround = false; //para que no salga de pantalla</span>
+            }
+        }
+<span class="fc" id="L102">    }</span>
+
+
+        /**
+     * Lanza al jugador hacia arriba, despegándolo del suelo, para el
+     * efecto del tiro de poder Tornado. La gravedad que se aplica en
+     * la actualización de cada frame se encarga de bajarlo después.
+     * @param strength fuerza con la que se lanza al jugador hacia arriba
+     */
+    public void launchUp(double strength) {
+<span class="fc" id="L112">        this.velocityY = -strength;</span>
+<span class="fc" id="L113">        this.onGround = false;</span>
+<span class="fc" id="L114">    }</span>
+
+
+    /**
+     * Aplica un empuje horizontal al jugador, para el efecto del tiro
+     * de poder Aura Azul. El empuje se desliza y se frena solo con el
+     * paso de los frames.
+     * @param vx velocidad horizontal del empuje aplicado al jugador
+     */
+    public void applyKnockback(double vx) {
+<span class="fc" id="L124">        this.knockbackVX = vx;</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Actualiza la posición del jugador en cada frame: desliza y frena
+     * el empuje horizontal que tenga, aplica la gravedad a su
+     * velocidad vertical, y lo detiene al llegar al suelo de la cancha.
+     * @param groundY posición vertical del suelo, donde se apoyan los jugadores
+     */
+    public void update(double  groundY){
+
+        //empuje horizontal (knockback): se desliza y se va frenando
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        if(knockbackVX != 0){</span>
+<span class="nc" id="L137">            positionX += knockbackVX;</span>
+<span class="nc" id="L138">            knockbackVX *= 0.85;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if(Math.abs(knockbackVX) &lt; 0.5){</span>
+<span class="nc" id="L140">                knockbackVX = 0;</span>
+            }
+        }
+        
+        //la gravedad aumenta la velocidad hacia abajo en cada frame
+<span class="fc" id="L145">        velocityY += 0.5;</span>
+<span class="fc" id="L146">        positionY += velocityY; </span>
+
+        //si llego al suelo o lo paso, se deja al jugador en el suelo 
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if(positionY &gt;= groundY){</span>
+<span class="nc" id="L150">            positionY = groundY;</span>
+<span class="nc" id="L151">            velocityY = 0; //ya no se mueve verticalmente</span>
+<span class="nc" id="L152">            onGround = true; //ya esta en el suelo</span>
+        }else{
+<span class="fc" id="L154">            onGround = false; //se encuentra en el aire</span>
+        }
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Descuenta el tiempo de aturdimiento transcurrido y, al agotarse,
+     * reinicia la vida del jugador a su máximo y lo deja listo para
+     * volver a jugar normalmente.
+     * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
+     */
+    public void updateStun(double deltaTime){
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if(stunned){</span>
+<span class="nc" id="L166">            stunTimer -= deltaTime;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">            if(stunTimer &lt;= 0){</span>
+<span class="nc" id="L168">                resetHealth(); //la vida vuelve al maximo</span>
+            }
+        }
+<span class="nc" id="L171">    }</span>
+
+    /**
+     * Descuenta el tiempo del efecto activo del jugador, ya sea
+     * electrocutado, inconsciente o confundido, y lo retira al
+     * agotarse su duración.
+     * @param deltaTime tiempo transcurrido desde la última actualización, en segundos
+     */
+    public void updateEffect(double deltaTime){
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if(currentEffect != null){</span>
+<span class="nc" id="L181">            effectTimer -= deltaTime;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">            if(effectTimer &lt;= 0){</span>
+<span class="nc" id="L183">                clearEffect();</span>
+            }
+        }
+<span class="nc" id="L186">    }</span>
+
+    /**
+     * Patea el balón dado, impulsándolo según la estadística kick del
+     * jugador, siempre que el jugador no esté aturdido ni inconsciente.
+     * @param ball balón que el jugador patea
+     */
+    public void kick(Ball ball) {
+<span class="nc bnc" id="L194" title="All 4 branches missed.">        if (!stunned &amp;&amp; !&quot;unconscious&quot;.equals(currentEffect)) {</span>
+<span class="nc" id="L195">            ball.applyForce(kick, 0);</span>
+        }
+<span class="nc" id="L197">    }</span>
+
+    /**
+     * Activa el aura del poder del jugador y vacía su barra de poder,
+     * siempre que la barra esté llena, el jugador no esté aturdido y
+     * no tenga ya el aura activa.
+     */
+    public void usePower(){
+<span class="pc bpc" id="L205" title="1 of 6 branches missed.">        if(!stunned &amp;&amp; powerBar.isFull() &amp;&amp; !auraActive){</span>
+<span class="fc" id="L206">            auraActive = true;</span>
+<span class="fc" id="L207">            powerBar.reset();</span>
+        }
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Deja al jugador aturdido durante la duración dada, sin poder
+     * moverse, saltar ni patear mientras dure el aturdimiento.
+     * @param duration duración del aturdimiento en segundos
+     */
+    public void stun(double duration) {
+<span class="fc" id="L217">        this.stunned = true;</span>
+<span class="fc" id="L218">        this.stunTimer = duration;</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Indica si el jugador se encuentra aturdido en este momento.
+     * @return verdadero si el jugador está aturdido, falso en caso contrario
+     */
+    public boolean isStunned() {
+<span class="fc" id="L226">        return stunned;</span>
+    }
+
+    /**
+     * Resta el daño dado a la vida del jugador y, si su vida llega a
+     * cero, lo deja aturdido durante tres segundos.
+     * @param damage cantidad de daño que recibe el jugador
+     */
+    public void takeDamage(double damage){
+<span class="fc" id="L235">        health -= damage;</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        if (health &lt;= 0) {</span>
+<span class="fc" id="L237">            health = 0;</span>
+<span class="fc" id="L238">            stun(3.0);</span>
+        }
+<span class="fc" id="L240">    }</span>
+
+    /**
+     * Reinicia la vida del jugador a su máximo y le quita el
+     * aturdimiento, dejándolo listo para volver a jugar normalmente.
+     */
+    public void resetHealth() {
+<span class="nc" id="L247">        this.health = getMaxHealth();</span>
+<span class="nc" id="L248">        this.stunned = false;</span>
+<span class="nc" id="L249">        this.stunTimer = 0;</span>
+<span class="nc" id="L250">    }</span>
+
+    /**
+     * Fija la posición inicial del jugador dentro de la cancha, a la
+     * que vuelve después de cada gol.
+     * @param x posición horizontal inicial del jugador
+     * @param y posición vertical inicial del jugador
+     */
+    public void setInitialPosition(double x, double y) {
+<span class="fc" id="L259">        this.initialX = x;</span>
+<span class="fc" id="L260">        this.initialY = y;</span>
+<span class="fc" id="L261">        this.positionX = x;</span>
+<span class="fc" id="L262">        this.positionY = y;</span>
+<span class="fc" id="L263">    }</span>
+
+    /**
+     * Devuelve al jugador a su posición inicial dentro de la cancha,
+     * según las reglas del juego después de cada gol.
+     */
+    public void resetPosition() {
+<span class="fc" id="L270">        this.positionX = initialX;</span>
+<span class="fc" id="L271">        this.positionY = initialY;</span>
+<span class="fc" id="L272">    }</span>
+
+    /**
+     * Mantiene al jugador dentro de los bordes horizontales de la cancha.
+     * @param width ancho de la cancha
+     * @param diameter diámetro del jugador
+     */
+    public void clampToField(int width, int diameter) {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (positionX &lt; 0) {</span>
+<span class="nc" id="L281">            positionX = 0;</span>
+        }
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        if (positionX &gt; width - diameter) {</span>
+<span class="nc" id="L284">            positionX = width - diameter;</span>
+        }
+<span class="nc" id="L286">    }</span>
+
+    /**
+     * Calcula el multiplicador de daño que corresponde a la
+     * estadística kick actual del jugador.
+     * @return el multiplicador de daño según la estadística kick
+     */
+    public double getMultiplicadorKick() {
+<span class="fc" id="L294">        return 1 + 0.10 * (kick - 1);</span>
+    }
+
+    /**
+     * Calcula la velocidad real de desplazamiento del jugador en
+     * píxeles por frame, según su estadística speed actual.
+     * @return la velocidad de desplazamiento del jugador
+     */
+    public double getMoveSpeed() {
+<span class="fc" id="L303">        return 5 * (1 + 0.10 * (speed - 1));</span>
+    }
+
+    /**
+     * Calcula la vida máxima del jugador según su estadística survival actual.
+     * @return la vida máxima del jugador
+     */
+    public double getMaxHealth() {
+<span class="fc" id="L311">        return 100 * (1 + 0.10 * (survival - 1));</span>
+    }
+
+    /**
+     * Aplica al jugador el efecto dado durante la duración dada,
+     * reemplazando cualquier efecto que tuviera antes.
+     * @param effect nombre del efecto a aplicar, electrocutado, inconsciente o confundido
+     * @param duration duración en segundos del efecto
+     */
+    public void applyEffect(String effect, double duration) {
+<span class="fc" id="L321">        this.currentEffect = effect;</span>
+<span class="fc" id="L322">        this.effectTimer = duration;</span>
+<span class="fc" id="L323">    }</span>
+
+    /**
+     * Entrega el nombre del efecto que tiene activo el jugador en este momento.
+     * @return el nombre del efecto activo, o nulo si el jugador no tiene ningún efecto
+     */
+    public String getCurrentEffect() {
+<span class="nc" id="L330">        return currentEffect;</span>
+    }
+
+    /**
+     * Entrega el tiempo restante del efecto activo del jugador, en segundos.
+     * @return el tiempo restante del efecto activo
+     */
+    public double getEffectTimer() {
+<span class="nc" id="L338">        return effectTimer;</span>
+    }
+
+    /**
+     * Quita cualquier efecto activo del jugador.
+     */
+    public void clearEffect() {
+<span class="nc" id="L345">        this.currentEffect = null;</span>
+<span class="nc" id="L346">        this.effectTimer = 0;</span>
+<span class="nc" id="L347">    }</span>
+
+    /**
+     * Fija las estadísticas del jugador desde su perfil, al empezar el
+     * partido, y ajusta su vida al máximo que les corresponde.
+     * @param speed estadística de velocidad de desplazamiento del jugador
+     * @param kick estadística de daño de patada del jugador
+     * @param jump estadística de altura de salto del jugador
+     * @param survival estadística de vida máxima del jugador
+     */
+    public void setStats(int speed, int kick, int jump, int survival) {
+<span class="fc" id="L358">        this.speed = speed;</span>
+<span class="fc" id="L359">        this.kick = kick;</span>
+<span class="fc" id="L360">        this.jump = jump;</span>
+<span class="fc" id="L361">        this.survival = survival;</span>
+<span class="fc" id="L362">        this.health = getMaxHealth();   //la vida maxima depende de survival</span>
+<span class="fc" id="L363">    }</span>
+
+    /**
+     * Sube en un punto la estadística dada del jugador, hasta un
+     * máximo de diez puntos, y si la estadística subida es survival
+     * también ajusta la vida al nuevo máximo.
+     * @param stat nombre de la estadística a subir, speed, jump, kick o survival
+     */
+    public void upgradeStat(String stat){
+<span class="fc bfc" id="L372" title="All 2 branches covered.">        if(stat.equals(&quot;speed&quot;)){</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">            if (speed &lt; 10) speed++;</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">        } else if(stat.equals(&quot;jump&quot;)){</span>
+<span class="nc bnc" id="L375" title="All 2 branches missed.">            if (jump &lt; 10) jump++;</span>
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">        } else if(stat.equals(&quot;kick&quot;)){</span>
+<span class="fc bfc" id="L377" title="All 2 branches covered.">            if (kick &lt; 10) kick++;</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">        } else if(stat.equals(&quot;survival&quot;)){</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">            if (survival &lt; 10) {</span>
+<span class="nc" id="L380">                survival++;</span>
+<span class="nc" id="L381">                health = getMaxHealth();</span>
+            }
+        }
+<span class="fc" id="L384">    }</span>
+
+    /**
+     * Suma la cantidad dada a los puntos acumulados del jugador.
+     * @param amount cantidad de puntos a sumar
+     */
+    public void addPoints(int amount){
+<span class="nc" id="L391">        this.points += amount;</span>
+<span class="nc" id="L392">    }</span>
+
+    /**
+     * Entrega los puntos acumulados por el jugador.
+     * @return los puntos acumulados del jugador
+     */
+    public int getPoints(){
+<span class="nc" id="L399">        return points;</span>
+    }
+
+    /**
+     * Entrega la posición horizontal del jugador.
+     * @return la posición horizontal del jugador
+     */
+    public double getPositionX() {
+<span class="fc" id="L407">        return positionX;</span>
+    }
+
+    /**
+     * Entrega la posición vertical del jugador.
+     * @return la posición vertical del jugador
+     */
+    public double getPositionY() {
+<span class="fc" id="L415">        return positionY;</span>
+    }
+
+    /**
+     * Entrega la vida actual del jugador.
+     * @return la vida actual del jugador
+     */
+    public double getHealth() {
+<span class="fc" id="L423">        return health;</span>
+    }
+
+    /**
+     * Entrega el personaje del jugador.
+     * @return el personaje del jugador
+     */
+    public Character getCharacter() {
+<span class="nc" id="L431">        return character;</span>
+    }
+
+    /**
+     * Fija el personaje del jugador.
+     * @param character personaje a asignar al jugador
+     */
+    public void setCharacter(Character character) {
+<span class="fc" id="L439">        this.character = character;</span>
+<span class="fc" id="L440">    }</span>
+
+    /**
+     * Entrega la barra de poder del jugador.
+     * @return la barra de poder del jugador
+     */
+    public PowerBar getPowerBar() {
+<span class="fc" id="L447">        return powerBar;</span>
+    }
+
+    /**
+     * Indica si el jugador tiene el aura de su poder activa en este momento.
+     * @return verdadero si el aura del poder está activa, falso en caso contrario
+     */
+    public boolean isAuraActive() {
+<span class="fc" id="L455">        return auraActive;</span>
+    }
+
+    /**
+     * Cambia el estado del aura del poder del jugador.
+     * @param auraActive verdadero para activar el aura del poder, falso para apagarla
+     */
+    public void setAuraActive(boolean auraActive){
+<span class="nc" id="L463">        this.auraActive = auraActive;</span>
+<span class="nc" id="L464">    }</span>
+
+    /**
+     * Entrega la estadística de velocidad de desplazamiento del jugador.
+     * @return la estadística speed del jugador
+     */
+    public int getSpeed() {
+<span class="fc" id="L471">        return speed;</span>
+    }
+
+    /**
+     * Entrega la estadística de altura de salto del jugador.
+     * @return la estadística jump del jugador
+     */
+    public int getJump() {
+<span class="nc" id="L479">        return jump;</span>
+    }
+
+    /**
+     * Entrega la estadística de daño de patada del jugador.
+     * @return la estadística kick del jugador
+     */
+    public int getKick() {
+<span class="fc" id="L487">        return kick;</span>
+    }
+
+    /**
+     * Entrega la estadística de vida máxima del jugador.
+     * @return la estadística survival del jugador
+     */
+    public int getSurvival() {
+<span class="nc" id="L495">        return survival;</span>
+    }
+    //para el salto
+    /**
+     * Entrega la velocidad vertical actual del jugador, usada por la
+     * física de su salto.
+     * @return la velocidad vertical del jugador
+     */
+    public double getVelocity(){
+<span class="fc" id="L504">        return velocityY;</span>
+    }
+
+    /**
+     * Fija la posición horizontal del jugador.
+     * @param positionX nueva posición horizontal del jugador
+     */
+    public void setPositionX(double positionX) {
+<span class="nc" id="L512">        this.positionX = positionX;</span>
+<span class="nc" id="L513">    }</span>
+
+    /**
+     * Fija la posición vertical del jugador.
+     * @param positionY nueva posición vertical del jugador
+     */
+    public void setPositionY(double positionY) {
+<span class="nc" id="L520">        this.positionY = positionY;</span>
+<span class="nc" id="L521">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,13 +1,14 @@
 package presentation;
 
-import domain.Game;
 import domain.DOPOSoccerException;
+import domain.Game;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -32,12 +34,14 @@ public class FieldPanel extends JPanel {
 
     private BufferedImage fieldImage;
     private Game game;   // la fachada: lo unico del dominio que usamos
+    private GameGUI gui;
 
     // imagenes de los personajes (cabeza y zapato, por separado)
     private BufferedImage p1Head;
     private BufferedImage p1Shoe;
     private BufferedImage p2Head;
     private BufferedImage p2Shoe;
+    private Image auraGif;   //aura animada
 
     // constantes de dibujo, tomadas de la fachada (el mundo logico es 769x450)
     private static final int WIDTH = Game.WIDTH;
@@ -53,7 +57,17 @@ public class FieldPanel extends JPanel {
     private Timer gameLoop;
     private boolean paused = false;
 
-    public FieldPanel(Game game, int resW, int resH) {
+    /**
+     * Crea la pantalla de la cancha para el partido dado, cargando la
+     * imagen de la cancha y los sprites de ambos personajes, y pone a
+     * correr el ciclo del juego a sesenta cuadros por segundo.
+     * @param gui ventana principal que recibe la orden de mostrar la pantalla de fin
+     * @param game partido que se va a jugar en esta pantalla
+     * @param resW ancho de la ventana según la resolución elegida
+     * @param resH alto de la ventana según la resolución elegida
+     */
+    public FieldPanel(GameGUI gui, Game game, int resW, int resH) {
+        this.gui = gui;
         this.game = game;
         try {
             fieldImage = ImageIO.read(new File("resources/cancha.png"));
@@ -72,10 +86,20 @@ public class FieldPanel extends JPanel {
         } catch (IOException e) {
             System.out.println("No se pudieron cargar los personajes: " + e.getMessage());
         }
+        //aura animada, ImageIcon reproduce el GIF
+        auraGif = new ImageIcon("resources/aura_azul.gif").getImage();
         setPreferredSize(new Dimension(resW, resH));
 
         pressedKeys = new HashSet<>();
         addKeyListener(new KeyAdapter(){
+            /**
+             * Atiende cada tecla presionada: las teclas de acción
+             * inmediata (pausar, terminar, usar poder, guardar) se
+             * ejecutan al instante, y las demás quedan registradas
+             * como presionadas para que el ciclo del juego las lea en
+             * cada cuadro.
+             * @param e evento de tecla presionada
+             */
             @Override
             public void keyPressed(KeyEvent e){
                 int code = e.getKeyCode();
@@ -93,6 +117,10 @@ public class FieldPanel extends JPanel {
                     pressedKeys.add(code);
                 }
             }
+            /**
+             * Quita la tecla soltada del conjunto de teclas presionadas.
+             * @param e evento de tecla soltada
+             */
             @Override
             public void keyReleased(KeyEvent e){
                 pressedKeys.remove(e.getKeyCode());
@@ -101,6 +129,14 @@ public class FieldPanel extends JPanel {
         setFocusable(true);
 
         gameLoop = new Timer(16, new java.awt.event.ActionListener(){
+            /**
+             * Avanza un cuadro del juego: si el partido no está
+             * pausado ni terminado, procesa las teclas presionadas y
+             * le pide a la fachada que avance la física y las reglas;
+             * siempre vuelve a dibujar la pantalla; y si el partido ya
+             * terminó, detiene el ciclo y muestra la pantalla de fin.
+             * @param e evento de cada disparo del reloj del ciclo del juego
+             */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e){
                 if(!paused && !game.isFinished()){
@@ -110,6 +146,7 @@ public class FieldPanel extends JPanel {
                 repaint();
                 if(game.isFinished()){
                     gameLoop.stop();
+                    gui.showEndScreen(game); //pantalla de fin con navegación
                 }
             }
         });
@@ -136,6 +173,13 @@ public class FieldPanel extends JPanel {
         }
     }
 
+    /**
+     * Dibuja toda la pantalla de la cancha en cada cuadro: escala el
+     * dibujo lógico al tamaño real de la ventana y pinta la cancha,
+     * los jugadores, el balón, los arcos, el marcador y la pantalla de
+     * fin o de pausa, según corresponda.
+     * @param g contexto gráfico sobre el que se dibuja el panel
+     */
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -154,7 +198,11 @@ public class FieldPanel extends JPanel {
         }
     }
 
-    /** Pausa, pide un archivo y guarda la partida. */
+    /**
+     * Pausa el juego, pide al jugador un archivo y guarda la partida
+     * en él. Si ocurre un error al guardar, lo muestra al jugador y lo
+     * registra en el log.
+     */
     private void saveGame(){
         paused = true;   // que no avance mientras elijo el archivo
         JFileChooser chooser = new JFileChooser();
@@ -171,32 +219,55 @@ public class FieldPanel extends JPanel {
         requestFocusInWindow();
     }
 
+    /**
+     * Dibuja la imagen de la cancha, si se pudo cargar.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawField(Graphics g){
         if(fieldImage != null){
             g.drawImage(fieldImage, 0, 0, WIDTH, HEIGHT, this);
         }
     }
 
+        /**
+         * Dibuja a los dos jugadores en su posición actual, cada uno
+         * mirando hacia el arco contrario.
+         * @param g contexto gráfico sobre el que se dibuja
+         */
         private void drawPlayers(Graphics g){
         // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
         drawCharacter(g, p1Head, p1Shoe,
                 (int) game.getLeftPlayerX(), (int) game.getLeftPlayerY(),
-                game.isLeftPlayerAura(), 1);
+                game.isLeftPlayerAura(), 1, game.getLeftPlayerEffect());
         drawCharacter(g, p2Head, p2Shoe,
                 (int) game.getRightPlayerX(), (int) game.getRightPlayerY(),
-                game.isRightPlayerAura(), -1);
+                game.isRightPlayerAura(), -1, game.getRightPlayerEffect());
     }
 
-    /** Dibuja un personaje: aura (atras) + cabeza + zapato, por separado. */
-    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir){
+    /**
+     * Dibuja un personaje en la posición dada: primero su aura si la
+     * tiene activa, para que quede detrás, luego su cabeza y su zapato
+     * por separado, y al final el brillo de su efecto activo encima.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param head imagen de la cabeza del personaje
+     * @param shoe imagen del zapato del personaje
+     * @param x posición horizontal del personaje
+     * @param y posición vertical del personaje
+     * @param aura verdadero si el personaje tiene el aura de su poder activa
+     * @param frontDir dirección hacia la que mira el personaje, uno hacia la derecha o menos uno hacia la izquierda
+     * @param effect nombre del efecto activo del personaje, o nulo si no tiene ninguno
+     */
+    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir, String effect){
         int d = PLAYER_DIAMETER;
         int bottom = y + d;          // el piso del jugador (abajo del hitbox)
         int cx = x + d / 2;          // centro horizontal
 
-        // aura primero, para que quede DETRAS del personaje
-        if(aura){
-            g.setColor(new Color(80, 180, 255, 150));
-            g.fillOval(x - 8, y - 8, d + 16, d + 16);
+        //aura animada (GIF) primero, para que quede DETRAS del personaje
+        if(aura && auraGif != null){
+            int auraSize = (int)(d * 1.7);           // un poco mas grande que el jugador
+            int auraX = cx - auraSize / 2;           // centrada en horizontal
+            int auraY = (y + d / 2) - auraSize / 2;  // centrada en el cuerpo
+            g.drawImage(auraGif, auraX, auraY, auraSize, auraSize, this);
         }
 
         // cabeza: un poco mas grande que el hitbox (estilo cabezon)
@@ -216,18 +287,109 @@ public class FieldPanel extends JPanel {
             int shoeY = bottom - shoeH;
             g.drawImage(shoe, shoeX, shoeY, shoeW, shoeH, this);
         }
+        
+        // brillo del efecto activo, encima del personaje para que se note
+        drawEffect(g, effect, x, y);
     }
 
+    /**
+     * Dibuja encima del personaje un brillo semitransparente con el color
+     * del efecto que tiene activo, para que ambos jugadores vean que está
+     * bajo un efecto. No dibuja nada si el personaje no tiene efecto o si
+     * el efecto todavía no tiene un color asignado.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param effect nombre del efecto activo del personaje, o nulo si no tiene ninguno
+     * @param x posición horizontal del personaje
+     * @param y posición vertical del personaje
+     */
+    private void drawEffect(Graphics g, String effect, int x, int y){
+        if(effect == null){
+            return;
+        }
+        Color color = effectColor(effect);
+        if(color == null){
+            return;
+        }
+        int d = PLAYER_DIAMETER;
+        int glowSize = (int)(d * 1.3);                 // un poco mas grande que el jugador
+        int glowX = x + d / 2 - glowSize / 2;          // centrado en horizontal
+        int glowY = y + d / 2 - glowSize / 2;          // centrado en el cuerpo
+        g.setColor(color);
+        g.fillOval(glowX, glowY, glowSize, glowSize);
+    }
+
+    /**
+     * Entrega el color semitransparente con el que se dibuja el efecto
+     * dado sobre el personaje. Para que un efecto nuevo se vea basta con
+     * agregarle aquí su color.
+     * @param effect nombre del efecto activo del personaje
+     * @return el color del efecto, o nulo si el efecto no tiene un color asignado
+     */
+    private Color effectColor(String effect){
+        if(effect.equals("pushed")){
+            return new Color(60, 140, 255, 110);      // azul del Aura Azul
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Entrega el color con el que se dibuja el balón mientras viaja el
+     * tiro de poder dado. Para que un tiro nuevo se vea basta con
+     * agregarle aquí su color.
+     * @param shotName nombre del tiro de poder en vuelo
+     * @return el color del tiro de poder, o nulo si el tiro no tiene un color asignado
+     */
+    private Color shotColor(String shotName){
+        if(shotName.equals("Blue Aura")){
+            return new Color(60, 140, 255);           // azul del Aura Azul
+        } else {
+            return null;
+        }
+    }
+    
+
+        /**
+     * Dibuja el balón en su posición actual. Si hay un tiro de poder en
+     * vuelo con color asignado, dibuja primero una estela detrás del
+     * balón y pinta el balón con el color de ese tiro.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawBall(Graphics g){
         int d = BALL_DIAMETER;
         int x = (int) game.getBallX();
         int y = (int) game.getBallY();
-        g.setColor(Color.WHITE);
+
+        // color del tiro de poder en vuelo, si lo hay
+        Color shot = null;
+        if(game.isPowerShotActive()){
+            shot = shotColor(game.getPowerShotName());
+        }
+
+        if(shot != null){
+            // estela: circulos cada vez mas transparentes hacia atras del balon
+            double vx = game.getBallVelocityX();
+            double vy = game.getBallVelocityY();
+            for(int i = 5; i >= 1; i--){
+                int trailX = (int)(x - vx * i * 0.8);
+                int trailY = (int)(y - vy * i * 0.8);
+                int alpha = 150 - i * 25;
+                g.setColor(new Color(shot.getRed(), shot.getGreen(), shot.getBlue(), alpha));
+                g.fillOval(trailX, trailY, d, d);
+            }
+            g.setColor(shot);
+        } else {
+            g.setColor(Color.WHITE);
+        }
         g.fillOval(x, y, d, d);
         g.setColor(Color.BLACK);
         g.drawOval(x, y, d, d);
     }
 
+    /**
+     * Dibuja los dos arcos de la cancha, con sus postes y sus travesaños.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawGoals(Graphics g){
         g.setColor(Color.WHITE);
         int grosor = 6;
@@ -237,6 +399,11 @@ public class FieldPanel extends JPanel {
         g.fillRect(RIGHT_POST, GOAL_TOP - grosor/2, WIDTH - RIGHT_POST, grosor);
     }
 
+    /**
+     * Dibuja la barra superior del juego: el marcador, el tiempo
+     * restante y las barras de poder y de vida de ambos jugadores.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawHUD(Graphics g){
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, WIDTH, 58);
@@ -270,7 +437,18 @@ public class FieldPanel extends JPanel {
         drawBar(g, barX2, 47, barW, 6, game.getRightPlayerLife(), new Color(0x3ddc84), false);
     }
 
-    /** Dibuja una barra (fondo gris + relleno segun el porcentaje). */
+    /**
+     * Dibuja una barra con un fondo gris y un relleno según la
+     * proporción dada, con un borde opcional alrededor.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param x posición horizontal de la barra
+     * @param y posición vertical de la barra
+     * @param w ancho total de la barra
+     * @param h alto de la barra
+     * @param ratio proporción llena de la barra, entre cero y uno
+     * @param fill color de relleno de la barra
+     * @param border verdadero para dibujar un borde alrededor de la barra
+     */
     private void drawBar(Graphics g, int x, int y, int w, int h, double ratio, Color fill, boolean border){
         g.setColor(Color.DARK_GRAY);
         g.fillRect(x, y, w, h);
@@ -282,6 +460,11 @@ public class FieldPanel extends JPanel {
         }
     }
 
+    /**
+     * Dibuja la pantalla de fin de partido sobre la cancha: el
+     * resultado, el marcador final y los puntos obtenidos por cada jugador.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawMatchEnd(Graphics g){
         g.setColor(new Color(0, 0, 0, 180));
         g.fillRect(0, 0, WIDTH, HEIGHT);
@@ -312,6 +495,11 @@ public class FieldPanel extends JPanel {
         g.drawString(puntos, (WIDTH - fm3.stringWidth(puntos))/2, HEIGHT/2 + 72);
     }
 
+    /**
+     * Dibuja la pantalla de pausa sobre la cancha, con la ayuda de las
+     * teclas para reanudar o terminar el partido.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawPaused(Graphics g){
         g.setColor(new Color(0, 0, 0, 170));
         g.fillRect(0, 0, WIDTH, HEIGHT);

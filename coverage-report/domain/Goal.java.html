@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Goal.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Goal.java</span></div><h1>Goal.java</h1><pre class="source lang-java linenums">package domain;
+import java.io.Serializable;
+
+/**
+ * Representa el arco al que un jugador debe meter el balón para anotar.
+ * Define una zona rectangular de la cancha y determina si el balón
+ * entró dentro de esa zona.
+ */
+public class Goal implements Serializable{
+    private double positionX;
+    private double positionY;
+    private int width;
+    private int height;
+
+    /**
+     * Crea un arco en la posición dada, con un ancho y un alto por defecto.
+     * @param positionX posición horizontal del arco dentro de la cancha
+     * @param positionY posición vertical del arco dentro de la cancha
+     */
+    public Goal(double positionX, double positionY) {
+<span class="fc" id="L21">       this(positionX, positionY, 10, 100);</span>
+<span class="fc" id="L22">    }</span>
+
+    //permite definir el ancho y alto del arco
+    /**
+     * Crea un arco en la posición dada, con el ancho y el alto propios
+     * de su zona de gol.
+     * @param positionX posición horizontal del arco dentro de la cancha
+     * @param positionY posición vertical del arco dentro de la cancha
+     * @param width ancho de la zona de gol del arco
+     * @param height alto de la zona de gol del arco
+     */
+<span class="fc" id="L33">    public Goal(double positionX, double positionY, int width, int height){</span>
+<span class="fc" id="L34">        this.positionX = positionX;</span>
+<span class="fc" id="L35">        this.positionY = positionY;</span>
+<span class="fc" id="L36">        this.width = width;</span>
+<span class="fc" id="L37">        this.height = height;</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Indica si el balón entró dentro de la zona de gol de este arco.
+     * @param ball balón del que se revisa la posición
+     * @return verdadero si el balón está dentro de la zona de gol, falso en caso contrario
+     */
+    public boolean isGoal(Ball ball) {
+
+<span class="nc bnc" id="L47" title="All 4 branches missed.">        return ball.getPositionX() &gt;= positionX &amp;&amp; ball.getPositionX() &lt;= positionX + width &amp;&amp;</span>
+<span class="nc bnc" id="L48" title="All 4 branches missed.">               ball.getPositionY() &gt;= positionY &amp;&amp; ball.getPositionY() &lt;= positionY + height;</span>
+    }
+
+    /**
+     * Entrega el ancho de la zona de gol del arco.
+     * @return el ancho de la zona de gol
+     */
+    public int getWidth() {
+<span class="nc" id="L56">        return width;</span>
+    }
+
+    /**
+     * Entrega el alto de la zona de gol del arco.
+     * @return el alto de la zona de gol
+     */
+    public int getHeight() {
+<span class="nc" id="L64">        return height;</span>
+    }
+
+    /**
+     * Entrega la posición horizontal del arco dentro de la cancha.
+     * @return la posición horizontal del arco
+     */
+    public double getPositionX() {
+<span class="nc" id="L72">        return positionX;</span>
+    }
+
+    /**
+     * Entrega la posición vertical del arco dentro de la cancha.
+     * @return la posición vertical del arco
+     */
+    public double getPositionY() {
+<span class="nc" id="L80">        return positionY;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

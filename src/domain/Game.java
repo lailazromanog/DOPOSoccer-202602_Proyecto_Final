@@ -207,16 +207,22 @@ public class Game implements Serializable{
             return;   // partida abierta desde archivo: sin perfiles vivos
         }
         int w = getWinner();
-        if (w == 1) {
+        try {
+            if (w == 1) {
             leftProfile.addPoints(100);
             rightProfile.addPoints(25);
-        } else if (w == 2) {
+            } else if (w == 2) {
             rightProfile.addPoints(100);
             leftProfile.addPoints(25);
-        } else {
+            } else {
             leftProfile.addPoints(25);
             rightProfile.addPoints(25);
+            }
+        } catch (DOPOSoccerException e) {
+            // Los puntos repartidos son constantes positivas, asi que no deberia ocurrir el error 
+            throw new IllegalStateException("Error interno al repartir puntos a los perfiles: " + e.getMessage(), e);
         }
+        
     }
 
     /**

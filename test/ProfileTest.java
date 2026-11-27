@@ -42,14 +42,14 @@ public class ProfileTest {
 
     // addPoints suma correctamente la cantidad dada
     @Test
-    public void testProfileAddPoints() {
+    public void testProfileAddPoints() throws Exception{
         profile.addPoints(100);
         assertEquals(100, profile.getPoints());
     }
 
     // Se pueden acumular puntos en multiples llamadas
     @Test
-    public void testProfileAddPointsAccumulates() {
+    public void testProfileAddPointsAccumulates() throws Exception{
         profile.addPoints(100);
         profile.addPoints(25);
         assertEquals(125, profile.getPoints());
@@ -190,14 +190,6 @@ public class ProfileTest {
         assertEquals(2, profile.getSurvival());
     }
 
-    // Si no hay puntos suficientes upgrade no hace nada
-    @Test
-    public void testUpgradeDoesNothingWithoutPoints() throws Exception {
-        profile.upgrade("speed");  // sin puntos, no debe cambiar nada
-        assertEquals(1, profile.getSpeed());
-        assertEquals(0, profile.getPoints());
-    }
-
     // Mejorar multiples veces acumula los niveles correctamente
     @Test
     public void testUpgradeMultipleTimes() throws Exception {
@@ -210,5 +202,140 @@ public class ProfileTest {
         profile.upgrade("kick");
 
         assertEquals(3, profile.getKick());
+    }
+
+        // ----------------------------------------------------------------
+    // Excepciones: addPoints
+    // ----------------------------------------------------------------
+
+    // Sumar puntos negativos lanza excepcion y no cambia los puntos
+    @Test
+    public void testAddNegativePointsThrows() {
+        try {
+            profile.addPoints(-5);
+            fail("Debio lanzar DOPOSoccerException por puntos negativos");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertEquals(0, profile.getPoints());
+    }
+
+    // Sumar cero es valido y no cambia nada
+    @Test
+    public void testAddZeroPointsIsAllowed() throws Exception {
+        profile.addPoints(0);
+        assertEquals(0, profile.getPoints());
+    }
+
+    // ----------------------------------------------------------------
+    // Excepciones: estadistica invalida
+    // ----------------------------------------------------------------
+
+    // Una estadistica desconocida lanza excepcion en upgradeCost
+    @Test
+    public void testUpgradeCostUnknownStatThrows() {
+        try {
+            profile.upgradeCost("fly");
+            fail("Debio lanzar DOPOSoccerException por estadistica desconocida");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("fly"));
+        }
+    }
+
+    // Una estadistica desconocida lanza excepcion en canUpgrade
+    @Test
+    public void testCanUpgradeUnknownStatThrows() {
+        try {
+            profile.canUpgrade("fly");
+            fail("Debio lanzar DOPOSoccerException");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("fly"));
+        }
+    }
+
+    // Una estadistica desconocida lanza excepcion en isMax
+    @Test
+    public void testIsMaxUnknownStatThrows() {
+        try {
+            profile.isMax("fly");
+            fail("Debio lanzar DOPOSoccerException");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("fly"));
+        }
+    }
+
+    // Una estadistica desconocida lanza excepcion en upgrade
+    @Test
+    public void testUpgradeUnknownStatThrows() {
+        try {
+            profile.upgrade("fly");
+            fail("Debio lanzar DOPOSoccerException");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("fly"));
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Excepciones: upgrade sin puntos o en nivel maximo
+    // ----------------------------------------------------------------
+
+    // El mensaje de puntos insuficientes dice cuantos puntos faltan
+    @Test
+    public void testUpgradeMessageSaysMissingPoints() throws Exception {
+        profile.addPoints(200);
+        try {
+            profile.upgrade("speed");
+            fail("Debio lanzar DOPOSoccerException por puntos insuficientes");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("Faltan 300"));
+            assertTrue(e.getMessage().contains("insuficientes"));
+        }
+        assertEquals(1, profile.getSpeed());
+        assertEquals(200, profile.getPoints());
+    }
+
+    // Mejorar una estadistica en nivel maximo lanza excepcion y no gasta puntos
+    @Test
+    public void testUpgradeAtMaxThrows() throws Exception {
+        // se sube speed hasta el nivel 10 pagando cada nivel
+        for (int level = 1; level < 10; level++) {
+            profile.addPoints(profile.upgradeCost("speed"));
+            profile.upgrade("speed");
+        }
+        profile.addPoints(100000);
+        try {
+            profile.upgrade("speed");
+            fail("Debio lanzar DOPOSoccerException por nivel maximo");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertEquals(10, profile.getSpeed());
+        assertEquals(100000, profile.getPoints());
+    }
+
+    // ----------------------------------------------------------------
+    // Precios a lo largo de los niveles
+    // ----------------------------------------------------------------
+
+    // El precio se duplica en cada nivel: 500, 1000, 2000, 4000
+    @Test
+    public void testUpgradeCostDoublesEachLevel() throws Exception {
+        int[] expected = {500, 1000, 2000, 4000};
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], profile.upgradeCost("kick"));
+            profile.addPoints(expected[i]);
+            profile.upgrade("kick");
+        }
+    }
+
+    // Mejorar una estadistica no afecta a las demas
+    @Test
+    public void testUpgradeDoesNotAffectOtherStats() throws Exception {
+        profile.addPoints(500);
+        profile.upgrade("jump");
+        assertEquals(2, profile.getJump());
+        assertEquals(1, profile.getSpeed());
+        assertEquals(1, profile.getKick());
+        assertEquals(1, profile.getSurvival());
     }
 }

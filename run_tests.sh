@@ -9,6 +9,15 @@ VERDE="\033[0;32m"
 ROJO="\033[0;31m"
 RESET="\033[0m"
 
+# Separador del classpath: en Windows (Git Bash) es punto y coma, en Linux y Mac son dos puntos
+SEP=":"
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) SEP=";" ;;
+esac
+
+echo ""
+echo "=== DOPOSoccer: compilacion + pruebas + cobertura ==="
+
 echo ""
 echo "=== DOPOSoccer: compilacion + pruebas + cobertura ==="
 echo ""
@@ -21,8 +30,8 @@ echo "Carpeta build lista."
 # --- 2. Compilar solo el codigo fuente principal (sin tests ni presentacion aun) ---
 echo ""
 echo "Compilando dominio y presentacion..."
-javac -d build \
-      -cp "lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar:src" \
+javac --release 8 -d build \
+      -cp "lib/junit-4.13.2.jar${SEP}lib/hamcrest-core-1.3.jar${SEP}src" \
       src/domain/*.java src/presentation/*.java
 
 if [ $? -ne 0 ]; then
@@ -34,8 +43,8 @@ echo -e "${VERDE}Compilacion principal exitosa.${RESET}"
 # --- 3. Compilar los tests (necesitan el codigo principal ya compilado) ---
 echo ""
 echo "Compilando tests..."
-javac -d build \
-      -cp "lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar:src:build" \
+javac --release 8 -d build \
+      -cp "lib/junit-4.13.2.jar${SEP}lib/hamcrest-core-1.3.jar${SEP}src${SEP}build" \
       test/*.java
 
 if [ $? -ne 0 ]; then
@@ -49,7 +58,7 @@ echo -e "${VERDE}Compilacion de tests exitosa.${RESET}"
 echo ""
 echo "Corriendo tests con JaCoCo..."
 java -javaagent:lib/jacocoagent.jar=destfile=jacoco.exec \
-     -cp "build:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar" \
+     -cp "build${SEP}lib/junit-4.13.2.jar${SEP}lib/hamcrest-core-1.3.jar" \
      org.junit.runner.JUnitCore \
      DOPOSoccerTest PowerTest FactoryTest ProfileTest PersistenceTest
 

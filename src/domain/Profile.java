@@ -84,7 +84,7 @@ public class Profile implements Serializable {
      * @param amount cantidad de puntos a sumar
      * @throws DOPOSoccerException si la cantidad es negativa
      */
-    public void addPoints(int amount) {
+    public void addPoints(int amount) throws DOPOSoccerException{
         if (amount < 0){
             throw new DOPOSoccerException("No se pueden sumar puntos negativos al perfil. Cantidad recibida: " + amount + ".");
         }
@@ -165,7 +165,7 @@ public class Profile implements Serializable {
         }
         int cost = upgradeCost(stat);
         if (points < cost){
-            throw new DOPOSoccerException("Puntos insuficientes para mejorar '" + stat + "'. Cuesta" + cost + " puntos y tienes " + points + ". Faltan "+ (cost-points)+ ".");
+            throw new DOPOSoccerException("Puntos insuficientes para mejorar '" + stat + "'. Cuesta " + cost + " puntos y tienes " + points + ". Faltan "+ (cost-points)+ ".");
         }
         points -= cost;
         if (stat.equals("speed")) {

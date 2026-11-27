@@ -1,28 +1,50 @@
 package domain;
 
 /**
- * Creador de bots (patron Creador / Fabricacion Pura).
+ * Representa a un jugador controlado por la máquina.
+ * Cada subclase concreta define el perfil de juego propio, es decir
+ * la manera en que decide moverse, saltar, patear y usar su poder en
+ * cada instante del partido.
  *
- * Unico lugar que sabe que perfiles de maquina existen y que bot usa cada uno.
- * Game le pide un bot segun el perfil y no conoce las subclases concretas.
- *
+ * Punto de extensión: para agregar un perfil de máquina nuevo basta
+ * con crear una subclase propia que decida la acción según sus
+ * propias reglas, y registrarla en la fábrica de bots. El resto del
+ * juego trabaja contra esta clase y no necesita cambios.
  */
-public class BotFactory {
+public abstract class Bot extends Player {
+
+    protected boolean wantsToKick;   // el bot pide patear; Game ejecuta la patada real
 
     /**
-     * Crea el bot correspondiente al perfil de máquina elegido.
-     * @param profile perfil de máquina del bot a crear
-     * @return el bot creado con ese perfil
+     * Crea un bot con la vida, las estadísticas y la barra de poder
+     * iniciales propias de todo jugador.
      */
-    public Bot create(String profile) {
-        if (profile.equals("stupid")) {
-            return new Stupid();
-        } else if (profile.equals("defensive")) {
-            return new Defensive();
-        } else if (profile.equals("expert")) {
-            return new Expert();
-        } else {
-            return new Offensive();   // offensive
-        }
+    public Bot() {
+        super();
+        wantsToKick = false;
+    }
+
+    /**
+     * Decide y ejecuta la acción del bot para el instante actual del
+     * partido, según el estado del balón, del marcador o de la cancha
+     * que necesite su propio perfil de juego.
+     * @param match partido en curso sobre el que el bot toma su decisión
+     */
+    public abstract void decideAction(Match match);
+
+    /**
+     * Indica si el bot pidió patear en la decisión más reciente.
+     * @return verdadero si el bot quiere patear, falso en caso contrario
+     */
+    public boolean wantsToKick() {
+        return wantsToKick;
+    }
+
+    /**
+     * Limpia la intención de patear del bot, una vez que ya se ejecutó
+     * la patada correspondiente.
+     */
+    public void clearKickIntent() {
+        wantsToKick = false;
     }
 }

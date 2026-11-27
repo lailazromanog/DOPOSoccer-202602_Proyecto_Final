@@ -28,6 +28,11 @@ public class ShopPanel extends JPanel {
     private GameGUI gui;
     private ProfileStore store;
 
+    /**
+     * Crea la pantalla de mejoras de estadísticas, leyendo el progreso
+     * de ambos jugadores desde la ventana principal.
+     * @param gui ventana principal, de donde se toma el progreso de los jugadores
+     */
     public ShopPanel(GameGUI gui) {
         this.gui = gui;
         this.store = gui.getProfileStore();
@@ -37,7 +42,12 @@ public class ShopPanel extends JPanel {
         buildUI();
     }
 
-    /** (Re)arma la pantalla; se llama al inicio y despues de cada mejora. */
+    /**
+     * Arma de nuevo toda la pantalla a partir del progreso actual de
+     * los dos jugadores. Se llama al crear la pantalla y de nuevo
+     * después de cada mejora, para que los precios y los niveles
+     * mostrados queden al día.
+     */
     private void buildUI() {
         removeAll();
         JPanel card = new JPanel();
@@ -66,6 +76,10 @@ public class ShopPanel extends JPanel {
         back.setPreferredSize(new Dimension(200, 44));
         back.setAlignmentX(Component.CENTER_ALIGNMENT);
         back.addActionListener(new ActionListener(){
+            /**
+             * Vuelve a la pantalla de configuración del partido.
+             * @param e evento de clic del botón listo
+             */
             @Override public void actionPerformed(ActionEvent e){ gui.showConfig(); }
         });
         card.add(back);
@@ -75,6 +89,14 @@ public class ShopPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Arma la columna de un jugador con su nombre, sus puntos
+     * acumulados y una fila por cada estadística que puede mejorar.
+     * @param name nombre del jugador a mostrar
+     * @param profile perfil persistente del jugador
+     * @param color color de fondo de la columna del jugador
+     * @return el panel con la columna armada
+     */
     private JPanel playerColumn(String name, Profile profile, Color color) {
         JPanel col = new JPanel();
         col.setBackground(color);
@@ -93,6 +115,17 @@ public class ShopPanel extends JPanel {
         return col;
     }
 
+    /**
+     * Arma la fila de una estadística del jugador: su nombre, su nivel
+     * actual, su detalle, y el botón para mejorarla, mostrando el
+     * precio del próximo nivel o la razón por la que no se puede
+     * mejorar todavía.
+     * @param profile perfil persistente del jugador dueño de la estadística
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @param name nombre de la estadística a mostrar
+     * @param detail detalle del efecto actual de la estadística, para mostrar
+     * @return el panel con la fila armada
+     */
     private JPanel statRow(final Profile profile, final String stat, String name, String detail) {
         JPanel row = new JPanel();
         row.setOpaque(false);
@@ -118,6 +151,12 @@ public class ShopPanel extends JPanel {
 
         final String statName = name;
         btn.addActionListener(new ActionListener(){
+            /**
+             * Pregunta al jugador si confirma gastar los puntos para
+             * mejorar la estadística y, si acepta, la sube de nivel y
+             * vuelve a armar la pantalla con el progreso al día.
+             * @param e evento de clic del botón mejorar
+             */
             @Override public void actionPerformed(ActionEvent e){
                 int cost = profile.upgradeCost(stat);
                 int option = JOptionPane.showConfirmDialog(ShopPanel.this,
@@ -136,6 +175,12 @@ public class ShopPanel extends JPanel {
         return row;
     }
 
+    /**
+     * Entrega el nivel actual de la estadística dada del perfil.
+     * @param p perfil del que se consulta la estadística
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return el nivel actual de esa estadística
+     */
     private int levelOf(Profile p, String stat) {
         if (stat.equals("speed")) {
             return p.getSpeed();
@@ -148,10 +193,24 @@ public class ShopPanel extends JPanel {
         }
     }
 
+    /**
+     * Calcula el multiplicador de daño que corresponde al nivel de
+     * kick dado, para mostrarlo en el detalle de esa estadística.
+     * @param kick nivel de la estadística kick
+     * @return el multiplicador de daño con un decimal, listo para mostrar
+     */
     private String mult(int kick) {
         return String.format("%.1f", 1 + 0.10 * (kick - 1));
     }
 
+    /**
+     * Crea una etiqueta de texto con la fuente y el color dados, para
+     * no repetir la misma configuración en cada etiqueta de la pantalla.
+     * @param text texto de la etiqueta
+     * @param font fuente de la etiqueta
+     * @param color color del texto de la etiqueta
+     * @return la etiqueta creada
+     */
     private JLabel label(String text, Font font, Color color) {
         JLabel l = new JLabel(text);
         l.setFont(font);
@@ -160,6 +219,12 @@ public class ShopPanel extends JPanel {
         return l;
     }
 
+    /**
+     * Alinea la etiqueta dada hacia la izquierda, para las filas de
+     * información que no deben quedar centradas.
+     * @param l etiqueta a alinear
+     * @return la misma etiqueta, ya alineada a la izquierda
+     */
     private JLabel left(JLabel l) {
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;

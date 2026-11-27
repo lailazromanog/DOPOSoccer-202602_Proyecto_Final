@@ -20,13 +20,19 @@ public class GameGUI extends JFrame {
     private int resW = 769;   // resolucion elegida (por defecto mediana)
     private int resH = 450;
 
+    /**
+     * Crea la ventana principal con un progreso nuevo para ambos
+     * jugadores y prepara sus elementos iniciales.
+     */
     private GameGUI() {
         profileStore = new domain.ProfileStore(); //carga el progreso guardado
         prepareElements();
     }
 
     /**
-     * Punto unico de acceso a la venta
+     * Entrega la única instancia de la ventana principal, creándola la
+     * primera vez que se pide.
+     * @return la instancia única de la ventana principal
      */
     public static GameGUI getInstance(){
         if(instance == null){
@@ -35,6 +41,10 @@ public class GameGUI extends JFrame {
         return instance;
     }
 
+    /**
+     * Prepara el título, el tamaño y el panel inicial de la ventana,
+     * mostrando primero la pantalla de configuración.
+     */
     private void prepareElements() {
         setTitle("DOPOSoccer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -47,6 +57,15 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /**
+     * Guarda la resolución elegida y muestra la pantalla de selección
+     * de personajes con el tipo de partido y el rival ya definidos.
+     * @param matchType tipo de partido elegido, por tiempo o por goles
+     * @param value minutos de duración del partido o goles para ganar, según el tipo de partido
+     * @param opponent modalidad del jugador 2, humano o perfil de máquina
+     * @param resW ancho de la ventana según la resolución elegida
+     * @param resH alto de la ventana según la resolución elegida
+     */
     public void showCharacterSelect(String matchType, int value,String opponent, int resW, int resH) {
         this.resW = resW;
         this.resH = resH;
@@ -83,7 +102,13 @@ public class GameGUI extends JFrame {
         }
     }
 
-    /** Entra a la cancha con un partido ya cargado desde archivo. */
+    /**
+     * Entra a la cancha con un partido ya cargado desde archivo, con
+     * la resolución dada.
+     * @param game partido ya cargado desde archivo
+     * @param resW ancho de la ventana según la resolución elegida
+     * @param resH alto de la ventana según la resolución elegida
+     */
     public void openGame(Game game, int resW, int resH) {
         this.resW = resW;
         this.resH = resH;
@@ -95,8 +120,10 @@ public class GameGUI extends JFrame {
         fieldPanel.requestFocusInWindow();
     }
 
-    /** 
-     * Muestra la pantalla de fin de partido. 
+    /**
+     * Muestra la pantalla de fin de partido con el resultado del
+     * partido dado.
+     * @param game partido que acaba de terminar
      */
     public void showEndScreen(Game game) {
         setContentPane(new EndPanel(this, game));
@@ -105,8 +132,8 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    /** 
-     * Muestra la tienda de mejoras. 
+    /**
+     * Muestra la tienda de mejoras de estadísticas.
      */
     public void showShop() {
         setContentPane(new ShopPanel(this));
@@ -115,8 +142,8 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    /** 
-     * Vuelve a la pantalla de configuracion. 
+    /**
+     * Vuelve a la pantalla de configuración del partido.
      */
     public void showConfig() {
         setContentPane(new ConfigPanel(this));
@@ -124,15 +151,21 @@ public class GameGUI extends JFrame {
         pack();
         setLocationRelativeTo(null);
     }
-    
 
-    /** 
-     * Acceso al progreso, para la pantalla de mejoras. 
+
+    /**
+     * Entrega el almacén de progreso de los dos jugadores, para que la
+     * pantalla de mejoras pueda consultarlo y modificarlo.
+     * @return el almacén de progreso de los dos jugadores
      */
     public domain.ProfileStore getProfileStore() {
         return profileStore;
     }
 
+    /**
+     * Punto de entrada de la aplicación: crea la ventana principal y la muestra.
+     * @param args argumentos de línea de comandos, sin uso en este programa
+     */
     public static void main(String[] args) {
         GameGUI ventana = GameGUI.getInstance();
         ventana.setVisible(true);

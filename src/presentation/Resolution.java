@@ -16,20 +16,40 @@ public enum Resolution {
     private final int width;
     private final int height;
 
+    /**
+     * Crea una resolución con su etiqueta para mostrar y el ancho y
+     * el alto de ventana que le corresponden.
+     * @param label etiqueta de la resolución, para mostrarla en el combo de selección
+     * @param width ancho de la ventana para esta resolución
+     * @param height alto de la ventana para esta resolución
+     */
     Resolution(String label, int width, int height) {
         this.label = label;
         this.width = width;
         this.height = height;
     }
 
+    /**
+     * Entrega el ancho de ventana de esta resolución.
+     * @return el ancho de ventana de esta resolución
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Entrega el alto de ventana de esta resolución.
+     * @return el alto de ventana de esta resolución
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Entrega la etiqueta de esta resolución, para mostrarla en el
+     * combo de selección.
+     * @return la etiqueta de esta resolución
+     */
     @Override
     public String toString() {
         return label;   // lo que se muestra en el combo

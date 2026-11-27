@@ -34,15 +34,28 @@ public class CharacterSelectPanel extends JPanel{
     private int value;
     private String opponent;
 
+    /**
+     * Crea la pantalla de selección de personajes, con el tipo de
+     * partido, el valor del partido y el rival ya elegidos en la
+     * pantalla anterior.
+     * @param gui ventana principal que recibe la orden de empezar el partido
+     * @param matchType tipo de partido elegido, por tiempo o por goles
+     * @param value minutos de duración del partido o goles para ganar, según el tipo de partido
+     * @param opponent modalidad del jugador 2, humano o perfil de máquina
+     */
     public CharacterSelectPanel(GameGUI gui, String matchType, int value, String opponent){
-        this.matchType = matchType; 
-        this.value = value; 
+        this.matchType = matchType;
+        this.value = value;
         this.opponent = opponent;
         loadBackground();
         prepareElements();
         prepareActions(gui);
     }
 
+    /**
+     * Carga la imagen de fondo de la pantalla de selección de
+     * personajes desde el archivo de recursos del juego.
+     */
     private void loadBackground(){
         try{
             background = ImageIO.read( new File("resources/menu.png"));
@@ -51,6 +64,10 @@ public class CharacterSelectPanel extends JPanel{
         }
     }
 
+    /**
+     * Dibuja la imagen de fondo de la pantalla, si se pudo cargar.
+     * @param g contexto gráfico sobre el que se dibuja el panel
+     */
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -59,6 +76,11 @@ public class CharacterSelectPanel extends JPanel{
         }
     }
 
+    /**
+     * Crea y ubica los componentes de la pantalla dentro de la
+     * tarjeta central: el combo de personaje de cada jugador y el
+     * botón de jugar.
+     */
     private void prepareElements(){
         setPreferredSize(new Dimension(769, 450));
         setLayout( new GridBagLayout());
@@ -100,8 +122,18 @@ public class CharacterSelectPanel extends JPanel{
         add(card);
     }
 
+    /**
+     * Asigna al botón de jugar la acción de iniciar el partido con los
+     * personajes elegidos.
+     * @param gui ventana principal que recibe la orden de empezar el partido
+     */
     private void prepareActions(final GameGUI gui){
         playButton.addActionListener( new ActionListener(){
+            /**
+             * Toma el personaje elegido por cada jugador y le pide a
+             * la ventana principal que arranque el partido con ellos.
+             * @param e evento de clic del botón jugar
+             */
             @Override
             public void actionPerformed(ActionEvent e){
                 String country1 = (String) leftCharacter.getSelectedItem();
@@ -111,6 +143,14 @@ public class CharacterSelectPanel extends JPanel{
         });
     }
 
+    /**
+     * Crea una etiqueta de texto con la fuente y el color dados, para
+     * no repetir la misma configuración en cada etiqueta de la pantalla.
+     * @param text texto de la etiqueta
+     * @param font fuente de la etiqueta
+     * @param color color del texto de la etiqueta
+     * @return la etiqueta creada
+     */
     private JLabel label(String text, Font font, Color color){
         JLabel l = new JLabel(text);
         l.setFont(font);

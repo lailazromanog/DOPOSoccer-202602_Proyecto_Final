@@ -18,6 +18,13 @@ import javax.swing.JPanel;
 /** Pantalla de fin de partido: resultado + navegacion a la tienda o a configuracion. */
 public class EndPanel extends JPanel {
 
+    /**
+     * Crea la pantalla de fin de partido con el resultado del partido
+     * dado, los puntos acumulados de ambos jugadores y los botones
+     * para ir a la tienda de mejoras o volver al menú.
+     * @param gui ventana principal que recibe la orden de cambiar de pantalla
+     * @param game partido que acaba de terminar
+     */
     public EndPanel(final GameGUI gui, Game game) {
         setBackground(new Color(0x0e1a24));
         setLayout(new GridBagLayout());
@@ -56,6 +63,10 @@ public class EndPanel extends JPanel {
         shop.setPreferredSize(new Dimension(240, 48));
         shop.setAlignmentX(Component.CENTER_ALIGNMENT);
         shop.addActionListener(new ActionListener(){
+            /**
+             * Muestra la tienda de mejoras de estadísticas.
+             * @param e evento de clic del botón mejorar estadísticas
+             */
             @Override public void actionPerformed(ActionEvent e){ gui.showShop(); }
         });
         card.add(shop);
@@ -67,6 +78,10 @@ public class EndPanel extends JPanel {
         menu.setPreferredSize(new Dimension(240, 42));
         menu.setAlignmentX(Component.CENTER_ALIGNMENT);
         menu.addActionListener(new ActionListener(){
+            /**
+             * Vuelve a la pantalla de configuración del partido.
+             * @param e evento de clic del botón menú
+             */
             @Override public void actionPerformed(ActionEvent e){ gui.showConfig(); }
         });
         card.add(menu);
@@ -74,6 +89,14 @@ public class EndPanel extends JPanel {
         add(card);
     }
 
+    /**
+     * Crea una etiqueta de texto con la fuente y el color dados, para
+     * no repetir la misma configuración en cada etiqueta de la pantalla.
+     * @param text texto de la etiqueta
+     * @param font fuente de la etiqueta
+     * @param color color del texto de la etiqueta
+     * @return la etiqueta creada
+     */
     private JLabel label(String text, Font font, Color color) {
         JLabel l = new JLabel(text);
         l.setFont(font);

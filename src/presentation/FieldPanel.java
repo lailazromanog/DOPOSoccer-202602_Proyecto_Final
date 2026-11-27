@@ -57,6 +57,15 @@ public class FieldPanel extends JPanel {
     private Timer gameLoop;
     private boolean paused = false;
 
+    /**
+     * Crea la pantalla de la cancha para el partido dado, cargando la
+     * imagen de la cancha y los sprites de ambos personajes, y pone a
+     * correr el ciclo del juego a sesenta cuadros por segundo.
+     * @param gui ventana principal que recibe la orden de mostrar la pantalla de fin
+     * @param game partido que se va a jugar en esta pantalla
+     * @param resW ancho de la ventana según la resolución elegida
+     * @param resH alto de la ventana según la resolución elegida
+     */
     public FieldPanel(GameGUI gui, Game game, int resW, int resH) {
         this.gui = gui;
         this.game = game;
@@ -83,6 +92,14 @@ public class FieldPanel extends JPanel {
 
         pressedKeys = new HashSet<>();
         addKeyListener(new KeyAdapter(){
+            /**
+             * Atiende cada tecla presionada: las teclas de acción
+             * inmediata (pausar, terminar, usar poder, guardar) se
+             * ejecutan al instante, y las demás quedan registradas
+             * como presionadas para que el ciclo del juego las lea en
+             * cada cuadro.
+             * @param e evento de tecla presionada
+             */
             @Override
             public void keyPressed(KeyEvent e){
                 int code = e.getKeyCode();
@@ -100,6 +117,10 @@ public class FieldPanel extends JPanel {
                     pressedKeys.add(code);
                 }
             }
+            /**
+             * Quita la tecla soltada del conjunto de teclas presionadas.
+             * @param e evento de tecla soltada
+             */
             @Override
             public void keyReleased(KeyEvent e){
                 pressedKeys.remove(e.getKeyCode());
@@ -108,6 +129,14 @@ public class FieldPanel extends JPanel {
         setFocusable(true);
 
         gameLoop = new Timer(16, new java.awt.event.ActionListener(){
+            /**
+             * Avanza un cuadro del juego: si el partido no está
+             * pausado ni terminado, procesa las teclas presionadas y
+             * le pide a la fachada que avance la física y las reglas;
+             * siempre vuelve a dibujar la pantalla; y si el partido ya
+             * terminó, detiene el ciclo y muestra la pantalla de fin.
+             * @param e evento de cada disparo del reloj del ciclo del juego
+             */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e){
                 if(!paused && !game.isFinished()){
@@ -144,6 +173,13 @@ public class FieldPanel extends JPanel {
         }
     }
 
+    /**
+     * Dibuja toda la pantalla de la cancha en cada cuadro: escala el
+     * dibujo lógico al tamaño real de la ventana y pinta la cancha,
+     * los jugadores, el balón, los arcos, el marcador y la pantalla de
+     * fin o de pausa, según corresponda.
+     * @param g contexto gráfico sobre el que se dibuja el panel
+     */
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -162,7 +198,11 @@ public class FieldPanel extends JPanel {
         }
     }
 
-    /** Pausa, pide un archivo y guarda la partida. */
+    /**
+     * Pausa el juego, pide al jugador un archivo y guarda la partida
+     * en él. Si ocurre un error al guardar, lo muestra al jugador y lo
+     * registra en el log.
+     */
     private void saveGame(){
         paused = true;   // que no avance mientras elijo el archivo
         JFileChooser chooser = new JFileChooser();
@@ -179,12 +219,21 @@ public class FieldPanel extends JPanel {
         requestFocusInWindow();
     }
 
+    /**
+     * Dibuja la imagen de la cancha, si se pudo cargar.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawField(Graphics g){
         if(fieldImage != null){
             g.drawImage(fieldImage, 0, 0, WIDTH, HEIGHT, this);
         }
     }
 
+        /**
+         * Dibuja a los dos jugadores en su posición actual, cada uno
+         * mirando hacia el arco contrario.
+         * @param g contexto gráfico sobre el que se dibuja
+         */
         private void drawPlayers(Graphics g){
         // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
         drawCharacter(g, p1Head, p1Shoe,
@@ -195,7 +244,18 @@ public class FieldPanel extends JPanel {
                 game.isRightPlayerAura(), -1);
     }
 
-    /** Dibuja un personaje: aura (atras) + cabeza + zapato, por separado. */
+    /**
+     * Dibuja un personaje en la posición dada: primero su aura si la
+     * tiene activa, para que quede detrás, y luego su cabeza y su
+     * zapato por separado.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param head imagen de la cabeza del personaje
+     * @param shoe imagen del zapato del personaje
+     * @param x posición horizontal del personaje
+     * @param y posición vertical del personaje
+     * @param aura verdadero si el personaje tiene el aura de su poder activa
+     * @param frontDir dirección hacia la que mira el personaje, uno hacia la derecha o menos uno hacia la izquierda
+     */
     private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir){
         int d = PLAYER_DIAMETER;
         int bottom = y + d;          // el piso del jugador (abajo del hitbox)
@@ -228,6 +288,10 @@ public class FieldPanel extends JPanel {
         }
     }
 
+    /**
+     * Dibuja el balón en su posición actual.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawBall(Graphics g){
         int d = BALL_DIAMETER;
         int x = (int) game.getBallX();
@@ -238,6 +302,10 @@ public class FieldPanel extends JPanel {
         g.drawOval(x, y, d, d);
     }
 
+    /**
+     * Dibuja los dos arcos de la cancha, con sus postes y sus travesaños.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawGoals(Graphics g){
         g.setColor(Color.WHITE);
         int grosor = 6;
@@ -247,6 +315,11 @@ public class FieldPanel extends JPanel {
         g.fillRect(RIGHT_POST, GOAL_TOP - grosor/2, WIDTH - RIGHT_POST, grosor);
     }
 
+    /**
+     * Dibuja la barra superior del juego: el marcador, el tiempo
+     * restante y las barras de poder y de vida de ambos jugadores.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawHUD(Graphics g){
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, WIDTH, 58);
@@ -280,7 +353,18 @@ public class FieldPanel extends JPanel {
         drawBar(g, barX2, 47, barW, 6, game.getRightPlayerLife(), new Color(0x3ddc84), false);
     }
 
-    /** Dibuja una barra (fondo gris + relleno segun el porcentaje). */
+    /**
+     * Dibuja una barra con un fondo gris y un relleno según la
+     * proporción dada, con un borde opcional alrededor.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param x posición horizontal de la barra
+     * @param y posición vertical de la barra
+     * @param w ancho total de la barra
+     * @param h alto de la barra
+     * @param ratio proporción llena de la barra, entre cero y uno
+     * @param fill color de relleno de la barra
+     * @param border verdadero para dibujar un borde alrededor de la barra
+     */
     private void drawBar(Graphics g, int x, int y, int w, int h, double ratio, Color fill, boolean border){
         g.setColor(Color.DARK_GRAY);
         g.fillRect(x, y, w, h);
@@ -292,6 +376,11 @@ public class FieldPanel extends JPanel {
         }
     }
 
+    /**
+     * Dibuja la pantalla de fin de partido sobre la cancha: el
+     * resultado, el marcador final y los puntos obtenidos por cada jugador.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawMatchEnd(Graphics g){
         g.setColor(new Color(0, 0, 0, 180));
         g.fillRect(0, 0, WIDTH, HEIGHT);
@@ -322,6 +411,11 @@ public class FieldPanel extends JPanel {
         g.drawString(puntos, (WIDTH - fm3.stringWidth(puntos))/2, HEIGHT/2 + 72);
     }
 
+    /**
+     * Dibuja la pantalla de pausa sobre la cancha, con la ayuda de las
+     * teclas para reanudar o terminar el partido.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
     private void drawPaused(Graphics g){
         g.setColor(new Color(0, 0, 0, 170));
         g.fillRect(0, 0, WIDTH, HEIGHT);

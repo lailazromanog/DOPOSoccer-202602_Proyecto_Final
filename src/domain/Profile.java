@@ -19,6 +19,10 @@ public class Profile implements Serializable {
     private int jump;
     private int survival;
 
+    /**
+     * Crea un perfil nuevo con sus puntos en cero y todas sus
+     * estadísticas en el nivel mínimo.
+     */
     public Profile() {
         this.points = 0;
         this.speed = 1;
@@ -27,60 +31,109 @@ public class Profile implements Serializable {
         this.survival = 1;
     }
 
-    public int getPoints(){ 
-        return points; 
+    /**
+     * Entrega los puntos acumulados del perfil.
+     * @return los puntos acumulados del perfil
+     */
+    public int getPoints(){
+        return points;
     }
 
-    public int getSpeed(){ 
-        return speed; 
+    /**
+     * Entrega el nivel de la estadística de velocidad del perfil.
+     * @return el nivel de la estadística speed
+     */
+    public int getSpeed(){
+        return speed;
     }
 
-    public int getKick(){ 
-        return kick; 
+    /**
+     * Entrega el nivel de la estadística de daño de patada del perfil.
+     * @return el nivel de la estadística kick
+     */
+    public int getKick(){
+        return kick;
     }
 
-    public int getJump(){ 
-        return jump; 
+    /**
+     * Entrega el nivel de la estadística de altura de salto del perfil.
+     * @return el nivel de la estadística jump
+     */
+    public int getJump(){
+        return jump;
     }
 
-    public int getSurvival(){ 
-        return survival; 
+    /**
+     * Entrega el nivel de la estadística de vida máxima del perfil.
+     * @return el nivel de la estadística survival
+     */
+    public int getSurvival(){
+        return survival;
     }
 
+    /**
+     * Suma la cantidad dada a los puntos acumulados del perfil.
+     * @param amount cantidad de puntos a sumar
+     */
     public void addPoints(int amount) {
         points += amount;
     }
 
-    /** Nivel actual de la estadistica pedida. */
-    private int levelOf(String stat) {
+    /**
+     * Entrega el nivel actual de la estadística dada.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return el nivel actual de esa estadística
+     */
+    private int levelOf(String stat) throws DOPOSoccerException {
         if (stat.equals("speed")) {
             return speed;
         } else if (stat.equals("kick")) {
             return kick;
         } else if (stat.equals("jump")) {
             return jump;
-        } else {
+        } else if (stat.equals("survival")) {
             return survival;
+        } else {
+            throw new DOPOSoccerException("Estadistica desconocida: '" + stat + "'. Las validas son speed, kick, jump y survival.");
         }
     }
 
-    /** Precio del proximo nivel de la estadistica: 500, 1000, 2000... (se duplica). */
-    public int upgradeCost(String stat) {
+    /**
+     * Calcula el precio en puntos del próximo nivel de la estadística
+     * dada, que arranca en quinientos puntos y se duplica con cada nivel.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return el precio del próximo nivel de esa estadística
+     */
+    public int upgradeCost(String stat) throws DOPOSoccerException {
         return 500 * (int) Math.pow(2, levelOf(stat) - 1);
     }
 
-    /** True si la estadistica no esta al maximo (10) y alcanzan los puntos. */
-    public boolean canUpgrade(String stat) {
+    /**
+     * Indica si la estadística dada se puede mejorar: si no está en su
+     * nivel máximo y el perfil tiene puntos suficientes para pagar el
+     * próximo nivel.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return verdadero si la estadística se puede mejorar, falso en caso contrario
+     */
+    public boolean canUpgrade(String stat) throws DOPOSoccerException {
         return levelOf(stat) < 10 && points >= upgradeCost(stat);
     }
 
-    /** True si la estadistica ya esta en el nivel maximo. */
-    public boolean isMax(String stat) {
+    /**
+     * Indica si la estadística dada ya llegó a su nivel máximo.
+     * @param stat nombre de la estadística, speed, kick, jump o survival
+     * @return verdadero si la estadística está en su nivel máximo, falso en caso contrario
+     */
+    public boolean isMax(String stat) throws DOPOSoccerException {
         return levelOf(stat) >= 10;
     }
 
-    /** Sube la estadistica un nivel y descuenta los puntos (si se puede). */
-    public void upgrade(String stat) {
+    /**
+     * Sube un nivel la estadística dada y descuenta del perfil el
+     * precio de ese nivel, siempre que la estadística se pueda mejorar.
+     * @param stat nombre de la estadística a subir, speed, kick, jump o survival
+     */
+    public void upgrade(String stat) throws DOPOSoccerException {
         if (!canUpgrade(stat)) {
             return;
         }
@@ -91,8 +144,10 @@ public class Profile implements Serializable {
             kick++;
         } else if (stat.equals("jump")) {
             jump++;
-        } else {
+        } else if (stat.equals("survival")) {
             survival++;
+        } else {
+            throw new DOPOSoccerException("Estadistica desconocida: '" + stat + "'. Las validas son speed, kick, jump y survival.");
         }
     }
 }

@@ -17,9 +17,7 @@ public class ProfileTest {
         profile = new Profile();
     }
 
-    // ----------------------------------------------------------------
     // Estado inicial
-    // ----------------------------------------------------------------
 
     // Un perfil nuevo empieza con cero puntos
     @Test
@@ -36,9 +34,7 @@ public class ProfileTest {
         assertEquals(1, profile.getSurvival());
     }
 
-    // ----------------------------------------------------------------
     // Puntos
-    // ----------------------------------------------------------------
 
     // addPoints suma correctamente la cantidad dada
     @Test
@@ -55,9 +51,7 @@ public class ProfileTest {
         assertEquals(125, profile.getPoints());
     }
 
-    // ----------------------------------------------------------------
     // Costo de mejora: upgradeCost
-    // ----------------------------------------------------------------
 
     // En nivel 1 el costo del proximo nivel es 500
     @Test
@@ -86,9 +80,7 @@ public class ProfileTest {
         assertEquals(profile.upgradeCost("jump"),     profile.upgradeCost("survival"));
     }
 
-    // ----------------------------------------------------------------
     // Disponibilidad de mejora: canUpgrade
-    // ----------------------------------------------------------------
 
     // Sin puntos suficientes no se puede mejorar
     @Test
@@ -127,9 +119,7 @@ public class ProfileTest {
         assertFalse(profile.canUpgrade("speed"));
     }
 
-    // ----------------------------------------------------------------
     // Nivel maximo: isMax
-    // ----------------------------------------------------------------
 
     // Una estadistica nueva no esta en su maximo
     @Test
@@ -151,9 +141,7 @@ public class ProfileTest {
         assertTrue(profile.isMax("speed"));
     }
 
-    // ----------------------------------------------------------------
     // Operacion de mejora: upgrade
-    // ----------------------------------------------------------------
 
     // Mejorar speed sube su nivel y descuenta los puntos
     @Test
@@ -204,9 +192,8 @@ public class ProfileTest {
         assertEquals(3, profile.getKick());
     }
 
-        // ----------------------------------------------------------------
+
     // Excepciones: addPoints
-    // ----------------------------------------------------------------
 
     // Sumar puntos negativos lanza excepcion y no cambia los puntos
     @Test
@@ -227,9 +214,7 @@ public class ProfileTest {
         assertEquals(0, profile.getPoints());
     }
 
-    // ----------------------------------------------------------------
     // Excepciones: estadistica invalida
-    // ----------------------------------------------------------------
 
     // Una estadistica desconocida lanza excepcion en upgradeCost
     @Test
@@ -275,9 +260,7 @@ public class ProfileTest {
         }
     }
 
-    // ----------------------------------------------------------------
     // Excepciones: upgrade sin puntos o en nivel maximo
-    // ----------------------------------------------------------------
 
     // El mensaje de puntos insuficientes dice cuantos puntos faltan
     @Test
@@ -313,9 +296,7 @@ public class ProfileTest {
         assertEquals(100000, profile.getPoints());
     }
 
-    // ----------------------------------------------------------------
     // Precios a lo largo de los niveles
-    // ----------------------------------------------------------------
 
     // El precio se duplica en cada nivel: 500, 1000, 2000, 4000
     @Test

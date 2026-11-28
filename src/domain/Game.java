@@ -788,6 +788,25 @@ public class Game implements Serializable{
     }
 
     /**
+     * Asocia al partido los perfiles persistentes de ambos jugadores,
+     * para que al terminar el partido sus puntos se sumen a esos
+     * perfiles. Se usa con un partido abierto desde un archivo, que
+     * llega sin perfiles porque estos no se guardan con el partido.
+     * Las estadísticas de los jugadores no cambian: el partido
+     * conserva las que tenía al guardarse.
+     * @param leftProfile perfil persistente del jugador izquierdo
+     * @param rightProfile perfil persistente del jugador derecho
+     * @throws DOPOSoccerException si alguno de los dos perfiles es nulo
+     */
+    public void attachProfiles(Profile leftProfile, Profile rightProfile) throws DOPOSoccerException {
+        if (leftProfile == null || rightProfile == null) {
+            throw new DOPOSoccerException("Los perfiles de ambos jugadores son obligatorios para asociarlos al partido.");
+        }
+        this.leftProfile = leftProfile;
+        this.rightProfile = rightProfile;
+    }
+
+    /**
      * Abre el partido guardado en el archivo dado.
      * @param file archivo del que se quiere abrir el partido
      * @return el partido reconstruido a partir del archivo

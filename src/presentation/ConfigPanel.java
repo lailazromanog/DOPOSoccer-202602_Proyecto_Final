@@ -218,7 +218,7 @@ public class ConfigPanel extends JPanel {
                 int result = chooser.showOpenDialog(ConfigPanel.this);
                 if(result == JFileChooser.APPROVE_OPTION){
                     try {
-                        Game game = Game.openFrom(chooser.getSelectedFile());
+                        Game game = gui.getProgress().openGame(chooser.getSelectedFile());
                         Resolution res = (Resolution) resolutionBox.getSelectedItem();
                         gui.openGame(game, res.getWidth(), res.getHeight());
                     } catch (DOPOSoccerException ex) {

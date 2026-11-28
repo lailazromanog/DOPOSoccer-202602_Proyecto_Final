@@ -21,6 +21,14 @@ import java.io.ObjectOutputStream;
  * para el jugador izquierdo y 2 para el derecho.
  */
 
+// Declaración de uso de IA: esta parte (HUD con país/puntos/niveles y
+// guardado de progreso en disco) se desarrolló con ayuda de Claude
+// (Anthropic) a partir de prompts escritos por Laila, que los revisó.
+// Prompts resumidos:
+//  (1) "mostrar país, estadísticas y puntos en el HUD sin agregar clases ni métodos";
+//  (2) "guardar el progreso del jugador en disco al abrir/cerrar sin cambiar
+//      el diagrama salvo un método Progress.save()";
+//  (3) "igualar la rama Laila con main para integrar lo de Juan".
 public class Progress {
     
     //Identificador del jugador del lado izquierdo 

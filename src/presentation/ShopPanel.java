@@ -186,6 +186,7 @@ public class ShopPanel extends JPanel {
                             "Mejorar estadistica", JOptionPane.YES_NO_OPTION);
                     if (option == JOptionPane.YES_OPTION) {
                         progress.upgrade(player, stat);
+                        progress.save();   // guarda la mejora en disco
                         buildUI();        // refresca la pantalla
                     }
                 } catch (DOPOSoccerException ex) {

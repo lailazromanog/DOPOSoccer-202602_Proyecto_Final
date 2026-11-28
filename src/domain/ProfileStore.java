@@ -1,11 +1,13 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
- * Mantiene el progreso de los dos jugadores (perfiles J1 y J2) durante la sesion.
- * El progreso se REINICIA cada vez que se arranca el juego: no se guarda en disco,
- * solo vive mientras la aplicacion esta abierta.
+ * Mantiene el progreso de los dos jugadores (perfiles J1 y J2). Es
+ * serializable para que Progress lo pueda guardar en disco y abrirlo
+ * de nuevo al volver a iniciar el juego.
  */
-public class ProfileStore {
+public class ProfileStore implements Serializable {
     private Profile left;
     private Profile right;
 

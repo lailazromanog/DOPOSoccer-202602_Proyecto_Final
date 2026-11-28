@@ -4,9 +4,10 @@
 
 import org.junit.Test;
 import org.junit.Before;
-import static org.junit.Assert.*;
-
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import java.io.File;
+import static org.junit.Assert.*;
 
 import domain.*;
 
@@ -14,6 +15,27 @@ public class ProgressTest {
 
     private Progress progress;
 
+    private static final File FILE = new File("progreso.dat");
+    private static final File BACKUP = new File("progreso.dat.respaldo-pruebas");
+
+    // Aparta el progreso guardado del jugador para que las pruebas empiecen de cero
+    @BeforeClass
+    public static void backupRealProgress() {
+        BACKUP.delete();
+        if (FILE.exists()) {
+            FILE.renameTo(BACKUP);
+        }
+    }
+
+    // Devuelve el progreso guardado del jugador a su lugar
+    @AfterClass
+    public static void restoreRealProgress() {
+        if (BACKUP.exists()) {
+            FILE.delete();
+            BACKUP.renameTo(FILE);
+        }
+    }
+ 
     // Crea un progreso nuevo antes de cada prueba
     @Before
     public void setUp() {

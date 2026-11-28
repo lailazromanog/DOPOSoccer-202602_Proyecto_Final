@@ -1,22 +1,25 @@
 // Pruebas de la fachada de progreso de los jugadores (Progress).
 // Cubre: puntos iniciales, reparto de puntos por partido, mejoras de
 // estadisticas por jugador, valores finales y excepciones.
- 
+
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
+
+import java.io.File;
+
 import domain.*;
- 
+
 public class ProgressTest {
- 
+
     private Progress progress;
- 
+
     // Crea un progreso nuevo antes de cada prueba
     @Before
     public void setUp() {
         progress = new Progress();
     }
- 
+
     // Juega partidos que terminan en empate, cada uno da 25 puntos a cada jugador
     private void earnPoints(int draws) throws Exception {
         for (int i = 0; i < draws; i++) {
@@ -24,16 +27,16 @@ public class ProgressTest {
             game.finishMatch();
         }
     }
- 
-       // Estado inicial y puntos
-    
+
+    // Estado inicial y puntos
+
     // Los dos jugadores empiezan con cero puntos
     @Test
     public void testInitialPointsAreZero() throws Exception {
         assertEquals(0, progress.getPoints(Progress.LEFT));
         assertEquals(0, progress.getPoints(Progress.RIGHT));
     }
- 
+
     // Todas las estadisticas de los dos jugadores empiezan en nivel 1
     @Test
     public void testInitialLevelsAreOne() throws Exception {
@@ -43,7 +46,7 @@ public class ProgressTest {
             assertEquals(1, progress.getLevel(Progress.RIGHT, stats[i]));
         }
     }
- 
+
     // Un partido empatado da 25 puntos a cada jugador en su progreso
     @Test
     public void testDrawMatchAwardsPointsToProgress() throws Exception {
@@ -51,7 +54,7 @@ public class ProgressTest {
         assertEquals(25, progress.getPoints(Progress.LEFT));
         assertEquals(25, progress.getPoints(Progress.RIGHT));
     }
- 
+
     // Los puntos se acumulan entre partidos
     @Test
     public void testPointsAccumulateAcrossMatches() throws Exception {
@@ -59,9 +62,9 @@ public class ProgressTest {
         assertEquals(75, progress.getPoints(Progress.LEFT));
         assertEquals(75, progress.getPoints(Progress.RIGHT));
     }
- 
-       // Mejoras
-    
+
+    // Mejoras
+
     // Sin puntos no se puede mejorar y la estadistica no esta en su maximo
     @Test
     public void testCannotUpgradeWithoutPoints() throws Exception {
@@ -69,14 +72,14 @@ public class ProgressTest {
         assertFalse(progress.isMax(Progress.LEFT, "kick"));
         assertEquals(500, progress.getUpgradeCost(Progress.LEFT, "kick"));
     }
- 
+
     // Con 500 puntos ya se puede mejorar
     @Test
     public void testCanUpgradeWithEnoughPoints() throws Exception {
         earnPoints(20);
         assertTrue(progress.canUpgrade(Progress.LEFT, "kick"));
     }
- 
+
     // Mejorar gasta solo los puntos del jugador que mejora
     @Test
     public void testUpgradeAffectsOnlyThatPlayer() throws Exception {
@@ -87,7 +90,7 @@ public class ProgressTest {
         assertEquals(1, progress.getLevel(Progress.RIGHT, "kick"));
         assertEquals(500, progress.getPoints(Progress.RIGHT));
     }
- 
+
     // Mejorar sin puntos suficientes lanza excepcion y no cambia nada
     @Test
     public void testUpgradeWithoutPointsThrows() throws Exception {
@@ -99,9 +102,9 @@ public class ProgressTest {
         }
         assertEquals(1, progress.getLevel(Progress.LEFT, "speed"));
     }
- 
-       // Valores finales
-    
+
+    // Valores finales
+
     // Los valores base coinciden con las tablas del enunciado
     @Test
     public void testBaseFinalValues() throws Exception {
@@ -111,7 +114,7 @@ public class ProgressTest {
         assertEquals(0, progress.getSpeedBonusPercent(Progress.LEFT));
         assertEquals(0, progress.getJumpBonusPercent(Progress.LEFT));
     }
- 
+
     // Mejorar survival del jugador izquierdo sube su vida maxima y no la del derecho
     @Test
     public void testFinalValuesFollowUpgrades() throws Exception {
@@ -120,9 +123,9 @@ public class ProgressTest {
         assertEquals(110.0, progress.getMaxHealth(Progress.LEFT), 0.01);
         assertEquals(100.0, progress.getMaxHealth(Progress.RIGHT), 0.01);
     }
- 
-       // Excepciones
-    
+
+    // Excepciones
+
     // Un identificador de jugador invalido lanza excepcion
     @Test
     public void testInvalidPlayerThrows() {
@@ -133,7 +136,7 @@ public class ProgressTest {
             assertTrue(e.getMessage().contains("3"));
         }
     }
- 
+
     // Una estadistica desconocida lanza excepcion
     @Test
     public void testUnknownStatThrows() {
@@ -144,7 +147,7 @@ public class ProgressTest {
             assertTrue(e.getMessage().contains("fly"));
         }
     }
- 
+
     // Crear un partido con un tipo desconocido lanza excepcion
     @Test
     public void testNewGameUnknownTypeThrows() {
@@ -153,6 +156,78 @@ public class ProgressTest {
             fail("Debio lanzar DOPOSoccerException por tipo de partido desconocido");
         } catch (DOPOSoccerException e) {
             assertTrue(e.getMessage().contains("penales"));
+        }
+    }
+
+
+    // Partidas guardadas y abiertas con el progreso vigente
+
+    // Guarda una partida nueva del progreso dado en un archivo temporal y entrega el archivo
+    private File saveNewGame(Progress source) throws Exception {
+        Game game = source.newGame("time", 1, "Camerun", "Nigeria", "human");
+        File file = File.createTempFile("partida", ".dat");
+        file.deleteOnExit();
+        game.saveTo(file);
+        return file;
+    }
+
+    // Una partida abierta con el progreso suma sus puntos a los perfiles al terminar
+    @Test
+    public void testOpenedGameAwardsPointsToProgress() throws Exception {
+        File file = saveNewGame(progress);
+        Game opened = progress.openGame(file);
+        opened.finishMatch();   // empate: 25 puntos para cada jugador
+        assertEquals(25, progress.getPoints(Progress.LEFT));
+        assertEquals(25, progress.getPoints(Progress.RIGHT));
+    }
+
+    // La partida abierta suma los puntos al progreso con el que se abre, no al que la guardo
+    @Test
+    public void testOpenedGameUsesTheProgressThatOpensIt() throws Exception {
+        File file = saveNewGame(progress);
+        Progress other = new Progress();
+        Game opened = other.openGame(file);
+        opened.finishMatch();
+        assertEquals(25, other.getPoints(Progress.LEFT));
+        assertEquals(0, progress.getPoints(Progress.LEFT));
+    }
+
+    // Una partida guardada ya terminada no reparte puntos otra vez al abrirse
+    @Test
+    public void testOpenedFinishedGameDoesNotAwardPointsAgain() throws Exception {
+        Game game = progress.newGame("time", 1, "Camerun", "Nigeria", "human");
+        game.finishMatch();   // reparte 25 y 25
+        File file = File.createTempFile("partida", ".dat");
+        file.deleteOnExit();
+        game.saveTo(file);
+        Game opened = progress.openGame(file);
+        opened.finishMatch();
+        assertEquals(25, progress.getPoints(Progress.LEFT));
+        assertEquals(25, progress.getPoints(Progress.RIGHT));
+    }
+
+    // Abrir un archivo que no es una partida lanza excepcion
+    @Test
+    public void testOpenGameWithInvalidFileThrows() throws Exception {
+        File file = File.createTempFile("invalido", ".dat");
+        file.deleteOnExit();
+        try {
+            progress.openGame(file);
+            fail("Debio lanzar excepcion por el archivo invalido");
+        } catch (DOPOSoccerException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    // Asociar un perfil nulo a una partida lanza excepcion
+    @Test
+    public void testAttachNullProfileThrows() throws Exception {
+        Game game = progress.newGame("time", 1, "Camerun", "Nigeria", "human");
+        try {
+            game.attachProfiles(new Profile(), null);
+            fail("Debio lanzar excepcion por el perfil nulo");
+        } catch (DOPOSoccerException e) {
+            assertTrue(e.getMessage().contains("perfiles"));
         }
     }
 }

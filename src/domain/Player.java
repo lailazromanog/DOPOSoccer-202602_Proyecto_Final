@@ -107,7 +107,7 @@ public class Player implements Serializable{
     }
 
 
-        /**
+    /**
      * Lanza al jugador hacia arriba, despegándolo del suelo, para el
      * efecto del tiro de poder Tornado. La gravedad que se aplica en
      * la actualización de cada frame se encarga de bajarlo después.
@@ -233,14 +233,33 @@ public class Player implements Serializable{
     }
 
     /**
+     * Entrega el tiempo que le queda al aturdimiento del jugador. Si el
+     * jugador no está aturdido entrega cero.
+     * @return el tiempo restante del aturdimiento en segundos, o cero si el jugador no está aturdido
+     */
+    public double getStunTimeLeft(){
+        if(stunned){
+            return stunTimer;
+        }
+        return 0;
+    }
+
+    /**
      * Resta el daño dado a la vida del jugador y, si su vida llega a
-     * cero, lo deja aturdido durante tres segundos.
+     * cero, lo deja aturdido durante tres segundos. Mientras el jugador
+     * está aturdido ignora el daño, de modo que un nuevo golpe no le
+     * alarga el aturdimiento.
      * @param damage cantidad de daño que recibe el jugador
      * @throws DOPOSoccerException si el daño es negativo
      */
+
     public void takeDamage(double damage) throws DOPOSoccerException{
         if (damage < 0){
-            throw new DOPOSoccerException("El daño recibido no puede ser negativo. Valor recibido: " + damage + ".");
+            throw new DOPOSoccerException("El dano recibido no puede ser negativo. Valor recibido: " + damage + ".");
+        }
+        //cuando esta aturdido no se reinicia con otro golpe
+        if (stunned){
+            return;
         }
         health -= damage;
         if (health <= 0) {
@@ -321,8 +340,8 @@ public class Player implements Serializable{
         return 100 * (1 + 0.10 * (survival - 1));
     }
 
-    /*
-    * Aplica al jugador el efecto dado durante la duración dada,
+    /**
+     * Aplica al jugador el efecto dado durante la duración dada,
      * reemplazando cualquier efecto que tuviera antes junto con el
      * empuje que ese efecto le estuviera dejando.
      * @param effect nombre del efecto a aplicar, electrocutado, inconsciente, confundido o empujado

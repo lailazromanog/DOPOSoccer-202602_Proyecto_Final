@@ -315,9 +315,9 @@ public class DOPOSoccerTest {
         assertEquals(110.0, player.getHealth(), 0.01);
     }
 
-    
+    // ----------------------------------------------------------------
     // Integracion Profile con Player: formulas de las estadisticas
-    
+    // ----------------------------------------------------------------
 
     // Un perfil con survival mejorado da la vida maxima de la tabla de vida
     @Test

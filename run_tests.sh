@@ -57,7 +57,7 @@ echo "Corriendo tests con JaCoCo..."
 java -javaagent:lib/jacocoagent.jar=destfile=jacoco.exec \
      -cp "build${SEP}lib/junit-4.13.2.jar${SEP}lib/hamcrest-core-1.3.jar" \
      org.junit.runner.JUnitCore \
-     DOPOSoccerTest PowerTest FactoryTest ProfileTest PersistenceTest ProgressTest HealthTest
+     DOPOSoccerTest PowerTest FactoryTest ProfileTest PersistenceTest ProgressTest ProgressPersistenceTest HealthTest
 
 RESULTADO=$?
 echo ""

@@ -22,7 +22,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-
+import java.awt.BasicStroke;
 /**
  * Pantalla de la cancha.
  *
@@ -328,6 +328,8 @@ public class FieldPanel extends JPanel {
     private Color effectColor(String effect){
         if(effect.equals("pushed")){
             return new Color(60, 140, 255, 110);      // azul del Aura Azul
+        } else if(effect.equals("electrocuted")){
+            return new Color(255, 230, 40, 110);      // amarillo del Rayo
         } else {
             return null;
         }
@@ -343,6 +345,8 @@ public class FieldPanel extends JPanel {
     private Color shotColor(String shotName){
         if(shotName.equals("Blue Aura")){
             return new Color(60, 140, 255);           // azul del Aura Azul
+        } else if(shotName.equals("Lightning")){
+            return new Color(255, 230, 40);           // amarillo del Rayo
         } else {
             return null;
         }
@@ -384,7 +388,55 @@ public class FieldPanel extends JPanel {
         g.fillOval(x, y, d, d);
         g.setColor(Color.BLACK);
         g.drawOval(x, y, d, d);
+        
+        // chispas del Rayo encima del balon, para que se vea cubierto de electricidad
+        if(game.isPowerShotActive() && game.getPowerShotName().equals("Lightning")){
+            drawSparks(g, x, y);
+        }
     }
+
+    
+    /**
+     * Dibuja chispas eléctricas en zigzag que salen del borde del balón
+     * en varias direcciones. Cada cuadro las dibuja con un ángulo y un
+     * quiebre al azar para que parezcan parpadear.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param x posición horizontal del balón
+     * @param y posición vertical del balón
+     */
+    private void drawSparks(Graphics g, int x, int y){
+        int d = BALL_DIAMETER;
+        int sparks = 6;                          // cantidad de chispas alrededor del balon
+        int segments = 3;                        // tramos del zigzag de cada chispa
+        double segmentLength = d * 0.25;         // largo de cada tramo
+        double centerX = x + d / 2.0;
+        double centerY = y + d / 2.0;
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(2));
+        g2.setColor(new Color(255, 250, 150));   // amarillo claro de la chispa
+
+        for(int i = 0; i < sparks; i++){
+            // cada chispa sale en su propia direccion, con un poco de azar
+            double angle = i * 2 * Math.PI / sparks + Math.random() * 0.5;
+            double startX = centerX + Math.cos(angle) * d / 2.0;
+            double startY = centerY + Math.sin(angle) * d / 2.0;
+
+            for(int j = 0; j < segments; j++){
+                // cada tramo se quiebra un poco hacia un lado o hacia el otro
+                double turn = (Math.random() - 0.5) * 1.2;
+                double endX = startX + Math.cos(angle + turn) * segmentLength;
+                double endY = startY + Math.sin(angle + turn) * segmentLength;
+                g2.drawLine((int) startX, (int) startY, (int) endX, (int) endY);
+                startX = endX;
+                startY = endY;
+            }
+        }
+
+        // se devuelve el grosor normal para no afectar lo que se dibuja despues
+        g2.setStroke(new BasicStroke(1));
+    }
+
 
     /**
      * Dibuja los dos arcos de la cancha, con sus postes y sus travesaños.

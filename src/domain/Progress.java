@@ -79,22 +79,29 @@ public class Progress {
         if (!file.exists()) {
             return new ProfileStore();
         }
+        FileInputStream in = null;
         try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-            try {
-                Object read = ois.readObject();
-                if (read instanceof ProfileStore
-                        && ((ProfileStore) read).getLeft() != null
-                        && ((ProfileStore) read).getRight() != null) {
-                    return (ProfileStore) read;
-                }
-            } finally {
-                ois.close();
+            in = new FileInputStream(file);
+            ObjectInputStream ois = new ObjectInputStream(in);
+            Object read = ois.readObject();
+            if (read instanceof ProfileStore
+                    && ((ProfileStore) read).getLeft() != null
+                    && ((ProfileStore) read).getRight() != null) {
+                return (ProfileStore) read;
             }
         } catch (IOException e) {
             // archivo danado: se empieza de nuevo
         } catch (ClassNotFoundException e) {
             // archivo de otra version: se empieza de nuevo
+        } finally {
+            // se cierra siempre, aunque la lectura falle, para que Windows deje borrar el archivo
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // no se pudo cerrar, no hay nada mas que hacer
+                }
+            }
         }
         return new ProfileStore();
     }

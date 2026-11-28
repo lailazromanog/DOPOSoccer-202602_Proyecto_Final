@@ -193,6 +193,7 @@ public class FieldPanel extends JPanel {
         drawField(g);
         drawPlayers(g);
         drawBall(g);
+        drawFakeBalls(g);
         drawGoals(g);
         drawHUD(g);
         if(game.isFinished()){
@@ -434,7 +435,27 @@ public class FieldPanel extends JPanel {
         }
     }
 
-    
+    /**
+     * Dibuja los balones señuelo del poder Ilusión exactamente igual
+     * que el balón real, blancos con borde negro, para que ningún
+     * jugador pueda distinguir cuál es el verdadero.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
+    private void drawFakeBalls(Graphics g){
+        int d = BALL_DIAMETER;
+        java.util.List<double[]> fakes = game.getFakeBalls();
+        for(int i = 0; i < fakes.size(); i++){
+            double[] position = fakes.get(i);
+            int x = (int) position[0];
+            int y = (int) position[1];
+            g.setColor(Color.WHITE);
+            g.fillOval(x, y, d, d);
+            g.setColor(Color.BLACK);
+            g.drawOval(x, y, d, d);
+        }
+    }
+
+
     /**
      * Dibuja chispas eléctricas en zigzag que salen del borde del balón
      * en varias direcciones. Cada cuadro las dibuja con un ángulo y un

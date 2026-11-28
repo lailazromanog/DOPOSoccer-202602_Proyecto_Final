@@ -35,6 +35,7 @@ public class Game implements Serializable{
     private static final int BALL_GROUND = 374;
     private static final double KICK_FORCE = 12;
     private static final double KICK_ANGLE = 0.3;
+    private static final double KICK_REACH = 75;
 
     //  Objetos del dominio que coordina la fachada.
     private transient CharacterFactory characterFactory;
@@ -243,7 +244,10 @@ public class Game implements Serializable{
         if (vsMachine) {
             bot.decideAction(match);
             if (bot.wantsToKick()) {
-                tryKick(rightPlayer, leftPlayer, -1);
+                // si esta aturdido no puede patear, pero la intencion se borra para que no dispare la patada al recuperarse
+                if(!rightPlayer.isStunned()){
+                    tryKick(rightPlayer, leftPlayer, -1);
+                }
                 bot.clearKickIntent();
             }
         }
@@ -304,13 +308,15 @@ public class Game implements Serializable{
     // reglas internas de la fachada
 
     /**
-     * Intenta ejecutar la patada de un jugador: si el balón está cerca
-     * de su pie lo impulsa en la dirección dada, y si el rival está
-     * dentro del alcance del pie le aplica el daño de la patada.
-     * @param player jugador que ejecuta la patada
-     * @param opponent rival del jugador que patea
-     * @param direction dirección de la patada, uno hacia la derecha o menos uno hacia la izquierda
-     */
+    * Intenta ejecutar la patada de un jugador. Si la patada toca el
+    * balón, únicamente lo impulsa en la dirección dada. Si no toca el
+    * balón y el rival está dentro del alcance del pie, le aplica el
+    * daño de la patada.
+    * @param player jugador que ejecuta la patada
+    * @param opponent rival del jugador que patea
+    * @param direction dirección de la patada, uno hacia la derecha o menos uno hacia la izquierda
+    */
+
     private void tryKick(Player player, Player opponent, int direction) {
         double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
         double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
@@ -327,12 +333,13 @@ public class Game implements Serializable{
                 angle = Math.PI + KICK_ANGLE;
             }
             ball.applyForce(KICK_FORCE, angle);
+            return; //la patada que roca el balon solo impulsa no hace daño
         }
 
-        // si el rival esta dentro del alcance del pie, le hace daño
+        // la patada no toca el balon y si el rival esta dentro del alcance del pie, le hace daño
         double oppCenterX = opponent.getPositionX() + PLAYER_DIAMETER / 2.0;
         double oppCenterY = opponent.getPositionY() + PLAYER_DIAMETER / 2.0;
-        if (Math.abs(playerCenterX - oppCenterX) < PLAYER_DIAMETER
+        if (Math.abs(playerCenterX - oppCenterX) < KICK_REACH
                 && Math.abs(playerCenterY - oppCenterY) < PLAYER_DIAMETER) {
             match.checkKickContact(player, opponent);
         }

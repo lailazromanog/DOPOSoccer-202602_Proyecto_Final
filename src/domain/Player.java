@@ -233,14 +233,21 @@ public class Player implements Serializable{
     }
 
     /**
-     * Resta el daño dado a la vida del jugador y, si su vida llega a
-     * cero, lo deja aturdido durante tres segundos.
-     * @param damage cantidad de daño que recibe el jugador
-     * @throws DOPOSoccerException si el daño es negativo
-     */
+    * Resta el daño dado a la vida del jugador y, si su vida llega a
+    * cero, lo deja aturdido durante tres segundos. Mientras el jugador
+    * está aturdido ignora el daño, de modo que un nuevo golpe no le
+    * alarga el aturdimiento.
+    * @param damage cantidad de daño que recibe el jugador
+    * @throws DOPOSoccerException si el daño es negativo
+    */
+
     public void takeDamage(double damage) throws DOPOSoccerException{
         if (damage < 0){
             throw new DOPOSoccerException("El dano recibido no puede ser negativo. Valor recibido: " + damage + ".");
+        }
+        //cuando esta aturdido no se reinicia con otro golpe
+        if (stunned){
+            return;
         }
         health -= damage;
         if (health <= 0) {

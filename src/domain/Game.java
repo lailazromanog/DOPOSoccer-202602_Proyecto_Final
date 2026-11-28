@@ -428,6 +428,17 @@ public class Game implements Serializable{
         return Math.abs(pCenterX - bCenterX) < alcance && Math.abs(pCenterY - bCenterY) < alcance;
     }
 
+    /**
+     * Calcula la proporción que representa un valor actual respecto a su
+     * valor máximo. Se usa para entregar a la presentación las barras de
+     * vida y de poder como un número entre cero y uno.
+     * @param actual valor actual que se quiere medir
+     * @param max valor máximo con el que se compara, que debe ser mayor que cero
+     * @return la proporción entre el valor actual y el valor máximo
+     */
+    private double calculateRatio(double actual, double max) {
+        return actual / max;
+    }
 
     //DATOS PARA DIBUJAR (solo lectura)
 
@@ -578,7 +589,9 @@ public class Game implements Serializable{
      * @return el progreso de la barra de poder del jugador izquierdo
      */
     public double getLeftPlayerPower(){
-        return leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge();
+        double actual = leftPlayer.getPowerBar().getCurrentCharge();
+        double max = leftPlayer.getPowerBar().getMaxCharge();
+        return calculateRatio(actual, max);
     }
 
     /**
@@ -587,7 +600,9 @@ public class Game implements Serializable{
      * @return el progreso de la barra de poder del jugador derecho
      */
     public double getRightPlayerPower(){
-        return rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge();
+        double actual = rightPlayer.getPowerBar().getCurrentCharge();
+        double max = rightPlayer.getPowerBar().getMaxCharge();
+        return calculateRatio(actual, max);
     }
 
     /**
@@ -596,7 +611,9 @@ public class Game implements Serializable{
      * @return la proporción de vida del jugador izquierdo
      */
     public double getLeftPlayerLife(){
-        return leftPlayer.getHealth() / leftPlayer.getMaxHealth();
+        double actual = leftPlayer.getHealth();
+        double max = leftPlayer.getMaxHealth();
+        return calculateRatio(actual, max);
     }
 
     /**
@@ -605,9 +622,10 @@ public class Game implements Serializable{
      * @return la proporción de vida del jugador derecho
      */
     public double getRightPlayerLife(){
-        return rightPlayer.getHealth() / rightPlayer.getMaxHealth();
+        double actual = rightPlayer.getHealth();
+        double max = rightPlayer.getMaxHealth();
+        return calculateRatio(actual, max);
     }
-
     /**
      * Entrega la vida actual del jugador izquierdo, en puntos de vida.
      * @return la vida actual del jugador izquierdo

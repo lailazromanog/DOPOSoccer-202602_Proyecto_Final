@@ -28,9 +28,7 @@ public class HealthTest {
         }
     }
 
-    // ----------------------------------------------------------------
     // Vida maxima
-    // ----------------------------------------------------------------
 
     // La vida maxima de cada nivel de survival coincide con la tabla del enunciado: 100, 110, ... 190
     @Test
@@ -45,9 +43,7 @@ public class HealthTest {
         }
     }
 
-    // ----------------------------------------------------------------
     // Daño y aturdimiento
-    // ----------------------------------------------------------------
 
     // Un daño mayor que la vida deja la vida en cero y no en un numero negativo
     @Test
@@ -105,9 +101,7 @@ public class HealthTest {
         }
     }
 
-    // ----------------------------------------------------------------
     // La patada
-    // ----------------------------------------------------------------
 
     // Una patada con el rival al alcance del pie y sin balon cerca le quita 10 de vida
     @Test
@@ -203,5 +197,81 @@ public class HealthTest {
             game.update(FRAME);
         }
         assertEquals(humanLife, game.getLeftPlayerLife(), 0.001);
+    }
+    
+    // Datos de vida y aturdimiento para la barra de vida
+
+    // Al empezar los dos jugadores tienen la vida llena, no estan aturdidos y no tienen tiempo de aturdimiento
+    @Test
+    public void testHealthGettersAtStart() throws Exception {
+        Game game = newHumanGame();
+        assertEquals(100.0, game.getLeftPlayerHealth(), 0.001);
+        assertEquals(100.0, game.getRightPlayerHealth(), 0.001);
+        assertEquals(100.0, game.getLeftPlayerMaxHealth(), 0.001);
+        assertEquals(100.0, game.getRightPlayerMaxHealth(), 0.001);
+        assertFalse(game.isLeftPlayerStunned());
+        assertFalse(game.isRightPlayerStunned());
+        assertEquals(0.0, game.getLeftPlayerStunTime(), 0.001);
+        assertEquals(0.0, game.getRightPlayerStunTime(), 0.001);
+    }
+
+    // Despues de una patada la vida actual baja 10 y la vida maxima no cambia
+    @Test
+    public void testHealthGettersAfterKick() throws Exception {
+        Game game = newHumanGame();
+        bringRightPlayerNextToLeft(game);
+        game.kickLeftPlayer();
+        assertEquals(90.0, game.getRightPlayerHealth(), 0.001);
+        assertEquals(100.0, game.getRightPlayerMaxHealth(), 0.001);
+        assertEquals(100.0, game.getLeftPlayerHealth(), 0.001);
+    }
+
+    // Un jugador sin vida queda aturdido con tres segundos, y el tiempo baja mientras pasa el juego
+    @Test
+    public void testStunGettersWhileStunned() throws Exception {
+        Game game = newHumanGame();
+        bringRightPlayerNextToLeft(game);
+        for (int i = 0; i < 10; i++) {
+            game.kickRightPlayer();
+        }
+        assertTrue(game.isLeftPlayerStunned());
+        assertFalse(game.isRightPlayerStunned());
+        assertEquals(0.0, game.getLeftPlayerHealth(), 0.001);
+        assertEquals(3.0, game.getLeftPlayerStunTime(), 0.001);
+        // pasa un segundo de juego: al aturdido le quedan dos segundos
+        for (int i = 0; i < 62; i++) {
+            game.update(FRAME);
+        }
+        assertTrue(game.isLeftPlayerStunned());
+        assertEquals(2.0, game.getLeftPlayerStunTime(), 0.05);
+    }
+
+    // Al terminar el aturdimiento el jugador ya no esta aturdido, no tiene tiempo y su vida vuelve a la maxima
+    @Test
+    public void testStunGettersAfterRecovery() throws Exception {
+        Game game = newHumanGame();
+        bringRightPlayerNextToLeft(game);
+        for (int i = 0; i < 10; i++) {
+            game.kickRightPlayer();
+        }
+        for (int i = 0; i < 200; i++) {
+            game.update(FRAME);
+        }
+        assertFalse(game.isLeftPlayerStunned());
+        assertEquals(0.0, game.getLeftPlayerStunTime(), 0.001);
+        assertEquals(game.getLeftPlayerMaxHealth(), game.getLeftPlayerHealth(), 0.001);
+    }
+
+    // El tiempo restante de aturdimiento del jugador es cero sin aturdir, tres al aturdirse y baja con el tiempo
+    @Test
+    public void testPlayerStunTimeLeft() throws Exception {
+        Player player = new Player();
+        assertEquals(0.0, player.getStunTimeLeft(), 0.001);
+        player.takeDamage(100);
+        assertEquals(3.0, player.getStunTimeLeft(), 0.001);
+        player.updateStun(1.0);
+        assertEquals(2.0, player.getStunTimeLeft(), 0.001);
+        player.updateStun(2.5);
+        assertEquals(0.0, player.getStunTimeLeft(), 0.001);
     }
 }

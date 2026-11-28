@@ -608,6 +608,72 @@ public class Game implements Serializable{
         return rightPlayer.getHealth() / rightPlayer.getMaxHealth();
     }
 
+    /**
+     * Entrega la vida actual del jugador izquierdo, en puntos de vida.
+     * @return la vida actual del jugador izquierdo
+    */
+    public double getLeftPlayerHealth(){
+        return leftPlayer.getHealth();
+    }
+
+    /**
+     * Entrega la vida actual del jugador derecho, en puntos de vida.
+     * @return la vida actual del jugador derecho
+    */
+    public double getRightPlayerHealth(){
+        return rightPlayer.getHealth();
+    }
+
+    /**
+    * Entrega la vida máxima del jugador izquierdo, en puntos de vida.
+    * @return la vida máxima del jugador izquierdo
+    */
+    public double getLeftPlayerMaxHealth(){
+        return leftPlayer.getMaxHealth();
+    }
+
+    /**
+    * Entrega la vida máxima del jugador derecho, en puntos de vida.
+    * @return la vida máxima del jugador derecho
+    */
+    public double getRightPlayerMaxHealth(){
+        return rightPlayer.getMaxHealth();
+    }
+
+    /**
+     * Indica si el jugador izquierdo está aturdido en este momento.
+     * @return verdadero si el jugador izquierdo está aturdido, falso en caso contrario
+     */
+    public boolean isLeftPlayerStunned(){
+        return leftPlayer.isStunned();
+    }
+
+    /**
+     * Indica si el jugador derecho está aturdido en este momento.
+     * @return verdadero si el jugador derecho está aturdido, falso en caso contrario
+     */
+    public boolean isRightPlayerStunned(){
+        return rightPlayer.isStunned();
+    }
+
+    /**
+     * Entrega el tiempo que le queda al aturdimiento del jugador
+     * izquierdo, o cero si no está aturdido.
+     * @return el tiempo restante del aturdimiento del jugador izquierdo en segundos
+     */
+    public double getLeftPlayerStunTime(){
+        return leftPlayer.getStunTimeLeft();
+    }
+
+    /**
+    * Entrega el tiempo que le queda al aturdimiento del jugador
+    * derecho, o cero si no está aturdido.
+    * @return el tiempo restante del aturdimiento del jugador derecho en segundos
+     */
+    public double getRightPlayerStunTime(){
+        return rightPlayer.getStunTimeLeft();
+    }
+
     //clave del sprite de cada jugador (la usa la presentacion para elegir la imagen)
     /**
      * Entrega la clave de la imagen del jugador izquierdo, usada por

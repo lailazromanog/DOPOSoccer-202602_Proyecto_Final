@@ -233,6 +233,18 @@ public class Player implements Serializable{
     }
 
     /**
+     * Entrega el tiempo que le queda al aturdimiento del jugador. Si el
+     * jugador no está aturdido entrega cero.
+     * @return el tiempo restante del aturdimiento en segundos, o cero si el jugador no está aturdido
+    */
+    public double getStunTimeLeft(){
+        if(stunned){
+            return stunTimer;
+        }
+        return 0;
+    }
+
+    /**
     * Resta el daño dado a la vida del jugador y, si su vida llega a
     * cero, lo deja aturdido durante tres segundos. Mientras el jugador
     * está aturdido ignora el daño, de modo que un nuevo golpe no le

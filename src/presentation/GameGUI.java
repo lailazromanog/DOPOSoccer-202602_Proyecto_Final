@@ -3,6 +3,8 @@ package presentation;
 import domain.DOPOSoccerException;
 import domain.Game;
 import domain.Progress;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -22,12 +24,25 @@ public class GameGUI extends JFrame {
     private int resH = 450;
 
     /**
-     * Crea la ventana principal con un progreso nuevo para ambos
-     * jugadores y prepara sus elementos iniciales.
+     * Crea la ventana principal con el progreso guardado de ambos
+     * jugadores (o uno nuevo si no hay nada guardado) y prepara sus
+     * elementos iniciales.
      */
     private GameGUI() {
-        progress = new Progress(); //progreso nuevo de ambos jugadores, vive mientras la aplicacion este abierta
+        progress = new Progress(); //abre el progreso guardado en disco
         prepareElements();
+    }
+
+    /**
+     * Guarda en disco el progreso de ambos jugadores. Si no se puede
+     * guardar, lo registra en el log sin interrumpir el juego.
+     */
+    private void saveProgress() {
+        try {
+            progress.save();
+        } catch (DOPOSoccerException ex) {
+            GameLogger.error("No se pudo guardar el progreso", ex);
+        }
     }
 
     /**
@@ -49,6 +64,15 @@ public class GameGUI extends JFrame {
     private void prepareElements() {
         setTitle("DOPOSoccer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            /**
+             * Guarda el progreso de los jugadores antes de cerrar la ventana.
+             * @param e evento de cierre de la ventana
+             */
+            @Override public void windowClosing(WindowEvent e) {
+                saveProgress();
+            }
+        });
         setResizable(false);
 
         configPanel = new ConfigPanel(this);
@@ -127,6 +151,7 @@ public class GameGUI extends JFrame {
      * @param game partido que acaba de terminar
      */
     public void showEndScreen(Game game) {
+        saveProgress();   // el partido ya repartio sus puntos a los perfiles
         setContentPane(new EndPanel(this, game));
         revalidate();
         pack();

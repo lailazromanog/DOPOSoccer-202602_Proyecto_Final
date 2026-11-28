@@ -1,17 +1,34 @@
 package domain;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /**
  * Fachada del progreso de los jugadores entre partidos.
  * Es la única puerta que usa la presentación para consultar y mejorar
  * los puntos y las estadísticas de cada jugador, sin conocer los
  * perfiles ni su almacén. También crea los partidos nuevos, de modo
  * que cada partido use el progreso vigente de ambos jugadores.
- * El progreso vive mientras la aplicación está abierta.
+ * El progreso se abre del archivo progreso.dat al crearse y se guarda
+ * en ese archivo con save(), de modo que no se pierde al cerrar la
+ * aplicación.
  *
  * Los jugadores se identifican con las constantes de esta clase, 1
  * para el jugador izquierdo y 2 para el derecho.
  */
 
+// Declaración de uso de IA: esta parte (HUD con país/puntos/niveles y
+// guardado de progreso en disco) se desarrolló con ayuda de Claude
+// (Anthropic) a partir de prompts escritos por Laila, que los revisó y probó.
+// Prompts resumidos:
+//  (1) "mostrar país, estadísticas y puntos en el HUD sin agregar clases ni métodos";
+//  (2) "guardar el progreso del jugador en disco al abrir/cerrar sin cambiar
+//      el diagrama salvo un método Progress.save()";
+//  (3) "igualar la rama Laila con main para integrar lo de Juan".
 public class Progress {
     
     //Identificador del jugador del lado izquierdo 
@@ -20,14 +37,66 @@ public class Progress {
     //Identificador del jugador del lado derecho
     public static final int RIGHT = 2; //--> extensibilidad
 
+    //Archivo donde se guarda el progreso entre ejecuciones del juego
+    private static final String FILE = "progreso.dat";
+
     private ProfileStore store;
 
     /**
-     * Crea el progreso con un perfil nuevo para cada jugador, con sus
-     * puntos en cero y sus estadísticas en el nivel mínimo.
+     * Crea el progreso abriendo el que está guardado en disco. Si no hay
+     * progreso guardado, o el archivo está dañado, empieza con un perfil
+     * nuevo para cada jugador, con sus puntos en cero y sus estadísticas
+     * en el nivel mínimo.
      */
     public Progress(){
-        store = new ProfileStore();
+        store = open();
+    }
+
+    /**
+     * Guarda en disco el progreso vigente de ambos jugadores, para que
+     * se conserve la próxima vez que se abra el juego.
+     * @throws DOPOSoccerException si ocurre un error al escribir el archivo
+     */
+    public void save() throws DOPOSoccerException{
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE));
+            try {
+                oos.writeObject(store);
+            } finally {
+                oos.close();
+            }
+        } catch (IOException e) {
+            throw new DOPOSoccerException("No se pudo guardar el progreso: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Abre el progreso guardado en disco.
+     * @return el progreso guardado, o uno nuevo si no existe o no se puede leer
+     */
+    private ProfileStore open(){
+        File file = new File(FILE);
+        if (!file.exists()) {
+            return new ProfileStore();
+        }
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+            try {
+                Object read = ois.readObject();
+                if (read instanceof ProfileStore
+                        && ((ProfileStore) read).getLeft() != null
+                        && ((ProfileStore) read).getRight() != null) {
+                    return (ProfileStore) read;
+                }
+            } finally {
+                ois.close();
+            }
+        } catch (IOException e) {
+            // archivo danado: se empieza de nuevo
+        } catch (ClassNotFoundException e) {
+            // archivo de otra version: se empieza de nuevo
+        }
+        return new ProfileStore();
     }
 
     /**

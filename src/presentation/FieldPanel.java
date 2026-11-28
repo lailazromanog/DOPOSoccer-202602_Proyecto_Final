@@ -196,6 +196,7 @@ public class FieldPanel extends JPanel {
         drawFakeBalls(g);
         drawGoals(g);
         drawHUD(g);
+        drawPlayersInfo(g);
         if(game.isFinished()){
             drawMatchEnd(g);
         }else if(paused){
@@ -570,6 +571,92 @@ public class FieldPanel extends JPanel {
             g.setColor(Color.WHITE);
             g.drawRect(x, y, w, h);
         }
+    }
+
+    /**
+     * Dibuja en la barra superior la información de cada jugador: el
+     * país de su personaje, sus puntos y sus estadísticas. El jugador 1
+     * se muestra junto a sus barras a la izquierda y el jugador 2 junto
+     * a las suyas a la derecha, sin tocar las barras de poder y vida.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
+    private void drawPlayersInfo(Graphics g){
+        int leftX = 125;
+        int rightX = WIDTH - 125;
+        drawPlayerInfo(g, countryName(game.getLeftPlayerSprite()), game.getLeftPlayerPoints(), statsOf(1), leftX, true);
+        drawPlayerInfo(g, countryName(game.getRightPlayerSprite()), game.getRightPlayerPoints(), statsOf(2), rightX, false);
+    }
+
+    /**
+     * Traduce la clave de la imagen del personaje al nombre de su país.
+     * @param sprite clave de la imagen del personaje
+     * @return el nombre del país del personaje, o la clave si no se reconoce
+     */
+    private String countryName(String sprite){
+        if(sprite.equals("camerun")) return "Camerun";
+        if(sprite.equals("nigeria")) return "Nigeria";
+        if(sprite.equals("usa")) return "Estados Unidos";
+        if(sprite.equals("corea")) return "Corea del Sur";
+        return sprite;
+    }
+
+    /**
+     * Arma el texto de estadísticas de un jugador con los niveles de su
+     * progreso: velocidad, patada, salto y supervivencia.
+     * @param player número del jugador en el progreso, 1 para el izquierdo y 2 para el derecho
+     * @return el texto con los niveles, o vacío si no se pueden leer
+     */
+    private String statsOf(int player){
+        if(gui == null){
+            return "";
+        }
+        try {
+            return "VEL " + gui.getProgress().getLevel(player, "speed")
+                    + "  PAT " + gui.getProgress().getLevel(player, "kick")
+                    + "  SAL " + gui.getProgress().getLevel(player, "jump")
+                    + "  SUP " + gui.getProgress().getLevel(player, "survival");
+        } catch (DOPOSoccerException e) {
+            return "";
+        }
+    }
+
+    /**
+     * Dibuja el bloque de información de un jugador en tres líneas:
+     * país, puntos y estadísticas.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param country país del personaje del jugador
+     * @param points puntos acumulados por el jugador
+     * @param statsText texto con las estadísticas del jugador
+     * @param x borde desde el que se alinea el texto
+     * @param alignLeft verdadero para alinear a la izquierda desde x, falso para alinear a la derecha hasta x
+     */
+    private void drawPlayerInfo(Graphics g, String country, int points, String statsText, int x, boolean alignLeft){
+        String countryText = country.toUpperCase();
+        String pointsText = "Puntos: " + points;
+
+        g.setFont(new Font("Arial", Font.BOLD, 13));
+        g.setColor(Color.WHITE);
+        drawAligned(g, countryText, x, 17, alignLeft);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 11));
+        g.setColor(new Color(0xE8A033));
+        drawAligned(g, pointsText, x, 32, alignLeft);
+
+        g.setColor(new Color(220, 220, 220));
+        drawAligned(g, statsText, x, 46, alignLeft);
+    }
+
+    /**
+     * Dibuja un texto alineado a la izquierda o a la derecha de x.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param text texto a dibujar
+     * @param x borde de alineación
+     * @param y línea base del texto
+     * @param alignLeft verdadero para alinear a la izquierda, falso para alinear a la derecha
+     */
+    private void drawAligned(Graphics g, String text, int x, int y, boolean alignLeft){
+        int w = g.getFontMetrics().stringWidth(text);
+        g.drawString(text, alignLeft ? x : x - w, y);
     }
 
     /**

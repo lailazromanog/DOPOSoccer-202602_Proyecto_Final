@@ -35,6 +35,7 @@ public class Game implements Serializable{
     private static final int BALL_GROUND = 374;
     private static final double KICK_FORCE = 12;
     private static final double KICK_ANGLE = 0.3;
+    private static final double KICK_REACH = 75; // para diferenciar la intencion de golpear al jugador y a la pelota
 
     //  Objetos del dominio que coordina la fachada.
     private transient CharacterFactory characterFactory;
@@ -243,7 +244,10 @@ public class Game implements Serializable{
         if (vsMachine) {
             bot.decideAction(match);
             if (bot.wantsToKick()) {
-                tryKick(rightPlayer, leftPlayer, -1);
+                // si esta aturdido no puede patear, pero la intencion se borra para que no dispare la patada al recuperarse
+                if(!rightPlayer.isStunned()){
+                    tryKick(rightPlayer, leftPlayer, -1);
+                }
                 bot.clearKickIntent();
             }
         }
@@ -304,9 +308,11 @@ public class Game implements Serializable{
     // reglas internas de la fachada
 
     /**
-     * Intenta ejecutar la patada de un jugador: si el balón está cerca
-     * de su pie lo impulsa en la dirección dada, y si el rival está
-     * dentro del alcance del pie le aplica el daño de la patada.
+     * Intenta ejecutar la patada de un jugador. Si la patada toca el
+     * balón real o alguno de los balones señuelo del poder Ilusión,
+     * únicamente impulsa a los balones tocados en la dirección dada.
+     * Si no toca ningún balón y el rival está dentro del alcance del
+     * pie, le aplica el daño de la patada.
      * @param player jugador que ejecuta la patada
      * @param opponent rival del jugador que patea
      * @param direction dirección de la patada, uno hacia la derecha o menos uno hacia la izquierda
@@ -315,9 +321,47 @@ public class Game implements Serializable{
         double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
         double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
 
-        // si el balon esta cerca, lo impulsa
-        double ballCenterX = ball.getPositionX() + BALL_DIAMETER / 2.0;
-        double ballCenterY = ball.getPositionY() + BALL_DIAMETER / 2.0;
+        // si el balon real esta cerca, lo impulsa
+        boolean touchedBall = kickBallIfNear(player, ball, direction);
+
+        // los balones senuelo del poder Illusion tambien se pueden patear
+        java.util.List<Ball> fakes = match.getFakeBalls();
+        for (int i = 0; i < fakes.size(); i++) {
+            if (kickBallIfNear(player, fakes.get(i), direction)) {
+                touchedBall = true;
+            }
+        }
+
+        // la patada que toca algun balon solo lo impulsa, no le hace daño al rival
+        if (touchedBall) {
+            return;
+        }
+
+        // la patada no toco ningun balon: si el rival esta dentro del alcance del pie, le hace daño
+        double oppCenterX = opponent.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double oppCenterY = opponent.getPositionY() + PLAYER_DIAMETER / 2.0;
+        if (Math.abs(playerCenterX - oppCenterX) < KICK_REACH
+                && Math.abs(playerCenterY - oppCenterY) < PLAYER_DIAMETER) {
+            match.checkKickContact(player, opponent);
+        }
+    }
+
+    /**
+     * Impulsa un balón con la fuerza y el ángulo de la patada si su
+     * centro está dentro del alcance del pie del jugador. Sirve tanto
+     * para el balón real como para los balones señuelo.
+     * @param player jugador que ejecuta la patada
+     * @param target balón que se intenta patear
+     * @param direction dirección de la patada, uno hacia la derecha o menos uno hacia la izquierda
+     * @return verdadero si el balón estaba al alcance y fue impulsado, falso en caso contrario
+     */
+    private boolean kickBallIfNear(Player player, Ball target, int direction) {
+        double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
+        double ballCenterX = target.getPositionX() + BALL_DIAMETER / 2.0;
+        double ballCenterY = target.getPositionY() + BALL_DIAMETER / 2.0;
+
+        // el balon debe estar dentro del alcance del pie
         if (Math.abs(playerCenterX - ballCenterX) < PLAYER_DIAMETER
                 && Math.abs(playerCenterY - ballCenterY) < PLAYER_DIAMETER) {
             double angle;
@@ -326,18 +370,11 @@ public class Game implements Serializable{
             } else {
                 angle = Math.PI + KICK_ANGLE;
             }
-            ball.applyForce(KICK_FORCE, angle);
+            target.applyForce(KICK_FORCE, angle);
+            return true;
         }
-
-        // si el rival esta dentro del alcance del pie, le hace daño
-        double oppCenterX = opponent.getPositionX() + PLAYER_DIAMETER / 2.0;
-        double oppCenterY = opponent.getPositionY() + PLAYER_DIAMETER / 2.0;
-        if (Math.abs(playerCenterX - oppCenterX) < PLAYER_DIAMETER
-                && Math.abs(playerCenterY - oppCenterY) < PLAYER_DIAMETER) {
-            match.checkKickContact(player, opponent);
-        }
+        return false;
     }
-
 
     /**
      * Revisa si hay un tiro de poder en vuelo y si el balón toca al rival
@@ -421,6 +458,17 @@ public class Game implements Serializable{
         return Math.abs(pCenterX - bCenterX) < alcance && Math.abs(pCenterY - bCenterY) < alcance;
     }
 
+    /**
+     * Calcula la proporción que representa un valor actual respecto a su
+     * valor máximo. Se usa para entregar a la presentación las barras de
+     * vida y de poder como un número entre cero y uno.
+     * @param actual valor actual que se quiere medir
+     * @param max valor máximo con el que se compara, que debe ser mayor que cero
+     * @return la proporción entre el valor actual y el valor máximo
+     */
+    private double calculateRatio(double actual, double max) {
+        return actual / max;
+    }
 
     //DATOS PARA DIBUJAR (solo lectura)
 
@@ -571,7 +619,9 @@ public class Game implements Serializable{
      * @return el progreso de la barra de poder del jugador izquierdo
      */
     public double getLeftPlayerPower(){
-        return leftPlayer.getPowerBar().getCurrentCharge() / leftPlayer.getPowerBar().getMaxCharge();
+        double actual = leftPlayer.getPowerBar().getCurrentCharge();
+        double max = leftPlayer.getPowerBar().getMaxCharge();
+        return calculateRatio(actual, max);
     }
 
     /**
@@ -580,7 +630,9 @@ public class Game implements Serializable{
      * @return el progreso de la barra de poder del jugador derecho
      */
     public double getRightPlayerPower(){
-        return rightPlayer.getPowerBar().getCurrentCharge() / rightPlayer.getPowerBar().getMaxCharge();
+        double actual = rightPlayer.getPowerBar().getCurrentCharge();
+        double max = rightPlayer.getPowerBar().getMaxCharge();
+        return calculateRatio(actual, max);
     }
 
     /**
@@ -589,7 +641,9 @@ public class Game implements Serializable{
      * @return la proporción de vida del jugador izquierdo
      */
     public double getLeftPlayerLife(){
-        return leftPlayer.getHealth() / leftPlayer.getMaxHealth();
+        double actual = leftPlayer.getHealth();
+        double max = leftPlayer.getMaxHealth();
+        return calculateRatio(actual, max);
     }
 
     /**
@@ -598,7 +652,74 @@ public class Game implements Serializable{
      * @return la proporción de vida del jugador derecho
      */
     public double getRightPlayerLife(){
-        return rightPlayer.getHealth() / rightPlayer.getMaxHealth();
+        double actual = rightPlayer.getHealth();
+        double max = rightPlayer.getMaxHealth();
+        return calculateRatio(actual, max);
+    }
+    /**
+     * Entrega la vida actual del jugador izquierdo, en puntos de vida.
+     * @return la vida actual del jugador izquierdo
+    */
+    public double getLeftPlayerHealth(){
+        return leftPlayer.getHealth();
+    }
+
+    /**
+     * Entrega la vida actual del jugador derecho, en puntos de vida.
+     * @return la vida actual del jugador derecho
+    */
+    public double getRightPlayerHealth(){
+        return rightPlayer.getHealth();
+    }
+
+    /**
+    * Entrega la vida máxima del jugador izquierdo, en puntos de vida.
+    * @return la vida máxima del jugador izquierdo
+    */
+    public double getLeftPlayerMaxHealth(){
+        return leftPlayer.getMaxHealth();
+    }
+
+    /**
+    * Entrega la vida máxima del jugador derecho, en puntos de vida.
+    * @return la vida máxima del jugador derecho
+    */
+    public double getRightPlayerMaxHealth(){
+        return rightPlayer.getMaxHealth();
+    }
+
+    /**
+     * Indica si el jugador izquierdo está aturdido en este momento.
+     * @return verdadero si el jugador izquierdo está aturdido, falso en caso contrario
+     */
+    public boolean isLeftPlayerStunned(){
+        return leftPlayer.isStunned();
+    }
+
+    /**
+     * Indica si el jugador derecho está aturdido en este momento.
+     * @return verdadero si el jugador derecho está aturdido, falso en caso contrario
+     */
+    public boolean isRightPlayerStunned(){
+        return rightPlayer.isStunned();
+    }
+
+    /**
+     * Entrega el tiempo que le queda al aturdimiento del jugador
+     * izquierdo, o cero si no está aturdido.
+     * @return el tiempo restante del aturdimiento del jugador izquierdo en segundos
+     */
+    public double getLeftPlayerStunTime(){
+        return leftPlayer.getStunTimeLeft();
+    }
+
+    /**
+    * Entrega el tiempo que le queda al aturdimiento del jugador
+    * derecho, o cero si no está aturdido.
+    * @return el tiempo restante del aturdimiento del jugador derecho en segundos
+     */
+    public double getRightPlayerStunTime(){
+        return rightPlayer.getStunTimeLeft();
     }
 
     //clave del sprite de cada jugador (la usa la presentacion para elegir la imagen)
@@ -694,6 +815,25 @@ public class Game implements Serializable{
     public void saveTo(File file) throws DOPOSoccerException {
         GamePersistence persistence = new GamePersistence();
         persistence.save(this, file);
+    }
+
+    /**
+     * Asocia al partido los perfiles persistentes de ambos jugadores,
+     * para que al terminar el partido sus puntos se sumen a esos
+     * perfiles. Se usa con un partido abierto desde un archivo, que
+     * llega sin perfiles porque estos no se guardan con el partido.
+     * Las estadísticas de los jugadores no cambian: el partido
+     * conserva las que tenía al guardarse.
+     * @param leftProfile perfil persistente del jugador izquierdo
+     * @param rightProfile perfil persistente del jugador derecho
+     * @throws DOPOSoccerException si alguno de los dos perfiles es nulo
+     */
+    public void attachProfiles(Profile leftProfile, Profile rightProfile) throws DOPOSoccerException {
+        if (leftProfile == null || rightProfile == null) {
+            throw new DOPOSoccerException("Los perfiles de ambos jugadores son obligatorios para asociarlos al partido.");
+        }
+        this.leftProfile = leftProfile;
+        this.rightProfile = rightProfile;
     }
 
     /**

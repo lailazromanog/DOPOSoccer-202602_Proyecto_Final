@@ -1,32 +1,30 @@
 // Pruebas del perfil persistente del jugador (Profile).
 // Cubre: estado inicial, costo de mejora, disponibilidad de mejora,
 // nivel maximo, y la operacion de mejora sobre cada estadistica.
- 
+
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
 import domain.*;
- 
+
 public class ProfileTest {
- 
+
     private Profile profile;
- 
+
     // Crea un perfil nuevo antes de cada prueba
     @Before
     public void setUp() {
         profile = new Profile();
     }
- 
-    
+
     // Estado inicial
-    
- 
+
     // Un perfil nuevo empieza con cero puntos
     @Test
     public void testProfileInitialPoints() {
         assertEquals(0, profile.getPoints());
     }
- 
+
     // Todas las estadisticas arrancan en nivel 1
     @Test
     public void testProfileInitialStats() {
@@ -35,18 +33,16 @@ public class ProfileTest {
         assertEquals(1, profile.getJump());
         assertEquals(1, profile.getSurvival());
     }
- 
-    
+
     // Puntos
-    
- 
+
     // addPoints suma correctamente la cantidad dada
     @Test
     public void testProfileAddPoints() throws Exception{
         profile.addPoints(100);
         assertEquals(100, profile.getPoints());
     }
- 
+
     // Se pueden acumular puntos en multiples llamadas
     @Test
     public void testProfileAddPointsAccumulates() throws Exception{
@@ -54,29 +50,27 @@ public class ProfileTest {
         profile.addPoints(25);
         assertEquals(125, profile.getPoints());
     }
- 
-    
+
     // Costo de mejora: upgradeCost
-    
- 
+
     // En nivel 1 el costo del proximo nivel es 500
     @Test
     public void testUpgradeCostLevel1() throws Exception {
         // Formula: 500 * 2^(nivel-1) = 500 * 2^0 = 500
         assertEquals(500, profile.upgradeCost("speed"));
     }
- 
+
     // En nivel 2 el costo se duplica a 1000
     @Test
     public void testUpgradeCostLevel2() throws Exception {
         // Subimos la estadistica a nivel 2 pagando su costo
         profile.addPoints(500);
         profile.upgrade("speed");
- 
+
         // Ahora en nivel 2: 500 * 2^1 = 1000
         assertEquals(1000, profile.upgradeCost("speed"));
     }
- 
+
     // El costo funciona igual para todas las estadisticas
     @Test
     public void testUpgradeCostSameForAllStats() throws Exception {
@@ -85,32 +79,30 @@ public class ProfileTest {
         assertEquals(profile.upgradeCost("kick"),     profile.upgradeCost("jump"));
         assertEquals(profile.upgradeCost("jump"),     profile.upgradeCost("survival"));
     }
- 
-    
+
     // Disponibilidad de mejora: canUpgrade
-    
- 
+
     // Sin puntos suficientes no se puede mejorar
     @Test
     public void testCanUpgradeWithoutPoints() throws Exception {
         // El perfil tiene 0 puntos y el costo es 500
         assertFalse(profile.canUpgrade("speed"));
     }
- 
+
     // Con puntos exactos se puede mejorar
     @Test
     public void testCanUpgradeWithExactPoints() throws Exception {
         profile.addPoints(500);
         assertTrue(profile.canUpgrade("speed"));
     }
- 
+
     // Con mas puntos que el costo tambien se puede mejorar
     @Test
     public void testCanUpgradeWithMorePoints() throws Exception {
         profile.addPoints(1000);
         assertTrue(profile.canUpgrade("speed"));
     }
- 
+
     // Una estadistica en nivel maximo no se puede mejorar aunque haya puntos
     @Test
     public void testCanUpgradeWhenAtMax() throws Exception {
@@ -126,17 +118,15 @@ public class ProfileTest {
         profile.addPoints(100000);
         assertFalse(profile.canUpgrade("speed"));
     }
- 
-    
+
     // Nivel maximo: isMax
-    
- 
+
     // Una estadistica nueva no esta en su maximo
     @Test
     public void testIsMaxFalseAtStart() throws Exception {
         assertFalse(profile.isMax("speed"));
     }
- 
+
     // Despues de subir hasta nivel 10 la estadistica esta en su maximo
     @Test
     public void testIsMaxTrueAtLevel10() throws Exception {
@@ -150,22 +140,20 @@ public class ProfileTest {
         }
         assertTrue(profile.isMax("speed"));
     }
- 
-    
+
     // Operacion de mejora: upgrade
-    
- 
+
     // Mejorar speed sube su nivel y descuenta los puntos
     @Test
     public void testUpgradeSpeedIncreasesLevel() throws Exception {
         profile.addPoints(500);
         profile.upgrade("speed");
- 
+
         assertEquals(2, profile.getSpeed());
         // Los puntos deben haber bajado de 500 a 0
         assertEquals(0, profile.getPoints());
     }
- 
+
     // Mejorar kick sube su nivel correctamente
     @Test
     public void testUpgradeKickIncreasesLevel() throws Exception {
@@ -173,7 +161,7 @@ public class ProfileTest {
         profile.upgrade("kick");
         assertEquals(2, profile.getKick());
     }
- 
+
     // Mejorar jump sube su nivel correctamente
     @Test
     public void testUpgradeJumpIncreasesLevel() throws Exception {
@@ -181,7 +169,7 @@ public class ProfileTest {
         profile.upgrade("jump");
         assertEquals(2, profile.getJump());
     }
- 
+
     // Mejorar survival sube su nivel correctamente
     @Test
     public void testUpgradeSurvivalIncreasesLevel() throws Exception {
@@ -189,25 +177,24 @@ public class ProfileTest {
         profile.upgrade("survival");
         assertEquals(2, profile.getSurvival());
     }
- 
+
     // Mejorar multiples veces acumula los niveles correctamente
     @Test
     public void testUpgradeMultipleTimes() throws Exception {
         // Nivel 1 -> 2: 500 pts
         profile.addPoints(500);
         profile.upgrade("kick");
- 
+
         // Nivel 2 -> 3: 1000 pts
         profile.addPoints(1000);
         profile.upgrade("kick");
- 
+
         assertEquals(3, profile.getKick());
     }
- 
-        
+
+
     // Excepciones: addPoints
-    
- 
+
     // Sumar puntos negativos lanza excepcion y no cambia los puntos
     @Test
     public void testAddNegativePointsThrows() {
@@ -219,18 +206,16 @@ public class ProfileTest {
         }
         assertEquals(0, profile.getPoints());
     }
- 
+
     // Sumar cero es valido y no cambia nada
     @Test
     public void testAddZeroPointsIsAllowed() throws Exception {
         profile.addPoints(0);
         assertEquals(0, profile.getPoints());
     }
- 
-    
+
     // Excepciones: estadistica invalida
-    
- 
+
     // Una estadistica desconocida lanza excepcion en upgradeCost
     @Test
     public void testUpgradeCostUnknownStatThrows() {
@@ -241,7 +226,7 @@ public class ProfileTest {
             assertTrue(e.getMessage().contains("fly"));
         }
     }
- 
+
     // Una estadistica desconocida lanza excepcion en canUpgrade
     @Test
     public void testCanUpgradeUnknownStatThrows() {
@@ -252,7 +237,7 @@ public class ProfileTest {
             assertTrue(e.getMessage().contains("fly"));
         }
     }
- 
+
     // Una estadistica desconocida lanza excepcion en isMax
     @Test
     public void testIsMaxUnknownStatThrows() {
@@ -263,7 +248,7 @@ public class ProfileTest {
             assertTrue(e.getMessage().contains("fly"));
         }
     }
- 
+
     // Una estadistica desconocida lanza excepcion en upgrade
     @Test
     public void testUpgradeUnknownStatThrows() {
@@ -274,11 +259,9 @@ public class ProfileTest {
             assertTrue(e.getMessage().contains("fly"));
         }
     }
- 
-    
+
     // Excepciones: upgrade sin puntos o en nivel maximo
-    
- 
+
     // El mensaje de puntos insuficientes dice cuantos puntos faltan
     @Test
     public void testUpgradeMessageSaysMissingPoints() throws Exception {
@@ -293,7 +276,7 @@ public class ProfileTest {
         assertEquals(1, profile.getSpeed());
         assertEquals(200, profile.getPoints());
     }
- 
+
     // Mejorar una estadistica en nivel maximo lanza excepcion y no gasta puntos
     @Test
     public void testUpgradeAtMaxThrows() throws Exception {
@@ -312,11 +295,9 @@ public class ProfileTest {
         assertEquals(10, profile.getSpeed());
         assertEquals(100000, profile.getPoints());
     }
- 
-    
+
     // Precios a lo largo de los niveles
-    
- 
+
     // El precio se duplica en cada nivel: 500, 1000, 2000, 4000
     @Test
     public void testUpgradeCostDoublesEachLevel() throws Exception {
@@ -327,7 +308,7 @@ public class ProfileTest {
             profile.upgrade("kick");
         }
     }
- 
+
     // Mejorar una estadistica no afecta a las demas
     @Test
     public void testUpgradeDoesNotAffectOtherStats() throws Exception {
@@ -339,4 +320,3 @@ public class ProfileTest {
         assertEquals(1, profile.getSurvival());
     }
 }
- 

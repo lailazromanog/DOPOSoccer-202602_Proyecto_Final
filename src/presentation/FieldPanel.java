@@ -2,6 +2,7 @@ package presentation;
 
 import domain.DOPOSoccerException;
 import domain.Game;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -22,7 +23,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-
 /**
  * Pantalla de la cancha.
  *
@@ -42,6 +42,7 @@ public class FieldPanel extends JPanel {
     private BufferedImage p2Head;
     private BufferedImage p2Shoe;
     private Image auraGif;   //aura animada
+    private Image tornadoGif; //remolino animado del tiro de poder Tornado
 
     // constantes de dibujo, tomadas de la fachada (el mundo logico es 769x450)
     private static final int WIDTH = Game.WIDTH;
@@ -88,6 +89,7 @@ public class FieldPanel extends JPanel {
         }
         //aura animada, ImageIcon reproduce el GIF
         auraGif = new ImageIcon("resources/aura_azul.gif").getImage();
+        tornadoGif = new ImageIcon("resources/tornado.gif").getImage();
         setPreferredSize(new Dimension(resW, resH));
 
         pressedKeys = new HashSet<>();
@@ -189,6 +191,7 @@ public class FieldPanel extends JPanel {
         drawField(g);
         drawPlayers(g);
         drawBall(g);
+        drawFakeBalls(g);
         drawGoals(g);
         drawHUD(g);
         if(game.isFinished()){
@@ -238,10 +241,12 @@ public class FieldPanel extends JPanel {
         // J1 mira a la derecha (frontDir = 1), J2 a la izquierda (frontDir = -1)
         drawCharacter(g, p1Head, p1Shoe,
                 (int) game.getLeftPlayerX(), (int) game.getLeftPlayerY(),
-                game.isLeftPlayerAura(), 1, game.getLeftPlayerEffect());
+                game.isLeftPlayerAura(), 1, game.getLeftPlayerEffect(),
+                game.isLeftPlayerStunned(), game.getLeftPlayerStunTime());
         drawCharacter(g, p2Head, p2Shoe,
                 (int) game.getRightPlayerX(), (int) game.getRightPlayerY(),
-                game.isRightPlayerAura(), -1, game.getRightPlayerEffect());
+                game.isRightPlayerAura(), -1, game.getRightPlayerEffect(),
+                game.isRightPlayerStunned(), game.getRightPlayerStunTime());
     }
 
     /**
@@ -256,8 +261,10 @@ public class FieldPanel extends JPanel {
      * @param aura verdadero si el personaje tiene el aura de su poder activa
      * @param frontDir dirección hacia la que mira el personaje, uno hacia la derecha o menos uno hacia la izquierda
      * @param effect nombre del efecto activo del personaje, o nulo si no tiene ninguno
+     * @param stunned verdadero si el personaje está aturdido
+     * @param stunTime tiempo restante del aturdimiento del personaje en segundos
      */
-    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir, String effect){
+    private void drawCharacter(Graphics g, BufferedImage head, BufferedImage shoe, int x, int y, boolean aura, int frontDir, String effect, boolean stunned, double stunTime){
         int d = PLAYER_DIAMETER;
         int bottom = y + d;          // el piso del jugador (abajo del hitbox)
         int cx = x + d / 2;          // centro horizontal
@@ -290,6 +297,9 @@ public class FieldPanel extends JPanel {
         
         // brillo del efecto activo, encima del personaje para que se note
         drawEffect(g, effect, x, y);
+
+        // aturdido: el personaje parpadea en gris
+        drawStun(g, stunned, stunTime, x, y);
     }
 
     /**
@@ -319,6 +329,33 @@ public class FieldPanel extends JPanel {
     }
 
     /**
+     * Dibuja encima del personaje aturdido un velo gris que parpadea,
+     * para que ambos jugadores vean que no puede jugar. El parpadeo
+     * cambia cada sexta parte de segundo del tiempo restante del
+     * aturdimiento. No dibuja nada si el personaje no está aturdido.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param stunned verdadero si el personaje está aturdido
+     * @param stunTime tiempo restante del aturdimiento en segundos
+     * @param x posición horizontal del personaje
+     * @param y posición vertical del personaje
+     */
+    private void drawStun(Graphics g, boolean stunned, double stunTime, int x, int y){
+        if(!stunned){
+            return;
+        }
+        int phase = (int) (stunTime * 6);
+        if(phase % 2 != 0){
+            return; //fase apagada del parpadeo
+        }
+        int d = PLAYER_DIAMETER;
+        int veilSize = (int)(d * 1.3);
+        int veilX = x + d / 2 - veilSize / 2;
+        int veilY = y + d / 2 - veilSize / 2;
+        g.setColor(new Color(110, 110, 110, 190));
+        g.fillOval(veilX, veilY, veilSize, veilSize);
+    }
+
+    /**
      * Entrega el color semitransparente con el que se dibuja el efecto
      * dado sobre el personaje. Para que un efecto nuevo se vea basta con
      * agregarle aquí su color.
@@ -328,6 +365,8 @@ public class FieldPanel extends JPanel {
     private Color effectColor(String effect){
         if(effect.equals("pushed")){
             return new Color(60, 140, 255, 110);      // azul del Aura Azul
+        } else if(effect.equals("electrocuted")){
+            return new Color(255, 230, 40, 110);      // amarillo del Rayo
         } else {
             return null;
         }
@@ -343,16 +382,54 @@ public class FieldPanel extends JPanel {
     private Color shotColor(String shotName){
         if(shotName.equals("Blue Aura")){
             return new Color(60, 140, 255);           // azul del Aura Azul
+        } else if(shotName.equals("Lightning")){
+            return new Color(255, 230, 40);           // amarillo del Rayo
         } else {
             return null;
         }
     }
+
+    /**
+     * Entrega la imagen animada con la que se dibuja el balón mientras
+     * viaja el tiro de poder dado. Para que un tiro nuevo tenga su propio
+     * gif basta con agregarle aquí su imagen.
+     * @param shotName nombre del tiro de poder en vuelo
+     * @return la imagen animada del tiro de poder, o nula si el tiro no tiene una asignada
+     */
+    private Image shotGif(String shotName){
+        if(shotName.equals("Tornado")){
+            return tornadoGif;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Dibuja los balones señuelo del poder Ilusión exactamente igual
+     * que el balón real, blancos con borde negro, para que ningún
+     * jugador pueda distinguir cuál es el verdadero.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
+    private void drawFakeBalls(Graphics g){
+        int d = BALL_DIAMETER;
+        java.util.List<double[]> fakes = game.getFakeBalls();
+        for(int i = 0; i < fakes.size(); i++){
+            double[] position = fakes.get(i);
+            int x = (int) position[0];
+            int y = (int) position[1];
+            g.setColor(Color.WHITE);
+            g.fillOval(x, y, d, d);
+            g.setColor(Color.BLACK);
+            g.drawOval(x, y, d, d);
+        }
+    }
     
 
-        /**
-     * Dibuja el balón en su posición actual. Si hay un tiro de poder en
-     * vuelo con color asignado, dibuja primero una estela detrás del
-     * balón y pinta el balón con el color de ese tiro.
+    /**
+     * Dibuja el balón en su posición actual. Si el tiro de poder en vuelo
+     * tiene un gif propio, dibuja ese gif en la posición del balón. Si no
+     * tiene gif pero sí tiene color asignado, dibuja primero una estela
+     * detrás del balón y lo pinta con ese color.
      * @param g contexto gráfico sobre el que se dibuja
      */
     private void drawBall(Graphics g){
@@ -360,10 +437,29 @@ public class FieldPanel extends JPanel {
         int x = (int) game.getBallX();
         int y = (int) game.getBallY();
 
-        // color del tiro de poder en vuelo, si lo hay
-        Color shot = null;
+        // nombre del tiro de poder en vuelo, si lo hay
+        String shotName = null;
         if(game.isPowerShotActive()){
-            shot = shotColor(game.getPowerShotName());
+            shotName = game.getPowerShotName();
+        }
+
+        // si el tiro tiene un gif propio, se dibuja ese en vez del balon
+        Image gif = null;
+        if(shotName != null){
+            gif = shotGif(shotName);
+        }
+        if(gif != null){
+            int size = (int)(d * 2.4);          // un poco mas grande que el balon, para que se note
+            int gx = x + d / 2 - size / 2;      // centrado en horizontal
+            int gy = y + d / 2 - size / 2;      // centrado en vertical
+            g.drawImage(gif, gx, gy, size, size, this);
+            return;
+        }
+
+        // si no tiene gif propio, se dibuja con el color del tiro, si lo tiene
+        Color shot = null;
+        if(shotName != null){
+            shot = shotColor(shotName);
         }
 
         if(shot != null){
@@ -384,7 +480,55 @@ public class FieldPanel extends JPanel {
         g.fillOval(x, y, d, d);
         g.setColor(Color.BLACK);
         g.drawOval(x, y, d, d);
+
+        // chispas del Rayo encima del balon, para que se vea cubierto de electricidad
+        if(game.isPowerShotActive() && game.getPowerShotName().equals("Lightning")){
+            drawSparks(g, x, y);
+        }
     }
+
+    
+    /**
+     * Dibuja chispas eléctricas en zigzag que salen del borde del balón
+     * en varias direcciones. Cada cuadro las dibuja con un ángulo y un
+     * quiebre al azar para que parezcan parpadear.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param x posición horizontal del balón
+     * @param y posición vertical del balón
+     */
+    private void drawSparks(Graphics g, int x, int y){
+        int d = BALL_DIAMETER;
+        int sparks = 6;                          // cantidad de chispas alrededor del balon
+        int segments = 3;                        // tramos del zigzag de cada chispa
+        double segmentLength = d * 0.25;         // largo de cada tramo
+        double centerX = x + d / 2.0;
+        double centerY = y + d / 2.0;
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(2));
+        g2.setColor(new Color(255, 250, 150));   // amarillo claro de la chispa
+
+        for(int i = 0; i < sparks; i++){
+            // cada chispa sale en su propia direccion, con un poco de azar
+            double angle = i * 2 * Math.PI / sparks + Math.random() * 0.5;
+            double startX = centerX + Math.cos(angle) * d / 2.0;
+            double startY = centerY + Math.sin(angle) * d / 2.0;
+
+            for(int j = 0; j < segments; j++){
+                // cada tramo se quiebra un poco hacia un lado o hacia el otro
+                double turn = (Math.random() - 0.5) * 1.2;
+                double endX = startX + Math.cos(angle + turn) * segmentLength;
+                double endY = startY + Math.sin(angle + turn) * segmentLength;
+                g2.drawLine((int) startX, (int) startY, (int) endX, (int) endY);
+                startX = endX;
+                startY = endY;
+            }
+        }
+
+        // se devuelve el grosor normal para no afectar lo que se dibuja despues
+        g2.setStroke(new BasicStroke(1));
+    }
+
 
     /**
      * Dibuja los dos arcos de la cancha, con sus postes y sus travesaños.
@@ -406,7 +550,7 @@ public class FieldPanel extends JPanel {
      */
     private void drawHUD(Graphics g){
         g.setColor(new Color(0, 0, 0, 150));
-        g.fillRect(0, 0, WIDTH, 58);
+        g.fillRect(0, 0, WIDTH, 64);
 
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.setColor(Color.WHITE);
@@ -433,8 +577,60 @@ public class FieldPanel extends JPanel {
         drawBar(g, barX1, barY, barW, 10, game.getLeftPlayerPower(), new Color(0xE8A033), true);
         drawBar(g, barX2, barY, barW, 10, game.getRightPlayerPower(), new Color(0xE8A033), true);
         // barras de vida (verde)
-        drawBar(g, barX1, 47, barW, 6, game.getLeftPlayerLife(), new Color(0x3ddc84), false);
-        drawBar(g, barX2, 47, barW, 6, game.getRightPlayerLife(), new Color(0x3ddc84), false);
+        drawLifeBar(g, barX1, 46, barW, 14, game.getLeftPlayerHealth(), game.getLeftPlayerMaxHealth(), game.isLeftPlayerStunned(), game.getLeftPlayerStunTime());
+        drawLifeBar(g, barX2, 46, barW, 14, game.getRightPlayerHealth(), game.getRightPlayerMaxHealth(), game.isRightPlayerStunned(), game.getRightPlayerStunTime());
+    }
+
+    /**
+     * Dibuja la barra de vida de un jugador con el color que le
+     * corresponde a su vida y un texto centrado. Si el jugador no está
+     * aturdido el texto muestra su vida actual y su vida máxima, y si
+     * está aturdido muestra el aviso de aturdimiento con el tiempo que
+     * le falta para recuperarse.
+     * @param g contexto gráfico sobre el que se dibuja
+     * @param x posición horizontal de la barra
+     * @param y posición vertical de la barra
+     * @param w ancho total de la barra
+     * @param h alto de la barra
+     * @param health vida actual del jugador
+     * @param maxHealth vida máxima del jugador
+     * @param stunned verdadero si el jugador está aturdido
+     * @param stunTime tiempo restante del aturdimiento en segundos
+     */
+    private void drawLifeBar(Graphics g, int x, int y, int w, int h, double health, double maxHealth, boolean stunned, double stunTime){
+        double ratio = health / maxHealth;
+        drawBar(g, x, y, w, h, ratio, lifeColor(ratio), true);
+
+        String text;
+        if (stunned){
+            text = String.format("ATURDIDO %.1f", stunTime); //%.1f flotante de un decimal stunTime es el valor que va en ese %
+        } else {
+            text = (int) Math.ceil(health) + "/" + (int) Math.round(maxHealth); // Math.ceil: funcion techo
+        }
+        g.setFont(new Font("Arial", Font.BOLD, 11));
+        FontMetrics fm = g.getFontMetrics();
+        int textX = x + (w - fm.stringWidth(text)) / 2;
+        int textY = y + (h + fm.getAscent()) / 2 - 1;
+        g.setColor(Color.WHITE);
+        g.drawString(text, textX, textY);
+    }
+
+    /**
+     * Entrega el color de la barra de vida según la proporción de vida
+     * que le queda al jugador: verde si le queda más de la mitad,
+     * amarillo si le queda entre la mitad y la cuarta parte, y rojo si
+     * le queda menos de la cuarta parte.
+     * @param ratio proporción de vida que queda, entre cero y uno
+     * @return el color con el que se dibuja el relleno de la barra de vida
+     */
+    private Color lifeColor(double ratio){
+        if(ratio > 0.5){
+            return new Color(0x3ddc84);
+        } else if(ratio > 0.25){
+            return new Color(0xF2C94C);
+        } else {
+            return new Color(0xE5484D);
+        }
     }
 
     /**

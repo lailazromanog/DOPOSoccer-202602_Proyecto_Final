@@ -1,5 +1,5 @@
 package domain;
-
+import java.io.File;
 /**
  * Fachada del progreso de los jugadores entre partidos.
  * Es la única puerta que usa la presentación para consultar y mejorar
@@ -58,6 +58,20 @@ public class Progress {
      */
     public Game newGame(String matchType, int value, String country1, String country2, String opponent) throws DOPOSoccerException{
         return new Game(matchType, value, country1, country2, opponent, store.getLeft(), store.getRight());
+    }
+
+    /**
+     * Abre el partido guardado en el archivo dado y lo asocia al
+     * progreso vigente de ambos jugadores, de modo que al terminar
+     * sus puntos se sumen a ese progreso.
+     * @param file archivo del que se quiere abrir el partido
+     * @return el partido reconstruido, listo para continuar
+     * @throws DOPOSoccerException si el archivo no contiene un partido válido o no se puede leer
+     */
+    public Game openGame(File file) throws DOPOSoccerException{
+        Game game = Game.openFrom(file);
+        game.attachProfiles(store.getLeft(), store.getRight());
+        return game;
     }
 
     /**

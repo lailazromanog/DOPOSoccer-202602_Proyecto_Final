@@ -7,6 +7,11 @@ package domain;
  * no puede moverse, saltar ni patear mientras dura el efecto.
  */
 public class Tornado extends Power {
+
+    // velocidad horizontal con la que sale el balon convertido en remolino
+    private static final double TORNADO_SPEED = 16;
+
+    
     /**
      * Crea el tiro de poder Tornado con su daño base y la duración del
      * efecto de inconsciencia que deja sobre el rival.
@@ -17,15 +22,25 @@ public class Tornado extends Power {
 
 
     /**
-     * Deja el balón con la trayectoria que ya traía al ser tocado por el
-     * jugador con el aura activa. La trayectoria propia de este tiro se
-     * define cuando se trabaje este poder.
+     * Lanza el balón a ras de suelo, a alta velocidad horizontal y sin
+     * impulso vertical, para que la gravedad y el rebote normales del
+     * balón lo hagan rebotar rápidamente contra el piso mientras avanza,
+     * como un remolino.
      * @param match partido en el que se ejecuta el tiro de poder
      * @param attacker jugador que activa y ejecuta el tiro de poder
      */
     @Override
     public void shoot(Match match, Player attacker) {
-        // por ahora el balón sigue con la trayectoria que traía
+        int shotDir;
+        if (attacker == match.getLeftPlayer()) {
+            shotDir = 1;
+        } else {
+            shotDir = -1;
+        }
+
+        Ball ball = match.getBall();
+        ball.setVelocityX(shotDir * TORNADO_SPEED);
+        ball.setVelocityY(0);
     }
 
     /**

@@ -2,6 +2,7 @@ package presentation;
 
 import domain.DOPOSoccerException;
 import domain.Game;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -22,7 +23,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-import java.awt.BasicStroke;
 /**
  * Pantalla de la cancha.
  *
@@ -42,6 +42,7 @@ public class FieldPanel extends JPanel {
     private BufferedImage p2Head;
     private BufferedImage p2Shoe;
     private Image auraGif;   //aura animada
+    private Image tornadoGif; //remolino animado del tiro de poder Tornado
 
     // constantes de dibujo, tomadas de la fachada (el mundo logico es 769x450)
     private static final int WIDTH = Game.WIDTH;
@@ -88,6 +89,7 @@ public class FieldPanel extends JPanel {
         }
         //aura animada, ImageIcon reproduce el GIF
         auraGif = new ImageIcon("resources/aura_azul.gif").getImage();
+        tornadoGif = new ImageIcon("resources/tornado.gif").getImage();
         setPreferredSize(new Dimension(resW, resH));
 
         pressedKeys = new HashSet<>();
@@ -189,6 +191,7 @@ public class FieldPanel extends JPanel {
         drawField(g);
         drawPlayers(g);
         drawBall(g);
+        drawFakeBalls(g);
         drawGoals(g);
         drawHUD(g);
         if(game.isFinished()){
@@ -385,12 +388,48 @@ public class FieldPanel extends JPanel {
             return null;
         }
     }
+
+    /**
+     * Entrega la imagen animada con la que se dibuja el balón mientras
+     * viaja el tiro de poder dado. Para que un tiro nuevo tenga su propio
+     * gif basta con agregarle aquí su imagen.
+     * @param shotName nombre del tiro de poder en vuelo
+     * @return la imagen animada del tiro de poder, o nula si el tiro no tiene una asignada
+     */
+    private Image shotGif(String shotName){
+        if(shotName.equals("Tornado")){
+            return tornadoGif;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Dibuja los balones señuelo del poder Ilusión exactamente igual
+     * que el balón real, blancos con borde negro, para que ningún
+     * jugador pueda distinguir cuál es el verdadero.
+     * @param g contexto gráfico sobre el que se dibuja
+     */
+    private void drawFakeBalls(Graphics g){
+        int d = BALL_DIAMETER;
+        java.util.List<double[]> fakes = game.getFakeBalls();
+        for(int i = 0; i < fakes.size(); i++){
+            double[] position = fakes.get(i);
+            int x = (int) position[0];
+            int y = (int) position[1];
+            g.setColor(Color.WHITE);
+            g.fillOval(x, y, d, d);
+            g.setColor(Color.BLACK);
+            g.drawOval(x, y, d, d);
+        }
+    }
     
 
-        /**
-     * Dibuja el balón en su posición actual. Si hay un tiro de poder en
-     * vuelo con color asignado, dibuja primero una estela detrás del
-     * balón y pinta el balón con el color de ese tiro.
+    /**
+     * Dibuja el balón en su posición actual. Si el tiro de poder en vuelo
+     * tiene un gif propio, dibuja ese gif en la posición del balón. Si no
+     * tiene gif pero sí tiene color asignado, dibuja primero una estela
+     * detrás del balón y lo pinta con ese color.
      * @param g contexto gráfico sobre el que se dibuja
      */
     private void drawBall(Graphics g){
@@ -398,10 +437,29 @@ public class FieldPanel extends JPanel {
         int x = (int) game.getBallX();
         int y = (int) game.getBallY();
 
-        // color del tiro de poder en vuelo, si lo hay
-        Color shot = null;
+        // nombre del tiro de poder en vuelo, si lo hay
+        String shotName = null;
         if(game.isPowerShotActive()){
-            shot = shotColor(game.getPowerShotName());
+            shotName = game.getPowerShotName();
+        }
+
+        // si el tiro tiene un gif propio, se dibuja ese en vez del balon
+        Image gif = null;
+        if(shotName != null){
+            gif = shotGif(shotName);
+        }
+        if(gif != null){
+            int size = (int)(d * 2.4);          // un poco mas grande que el balon, para que se note
+            int gx = x + d / 2 - size / 2;      // centrado en horizontal
+            int gy = y + d / 2 - size / 2;      // centrado en vertical
+            g.drawImage(gif, gx, gy, size, size, this);
+            return;
+        }
+
+        // si no tiene gif propio, se dibuja con el color del tiro, si lo tiene
+        Color shot = null;
+        if(shotName != null){
+            shot = shotColor(shotName);
         }
 
         if(shot != null){
@@ -422,7 +480,7 @@ public class FieldPanel extends JPanel {
         g.fillOval(x, y, d, d);
         g.setColor(Color.BLACK);
         g.drawOval(x, y, d, d);
-        
+
         // chispas del Rayo encima del balon, para que se vea cubierto de electricidad
         if(game.isPowerShotActive() && game.getPowerShotName().equals("Lightning")){
             drawSparks(g, x, y);

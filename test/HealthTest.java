@@ -6,6 +6,8 @@
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.List;
 import domain.*;
 
 public class HealthTest {
@@ -273,5 +275,30 @@ public class HealthTest {
         assertEquals(2.0, player.getStunTimeLeft(), 0.001);
         player.updateStun(2.5);
         assertEquals(0.0, player.getStunTimeLeft(), 0.001);
+    }
+
+        // Una patada que toca un balon senuelo de la Ilusion solo lo impulsa, aunque el rival este al alcance
+    @Test
+    public void testKickTouchingFakeBallOnlyImpulsesIt() throws Exception {
+        Game game = newHumanGame();
+        bringRightPlayerNextToLeft(game);
+
+        // se pone un senuelo sobre el jugador izquierdo; el balon real queda lejos
+        Ball fake = new Ball();
+        fake.setPositionX(game.getLeftPlayerX());
+        fake.setPositionY(game.getLeftPlayerY());
+        List<Ball> fakes = new ArrayList<Ball>();
+        fakes.add(fake);
+        java.lang.reflect.Field matchField = Game.class.getDeclaredField("match");
+        matchField.setAccessible(true);
+        Match match = (Match) matchField.get(game);
+        match.addFakeBalls(fakes, 5.0);
+        assertEquals(0.0, fake.getVelocityX(), 0.001);
+
+        game.kickLeftPlayer();
+
+        // el senuelo salio impulsado y el rival no perdio vida
+        assertTrue(fake.getVelocityX() > 1.0);
+        assertEquals(1.0, game.getRightPlayerLife(), 0.001);
     }
 }

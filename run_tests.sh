@@ -9,7 +9,6 @@ VERDE="\033[0;32m"
 ROJO="\033[0;31m"
 RESET="\033[0m"
 
-
 # Separador del classpath: en Windows (Git Bash) es punto y coma, en Linux y Mac son dos puntos
 SEP=":"
 case "$(uname -s)" in
@@ -56,9 +55,9 @@ echo -e "${VERDE}Compilacion de tests exitosa.${RESET}"
 echo ""
 echo "Corriendo tests con JaCoCo..."
 java -javaagent:lib/jacocoagent.jar=destfile=jacoco.exec \
-     -cp "build:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar" \
+     -cp "build${SEP}lib/junit-4.13.2.jar${SEP}lib/hamcrest-core-1.3.jar" \
      org.junit.runner.JUnitCore \
-     DOPOSoccerTest PowerTest FactoryTest ProfileTest PersistenceTest ProgressTest
+     DOPOSoccerTest PowerTest FactoryTest ProfileTest PersistenceTest ProgressTest HealthTest
 
 RESULTADO=$?
 echo ""

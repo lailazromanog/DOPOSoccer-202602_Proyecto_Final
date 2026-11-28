@@ -315,18 +315,13 @@ public class Game implements Serializable{
         double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
         double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
 
-        // si el balon esta cerca, lo impulsa
-        double ballCenterX = ball.getPositionX() + BALL_DIAMETER / 2.0;
-        double ballCenterY = ball.getPositionY() + BALL_DIAMETER / 2.0;
-        if (Math.abs(playerCenterX - ballCenterX) < PLAYER_DIAMETER
-                && Math.abs(playerCenterY - ballCenterY) < PLAYER_DIAMETER) {
-            double angle;
-            if (direction == 1) {
-                angle = -KICK_ANGLE;
-            } else {
-                angle = Math.PI + KICK_ANGLE;
-            }
-            ball.applyForce(KICK_FORCE, angle);
+        // si el balon real esta cerca, lo impulsa
+        kickBallIfNear(player, ball, direction);
+
+        // los balones senuelo del poder Illusion tambien se pueden patear
+        java.util.List<Ball> fakes = match.getFakeBalls();
+        for (int i = 0; i < fakes.size(); i++) {
+            kickBallIfNear(player, fakes.get(i), direction);
         }
 
         // si el rival esta dentro del alcance del pie, le hace daño
@@ -338,7 +333,33 @@ public class Game implements Serializable{
         }
     }
 
+    /**
+     * Impulsa un balón con la fuerza y el ángulo de la patada si su
+     * centro está dentro del alcance del pie del jugador. Sirve tanto
+     * para el balón real como para los balones señuelo.
+     * @param player jugador que ejecuta la patada
+     * @param target balón que se intenta patear
+     * @param direction dirección de la patada, uno hacia la derecha o menos uno hacia la izquierda
+     */
+    private void kickBallIfNear(Player player, Ball target, int direction) {
+        double playerCenterX = player.getPositionX() + PLAYER_DIAMETER / 2.0;
+        double playerCenterY = player.getPositionY() + PLAYER_DIAMETER / 2.0;
+        double ballCenterX = target.getPositionX() + BALL_DIAMETER / 2.0;
+        double ballCenterY = target.getPositionY() + BALL_DIAMETER / 2.0;
 
+        // el balon debe estar dentro del alcance del pie
+        if (Math.abs(playerCenterX - ballCenterX) < PLAYER_DIAMETER
+                && Math.abs(playerCenterY - ballCenterY) < PLAYER_DIAMETER) {
+            double angle;
+            if (direction == 1) {
+                angle = -KICK_ANGLE;
+            } else {
+                angle = Math.PI + KICK_ANGLE;
+            }
+            target.applyForce(KICK_FORCE, angle);
+        }
+    }
+    
     /**
      * Revisa si hay un tiro de poder en vuelo y si el balón toca al rival
      * de quien lo disparó. Si lo toca, el partido aplica el daño y el

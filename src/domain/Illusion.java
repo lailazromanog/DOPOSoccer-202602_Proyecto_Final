@@ -10,6 +10,10 @@ import java.util.List;
  * el balón real mientras dura el efecto.
  */
 public class Illusion extends Power {
+
+    //nombre del efecto que queda sobre el rival al ser golpeado
+    private static final String EFFECT = "confused";
+
     /**
      * Crea el tiro de poder Ilusión con su daño base y la duración del
      * efecto de confusión que deja sobre el rival.
@@ -47,15 +51,15 @@ public class Illusion extends Power {
     }
 
     /**
-     * No deja ningún efecto adicional sobre el rival por ahora, más allá
-     * del daño. El efecto propio de este tiro se define cuando se
-     * trabaje este poder.
+     * Deja al rival confundido durante la duración del efecto, sin
+     * saber cuál de los balones en la cancha es el real.
      * @param match partido en el que se ejecuta el tiro de poder
      * @param attacker jugador que ejecutó el tiro de poder
      * @param opponent jugador rival que fue golpeado por el tiro de poder
      */
     @Override
     protected void applyHitEffect(Match match, Player attacker, Player opponent) {
-        // por ahora solo recibe el daño, el efecto se define al trabajar este poder
+        //el rival queda confundido mientras dura el efecto
+        opponent.applyEffect(EFFECT, getEffectDuration());
     }
 }
